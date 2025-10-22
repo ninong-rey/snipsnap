@@ -107,4 +107,15 @@ Route::get('/call/join/{roomId}', function ($roomId) {
     return view('call-join', ['roomId' => $roomId]);
 })->name('call.join')->middleware('auth');
 Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
+
+Route::get('/test-working', function () {
+    return response()->json([
+        'message' => 'Laravel is working!',
+        'status' => 'success',
+        'time' => now()
+    ]);
+});
+
+// Your existing routes...
+Route::get('/', [App\Http\Controllers\WebController::class, 'index'])->name('home');
 });
