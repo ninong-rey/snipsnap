@@ -43,6 +43,11 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
+# ✅ DEBUG: Check if migrations exist and database is accessible
+RUN echo "=== DEBUG: Checking migrations ==="
+RUN ls -la database/migrations/
+RUN php artisan migrate:status
+
 # ✅ CRITICAL: Run database migrations to create tables
 RUN php artisan migrate --force
 
