@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnipSnap - TikTok Style Feed</title>
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Use Inter font (Standard practice) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables */
+        :root {
+            --accent: #fe2c55; /* TikTok Red/Pink */
+            --bg-light: #f9f9f9;
+            --text-dark: #161823;
+            --sidebar-width: 260px;
+        }
+
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #fff;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 25px 20px;
+            z-index: 20;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item i {
+            font-size: 18px;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .sidebar-bottom {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        /* --- Main Feed Styles --- */
+        .feed {
+            /* Desktop positioning to clear sidebar */
+            margin-left: var(--sidebar-width);
+            width: 100%;
+            max-width: 800px; /* Max content width */
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 100px; /* Space for the fixed header */
+        }
+        
+        /* --- Video Card Styles --- */
+        .video-card-wrapper {
+            /* Container for the video and its side actions */
+            position: relative;
+            width: 400px; /* Fixed video width for the desktop view */
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center; /* Center video content */
+            padding-right: 90px; /* Space for the actions bar */
+            transition: width 0.3s ease;
+        }
+
+        .video-card {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            background: #000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* 9:16 Aspect Ratio Wrapper */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 177.77%; /* (16 / 9) * 100% */
+            background: #000;
+        }
+        
+        .video-wrapper video,
+        .video-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Video Info (Caption and User) */
+        .video-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #fff;
+            z-index: 10;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+        }
+        
+        .video-info h4 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .video-info p {
+            font-size: 14px;
+            color: #ddd;
+            margin-top: 4px;
+        }
+
+        /* Video Actions (Right Side) */
+        .actions {
+            position: absolute;
+            right: 0; /* Positioned relative to .video-card-wrapper */
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            z-index: 10;
+            padding-left: 20px;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-icon {
+            font-size: 20px;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, background 0.3s;
+        }
+        
+        .action-icon:active {
+            transform: scale(0.9);
+        }
+        
+        .action-icon.liked {
+            color: var(--accent) !important;
+            background: #fff;
+        }
+        
+        .action-icon i {
+            transition: color 0.2s;
+        }
+
+        .action-count {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        /* Heart Animation on Double Click */
+        .heart-anim {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 90px;
+            color: var(--accent);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.6, -0.28, 0.74, 0.05); /* Quick pop */
+            z-index: 15;
+        }
+        
+        .heart-anim.show {
+            transform: translate(-50%, -50%) scale(1.1);
+            opacity: 1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring-like pop */
+        }
+
+        /* Play/Pause Button */
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            z-index: 9;
+        }
+
+        .play-overlay i {
+            font-size: 32px;
+            color: #fff;
+            opacity: 0.7;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.2s;
+        }
+
+        /* --- Header/Profile Button --- */
+        .profile-fixed {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            padding: 15px 20px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            z-index: 30;
+        }
+        .profile-fixed img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-fixed span {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Loader */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent);
+            margin: 120px auto;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 1024px) {
+            /* Reduce overall card width for better fit */
+            .video-card-wrapper {
+                width: 380px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            /* Mobile View */
+            .sidebar {
+                display: none;
+            }
+            .feed {
+                margin-left: 0;
+                width: 100%;
+                max-width: none;
+                padding-top: 70px; /* Adjust for smaller fixed header */
+            }
+            .profile-fixed {
+                padding: 10px 20px;
+            }
+            /* Make video full width on mobile devices, but limit the height for visibility */
+            .video-card-wrapper {
+                width: 90vw; /* Take 90% of viewport width */
+                max-width: 400px;
+                padding-right: 0; /* Remove padding for actions */
+                margin-bottom: 30px;
+            }
+            .actions {
+                /* Place actions bar at the bottom right corner of the video */
+                position: absolute;
+                right: 15px;
+                bottom: 15px;
+                top: auto;
+                transform: none;
+                flex-direction: row;
+                gap: 15px;
+                background: rgba(0, 0, 0, 0.4);
+                padding: 10px 15px;
+                border-radius: 50px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+            .action-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+                background: none;
+            }
+            .action-count {
+                display: none; /* Hide count on small mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR (Desktop Only) -->
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="logo">SnipSnap</div>
+            <div class="nav-items">
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i> Home</a>
+                <a href="#" class="nav-item"><i class="fas fa-compass"></i> Explore</a>
+                <a href="#" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+                <a href="#" class="nav-item"><i class="fas fa-upload"></i> Upload</a>
+                <a href="#" class="nav-item"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="#" class="nav-item"><i class="fas fa-envelope"></i> Messages</a>
+                <a href="#" class="nav-item"><i class="fas fa-user"></i> Profile</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="#" class="nav-item"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            <a href="#" class="nav-item"><i class="fas fa-ellipsis-h"></i> More</a>
+        </div>
+    </div>
+
+    <!-- PROFILE BUTTON / HEADER (Mobile/Desktop) -->
+    <div class="profile-fixed">
+        <img src="https://placehold.co/40x40/fe2c55/fff?text=M" alt="Avatar">
+        <span>Me</span>
+    </div>
+
+    <!-- MAIN FEED -->
+    <div class="feed" id="feed">
+        <div class="loader" id="loader"></div>
+        <!-- Video cards will be dynamically inserted here by JavaScript -->
+    </div>
+
+    <script>
+        // --- MOCK DATA (Simulating Backend Video List) ---
+        const MOCK_VIDEOS = [
+            {
+                id: 1,
+                user: 'code_guru',
+                description: 'When the front-end code finally compiles. 🕺 #reactjs #webdev',
+                filename: 'https://cdn.glitch.me/62c949c3-1627-4a6c-9a4f-712f86230f9a/sample.mp4?v=1630180470928',
+                likes: 1023,
+                comments_count: 54,
+                shares: 12,
+                isVideo: true,
+            },
+            {
+                id: 2,
+                user: 'design_daily',
+                description: 'A look at my new dark mode UI concept. ✨ #design #uiux',
+                filename: 'https://placehold.co/400x711/1f2937/fff?text=MOCK+IMAGE+2',
+                likes: 871,
+                comments_count: 32,
+                shares: 8,
+                isVideo: false,
+            },
+            {
+                id: 3,
+                user: 'travel_hacks',
+                description: 'The hidden beach in Portugal you NEED to see. 🏖️ #travel #portugal',
+                filename: 'https://cdn.glitch.me/62c949c3-1627-4a6c-9a4f-712f86230f9a/sample2.mp4?v=1630180470930',
+                likes: 2100,
+                comments_count: 110,
+                shares: 45,
+                isVideo: true,
+            },
+            {
+                id: 4,
+                user: 'ai_art_daily',
+                description: 'Generative AI is changing everything.🤯 #midjourney #ai',
+                filename: 'https://placehold.co/400x711/4a90e2/fff?text=MOCK+IMAGE+4',
+                likes: 450,
+                comments_count: 15,
+                shares: 5,
+                isVideo: false,
+            },
+        ];
+
+        // --- Interaction Functions ---
+
+        /** Toggles the 'liked' state and updates the count for the like icon. */
+        function toggleLike(iconElement) {
+            const item = iconElement.closest('.action-item');
+            const countEl = item.querySelector('.action-count');
+            
+            iconElement.classList.toggle('liked');
+            let count = parseInt(countEl.textContent.replace(/[^0-9]/g,'')) || 0;
+            
+            if (iconElement.classList.contains('liked')) {
+                count++;
+            } else {
+                count--;
+            }
+            countEl.textContent = count.toLocaleString();
+        }
+
+        /** Shows the heart animation on the video card. */
+        function likeVideo(cardElement) {
+            const heart = cardElement.querySelector('.heart-anim');
+            // If the video card has a like button, simulate the like action
+            const likeIcon = cardElement.closest('.video-card-wrapper').querySelector('.action-icon.like-icon');
+            if (likeIcon && !likeIcon.classList.contains('liked')) {
+                toggleLike(likeIcon);
+            }
+
+            heart.classList.add('show');
+            // Hide the heart after the animation completes
+            setTimeout(() => heart.classList.remove('show'), 700);
+        }
+
+        /** Console log for comments (replaces forbidden alert()) */
+        function toggleComments() {
+            console.log('Comments panel toggle requested. Use a modal here.');
+        }
+
+        /** Toggles the play/pause state of a video manually. */
+        function togglePlayPause(video) {
+            if (video.paused) {
+                video.play().catch(e => console.error('Play failed:', e));
+            } else {
+                video.pause();
+            }
+            updatePlayOverlay(video);
+        }
+
+        /** Updates the visibility of the play icon based on the video state. */
+        function updatePlayOverlay(video) {
+            const overlay = video.nextElementSibling; // The .play-overlay div
+            if (overlay) {
+                overlay.style.opacity = video.paused ? '1' : '0';
+            }
+        }
+        
+        // --- Dynamic Rendering ---
+
+        /** Creates the HTML for a single video card. */
+        function createVideoCard(video) {
+            // Main wrapper for video card + side actions
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-card-wrapper';
+            
+            // Video Card (the actual visible content box)
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.setAttribute('ondblclick', 'likeVideo(this)');
+            
+            // Aspect Ratio Wrapper
+            const videoWrapper = document.createElement('div');
+            videoWrapper.className = 'video-wrapper';
+
+            // Media Element (Video or Image)
+            let mediaElement;
+            if (video.isVideo) {
+                mediaElement = document.createElement('video');
+                mediaElement.src = video.filename;
+                mediaElement.muted = true;
+                mediaElement.playsInline = true;
+                mediaElement.loop = true;
+                mediaElement.preload = 'metadata';
+                // Click handler to manually pause/play
+                mediaElement.onclick = function() {
+                    togglePlayPause(this);
+                };
+            } else {
+                mediaElement = document.createElement('img');
+                mediaElement.src = video.filename;
+                mediaElement.alt = 'SnipSnap Image';
+                mediaElement.onerror = (e) => { e.target.src = 'https://placehold.co/400x711/000/fff?text=CONTENT+ERROR'; };
+            }
+
+            videoWrapper.appendChild(mediaElement);
+            card.appendChild(videoWrapper);
+
+            // Play/Pause Overlay (for videos)
+            if (video.isVideo) {
+                const overlay = document.createElement('div');
+                overlay.className = 'play-overlay';
+                overlay.innerHTML = '<i class="fas fa-play"></i>';
+                overlay.style.opacity = '1'; // Show play icon initially
+                videoWrapper.appendChild(overlay);
+            }
+            
+            // Double-Click Heart Animation
+            const heartAnim = document.createElement('div');
+            heartAnim.className = 'heart-anim';
+            heartAnim.innerHTML = '<i class="fas fa-heart"></i>';
+            card.appendChild(heartAnim);
+
+            // Video Info
+            const info = document.createElement('div');
+            info.className = 'video-info';
+            info.innerHTML = `<h4>@${video.user}</h4><p>${video.description}</p>`;
+            card.appendChild(info);
+
+            wrapper.appendChild(card);
+
+            // Actions Bar
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+
+            const createAction = (iconClass, count, onClickFunc, isLike) => {
+                const item = document.createElement('div');
+                item.className = 'action-item';
+                
+                const icon = document.createElement('div');
+                icon.className = `action-icon ${isLike ? 'like-icon' : ''}`;
+                icon.innerHTML = `<i class="${iconClass}"></i>`;
+                icon.onclick = () => onClickFunc(icon);
+
+                const countEl = document.createElement('div');
+                countEl.className = 'action-count';
+                countEl.textContent = count.toLocaleString();
+
+                item.appendChild(icon);
+                item.appendChild(countEl);
+                return item;
+            };
+
+            // Like, Comment, Share
+            actions.appendChild(createAction('fas fa-heart', video.likes, toggleLike, true));
+            actions.appendChild(createAction('fas fa-comment', video.comments_count, toggleComments, false));
+            // Share icon uses 'fas fa-share' for simplicity, original used 'fas fa-share' too
+            actions.appendChild(createAction('fas fa-share', video.shares, () => console.log('Share initiated'), false)); 
+            
+            wrapper.appendChild(actions);
+
+            return wrapper;
+        }
+
+        /** Renders all mock videos into the feed container. */
+        function renderFeed() {
+            const feedContainer = document.getElementById('feed');
+            const loader = document.getElementById('loader');
+            
+            // Remove loader
+            if (loader) loader.remove(); 
+            
+            if (MOCK_VIDEOS.length === 0) {
+                feedContainer.innerHTML = '<p style="text-align:center; margin-top:50px; color:#888;">No videos found.</p>';
+                return;
+            }
+
+            MOCK_VIDEOS.forEach(video => {
+                feedContainer.appendChild(createVideoCard(video));
+            });
+            
+            // Initialize the Intersection Observer for auto-play only after videos are rendered
+            initIntersectionObserver();
+        }
+
+        // --- Video Auto-Play Logic (Intersection Observer) ---
+
+        function initIntersectionObserver() {
+            const videoElements = document.querySelectorAll('.video-card-wrapper video');
+
+            if (videoElements.length === 0) return;
+
+            const options = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.8 // Play when 80% of video is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    
+                    if (entry.isIntersecting) {
+                        // Play when visible (muted is required)
+                        video.play().catch(error => {
+                            console.warn('Video auto-play blocked by browser:', error);
+                            // Ensure the play icon is visible if autoplay failed
+                            video.paused = true; 
+                        });
+                        video.isCurrentlyPlaying = true;
+                    } else {
+                        // Pause and reset when out of view
+                        if (!video.paused) {
+                            video.pause();
+                        }
+                        video.currentTime = 0; // Rewind to start
+                        video.isCurrentlyPlaying = false;
+                    }
+                    updatePlayOverlay(video);
+                });
+            }, options);
+
+            // Start observing every video
+            videoElements.forEach(video => {
+                observer.observe(video);
+            });
+        }
+
+        // --- Initialize App ---
+        window.onload = function() {
+            // Small delay to simulate data fetching (and show the loader briefly)
+            setTimeout(renderFeed, 500);
+        };
+    </script>
+
+</body>
+</html>

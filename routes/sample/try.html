@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnipSnap Web</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #ff0050;
+      --text-color: #000;
+      --muted: #666;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      border-right: 1px solid #eee;
+      padding: 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+
+    .logo img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .search-box {
+      background: #f3f3f3;
+      border-radius: 50px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .search-box input {
+      border: none;
+      background: none;
+      width: 100%;
+      outline: none;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .menu {
+      flex-grow: 1;
+    }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-color);
+      text-decoration: none;
+      padding: 10px 0;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .menu i {
+      font-size: 18px;
+      width: 22px;
+      text-align: center;
+    }
+
+    .notification-dot {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      padding: 2px 5px;
+      margin-left: auto;
+    }
+
+    /* --- Feed --- */
+    .feed-container {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      background: #fff;
+    }
+
+    .video-post {
+      width: 100%;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+      position: relative;
+      flex-direction: column;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 9 / 16;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* --- Floating heart --- */
+    .heart {
+      position: absolute;
+      color: var(--accent);
+      font-size: 90px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 10;
+    }
+
+    .heart.active {
+      animation: floatHeart 1.2s ease-out forwards;
+    }
+
+    @keyframes floatHeart {
+      0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2) translateY(-40px);
+        opacity: 0.9;
+      }
+      100% {
+        transform: scale(0.8) translateY(-120px);
+        opacity: 0;
+      }
+    }
+
+    /* --- Buttons & Caption --- */
+    .actions {
+      position: absolute;
+      right: 25px;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .action-btn {
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .liked {
+      color: var(--accent);
+    }
+
+    .caption {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      width: 70%;
+      line-height: 1.4;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo">
+        <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
+        SnipSnap
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search">
+      </div>
+
+      <div class="menu">
+        <a href="#" class="active"><i class="fa-solid fa-house"></i>For You</a>
+        <a href="#"><i class="fa-regular fa-compass"></i>Explore</a>
+        <a href="#"><i class="fa-solid fa-user-group"></i>Following</a>
+        <a href="#"><i class="fa-solid fa-user-friends"></i>Friends</a>
+        <a href="#"><i class="fa-solid fa-plus-square"></i>Upload</a>
+        <a href="#"><i class="fa-regular fa-comment-dots"></i>Notifications <span class="notification-dot">9</span></a>
+        <a href="#"><i class="fa-regular fa-paper-plane"></i>Messages</a>
+        <a href="#"><i class="fa-solid fa-tv"></i>LIVE</a>
+        <a href="#"><i class="fa-solid fa-user"></i>Profile</a>
+        <a href="#"><i class="fa-solid fa-ellipsis"></i>More</a>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ route('logout.perform') }}">
+      @csrf
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
+    </form>
+  </aside>
+
+  <!-- Feed -->
+  <main class="feed-container">
+    @foreach($videos as $video)
+    <div class="video-post">
+      <div class="video-wrapper">
+        <video src="{{ asset('storage/' . $video->file_path) }}" autoplay loop muted playsinline></video>
+        <div class="overlay" ondblclick="doubleTapLike(this)"></div>
+
+        <div class="actions">
+          <i class="fa-solid fa-heart action-btn like-btn" onclick="toggleLike(this)"></i>
+          <i class="fa-solid fa-comment action-btn"></i>
+          <i class="fa-solid fa-share action-btn"></i>
+        </div>
+
+        <div class="caption">
+          <strong>{{ '@' . $video->user->username }}</strong><br>
+          {{ $video->caption }}
+        </div>
+      </div>
+    </div>
+    @endforeach
+  </main>
+
+  <script>
+    // Floating heart on double tap
+    function doubleTapLike(overlay) {
+      const videoPost = overlay.closest('.video-post');
+      const likeBtn = videoPost.querySelector('.like-btn');
+
+      const heart = document.createElement('i');
+      heart.className = 'fa-solid fa-heart heart active';
+      heart.style.left = '50%';
+      heart.style.top = '50%';
+      heart.style.transform = 'translate(-50%, -50%)';
+      videoPost.appendChild(heart);
+      setTimeout(() => heart.remove(), 1200);
+
+      if (!likeBtn.classList.contains('liked')) {
+        likeBtn.classList.add('liked');
+      }
+    }
+
+    // Like click triggers floating heart every time
+    function toggleLike(btn) {
+      const videoPost = btn.closest('.video-post');
+      btn.classList.toggle('liked');
+
+      const heart = document.createElement('i');
+      heart.className = 'fa-solid fa-heart heart active';
+      heart.style.left = '50%';
+      heart.style.top = '50%';
+      heart.style.transform = 'translate(-50%, -50%)';
+      videoPost.appendChild(heart);
+      setTimeout(() => heart.remove(), 1200);
+    }
+  </script>
+</body>
+</html>

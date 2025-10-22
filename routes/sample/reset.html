@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnipSnap Feed</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    :root {
+      --accent: #ff0050;
+      --bg: #f8f8f8;
+      --text: #222;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* --- Sidebar --- */
+    aside.sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 230px;
+      height: 100%;
+      background: #fff;
+      border-right: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 25px;
+      z-index: 100;
+    }
+
+    .sidebar .brand img {
+      height: 30px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar nav a {
+      text-decoration: none;
+      color: #555;
+      display: block;
+      padding: 12px 0;
+      width: 100%;
+      text-align: center;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+
+    .sidebar nav a:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* --- Feed --- */
+    .feed {
+      margin-left: 230px;
+      width: calc(100% - 230px);
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
+    }
+
+    .feed::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* --- Video post --- */
+    .video-post {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      height: 90vh;
+      margin: 30px 0;
+      scroll-snap-align: center;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+    }
+
+    /* --- Heart --- */
+    .heart {
+      position: absolute;
+      color: var(--accent);
+      font-size: 90px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0);
+      transition: transform 0.3s ease, opacity 0.6s ease;
+    }
+
+    .heart.active {
+      opacity: 1;
+      transform: scale(1);
+      animation: shakeZoomFade 1.2s forwards;
+    }
+
+    @keyframes shakeZoomFade {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      25% { transform: scale(1.1) rotate(10deg); }
+      50% { transform: scale(1) rotate(-10deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(0) rotate(0deg); opacity: 0; }
+    }
+
+    /* --- Right side actions --- */
+    .actions {
+      position: absolute;
+      right: 15px;
+      bottom: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .actions i {
+      font-size: 28px;
+      cursor: pointer;
+      color: #fff;
+      transition: transform 0.2s;
+    }
+
+    .actions i:hover {
+      transform: scale(1.2);
+    }
+
+    /* --- Comments Panel --- */
+    .comments-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 420px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      box-shadow: -12px 0 36px rgba(0,0,0,0.25);
+      transition: right 0.35s ease;
+      z-index: 3000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .comments-panel.open {
+      right: 0;
+    }
+
+    .comments-header {
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .comments-header i {
+      cursor: pointer;
+    }
+
+    .comments-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+
+    .comment {
+      background: #f1f1f1;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+
+    .comment-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .comment-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .comment-input button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .comment-input button:hover {
+      background: #e60046;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      aside.sidebar {
+        display: none;
+      }
+
+      .feed {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .comments-panel {
+        width: 100%;
+        right: -100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap Logo">
+    </div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Friends</a>
+      <a href="#">Upload</a>
+      <a href="#">Notifications</a>
+      <a href="#">Messages</a>
+      <a href="#">Profile</a>
+      <a href="#">More</a>
+    </nav>
+  </aside>
+
+  <main class="feed">
+    @foreach($files as $file)
+      <div class="video-post">
+        <div class="video-wrapper">
+          @if (Str::endsWith($file, ['.mp4', '.mov', '.webm']))
+            <video src="{{ asset('storage/'.$file) }}" autoplay muted loop></video>
+          @else
+            <img src="{{ asset('storage/'.$file) }}" alt="Upload" />
+          @endif
+        </div>
+        <i class="fa-solid fa-heart heart"></i>
+        <div class="actions">
+          <i class="fa-regular fa-heart like-btn"></i>
+          <i class="fa-regular fa-comment comment-btn"></i>
+        </div>
+      </div>
+    @endforeach
+  </main>
+
+  <!-- Comments Panel -->
+  <div class="comments-panel" id="commentsPanel">
+    <div class="comments-header">
+      <span>Comments</span>
+      <i class="fa-solid fa-xmark" id="closeComments"></i>
+    </div>
+    <div class="comments-content" id="commentsContent">
+      <p>No comments yet.</p>
+    </div>
+    <div class="comment-input">
+      <input type="text" id="commentInput" placeholder="Add a comment..." />
+      <button id="postComment">Post</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Heart double-click animation ---
+    document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+      const heart = wrapper.parentElement.querySelector('.heart');
+      wrapper.addEventListener('dblclick', e => {
+        heart.style.left = `${e.offsetX - 40}px`;
+        heart.style.top = `${e.offsetY - 40}px`;
+        heart.classList.add('active');
+        setTimeout(() => heart.classList.remove('active'), 1200);
+      });
+    });
+
+    // --- Comments panel slide ---
+    const panel = document.getElementById('commentsPanel');
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+      btn.addEventListener('click', () => panel.classList.add('open'));
+    });
+    document.getElementById('closeComments').addEventListener('click', () => {
+      panel.classList.remove('open');
+    });
+
+    // --- Add comment dynamically ---
+    const commentInput = document.getElementById('commentInput');
+    const postButton = document.getElementById('postComment');
+    const commentsContent = document.getElementById('commentsContent');
+
+    postButton.addEventListener('click', () => {
+      const text = commentInput.value.trim();
+      if (text === "") return;
+      const p = document.createElement('div');
+      p.classList.add('comment');
+      p.textContent = text;
+      if (commentsContent.querySelector('p')) commentsContent.innerHTML = '';
+      commentsContent.appendChild(p);
+      commentInput.value = '';
+    });
+
+    // --- Scroll snapping (TikTok-like) ---
+    const feed = document.querySelector('.feed');
+    let isScrolling = false;
+
+    feed.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (isScrolling) return;
+      isScrolling = true;
+
+      const posts = [...document.querySelectorAll('.video-post')];
+      const current = posts.findIndex(post => {
+        const rect = post.getBoundingClientRect();
+        return rect.top >= 0 && rect.top < window.innerHeight / 2;
+      });
+
+      let nextIndex = current;
+      if (e.deltaY > 0 && current < posts.length - 1) nextIndex++;
+      else if (e.deltaY < 0 && current > 0) nextIndex--;
+
+      posts[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => (isScrolling = false), 700);
+    }, { passive: false });
+  </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnipSnap - Notifications</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #ff0050;
+      --text-color: #000;
+      --muted: #666;
+      --light-bg: #f8f8f8;
+      --border: #eee;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    /* Sidebar - Same as your other pages */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+
+    .logo img { width: 28px; height: 28px; }
+
+    .search-box {
+      background: #f3f3f3;
+      border-radius: 50px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .search-box input {
+      border: none;
+      background: none;
+      width: 100%;
+      outline: none;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .menu { flex-grow: 1; }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-color);
+      text-decoration: none;
+      padding: 10px 0;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .menu i {
+      font-size: 18px;
+      width: 22px;
+      text-align: center;
+    }
+
+    .notification-dot {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      padding: 2px 5px;
+      margin-left: auto;
+    }
+
+    /* Notifications Content - TikTok Style */
+    .notifications-container {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      height: 100vh;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .notifications-header {
+      padding: 20px 24px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .notifications-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* TikTok-style Tabs */
+    .notifications-tabs {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .notifications-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-size: 15px;
+      position: relative;
+    }
+
+    .tab.active {
+      color: var(--text-color);
+      border-bottom: 2px solid var(--text-color);
+    }
+
+    .tab-badge {
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      font-size: 11px;
+      padding: 2px 6px;
+      margin-left: 6px;
+    }
+
+    /* Notifications List */
+    .notifications-list {
+      padding: 0;
+    }
+
+    .notification-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+      gap: 12px;
+    }
+
+    .notification-item:hover {
+      background: #fafafa;
+    }
+
+    .notification-item.unread {
+      background: #fef5f7;
+    }
+
+    .notification-item.unread:hover {
+      background: #fdeff2;
+    }
+
+    .notification-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notification-text {
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .notification-user {
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .notification-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .notification-preview {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .notification-media {
+      width: 50px;
+      height: 70px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .notification-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .icon-heart {
+      background: #ffe6ec;
+      color: var(--accent);
+    }
+
+    .icon-comment {
+      background: #e6f3ff;
+      color: #0095f6;
+    }
+
+    .icon-message {
+      background: #f0f0f0;
+      color: var(--text-color);
+    }
+
+    .icon-follow {
+      background: #e6f7e6;
+      color: #00a400;
+    }
+
+    .icon-share {
+      background: #fff0e6;
+      color: #ff6b00;
+    }
+
+    /* Notification Actions */
+    .notification-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-small {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-follow {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-follow:hover {
+      background: #e00040;
+    }
+
+    .btn-reply {
+      background: var(--light-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border);
+    }
+
+    .btn-reply:hover {
+      background: #e8e8e8;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      margin-bottom: 20px;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+      .notifications-container {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+
+    /* Mark all read button */
+    .mark-all-read {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo">
+        <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
+        SnipSnap
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search...">
+      </div>
+
+      <div class="menu">
+        <a href="{{ route('my-web') }}"><i class="fa-solid fa-house"></i>For You</a>
+        <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
+        <a href="{{ route('following.videos') }}"><i class="fa-solid fa-user-group"></i>Following</a>
+        <a href="{{ route('friends') }}"><i class="fa-solid fa-user-friends"></i>Friends</a>
+        <a href="{{ route('upload') }}"><i class="fa-solid fa-plus-square"></i>Upload</a>
+        <a href="{{ route('notifications') }}" class="active"><i class="fa-regular fa-comment-dots"></i>Notifications 
+          @if($unreadCount > 0)
+            <span class="notification-dot">{{ $unreadCount }}</span>
+          @endif
+        </a>
+        <a href="{{ route('messages.index') }}"><i class="fa-regular fa-paper-plane"></i>Messages</a>
+        <a href="#"><i class="fa-solid fa-tv"></i>LIVE</a>
+        <a href="{{ route('profile.show') }}"><i class="fa-solid fa-user"></i>Profile</a>
+        <a href="#"><i class="fa-solid fa-ellipsis"></i>More</a>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ route('logout.perform') }}">
+      @csrf
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
+    </form>
+  </aside>
+
+  <!-- Notifications Content -->
+  <div class="notifications-container">
+    <div class="notifications-header">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h1 class="notifications-title">Notifications</h1>
+        @if($unreadCount > 0)
+          <button class="mark-all-read" onclick="markAllAsRead()">
+            <i class="fa-solid fa-check-double"></i> Mark all as read
+          </button>
+        @endif
+      </div>
+      
+      <!-- TikTok-style Tabs -->
+      <div class="notifications-tabs">
+        <div class="tab {{ $tab == 'all' ? 'active' : '' }}" data-tab="all">All</div>
+        <div class="tab {{ $tab == 'likes' ? 'active' : '' }}" data-tab="likes">
+          Likes 
+          @if($likeCount > 0)
+            <span class="tab-badge">{{ $likeCount }}</span>
+          @endif
+        </div>
+        <div class="tab {{ $tab == 'comments' ? 'active' : '' }}" data-tab="comments">
+          Comments 
+          @if($commentCount > 0)
+            <span class="tab-badge">{{ $commentCount }}</span>
+          @endif
+        </div>
+        <div class="tab {{ $tab == 'follows' ? 'active' : '' }}" data-tab="follows">
+          Follows 
+          @if($followCount > 0)
+            <span class="tab-badge">{{ $followCount }}</span>
+          @endif
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-list">
+      @if($notifications->count() > 0)
+        @foreach($notifications as $notification)
+          <div class="notification-item {{ $notification->read ? '' : 'unread' }}" 
+               data-notification-id="{{ $notification->id }}"
+               onclick="markAsRead({{ $notification->id }}, this)">
+            <div class="notification-icon icon-{{ $notification->type }}">
+              @if($notification->type == 'like')
+                <i class="fa-solid fa-heart"></i>
+              @elseif($notification->type == 'comment')
+                <i class="fa-solid fa-comment"></i>
+              @elseif($notification->type == 'follow')
+                <i class="fa-solid fa-user-plus"></i>
+              @elseif($notification->type == 'share')
+                <i class="fa-solid fa-share"></i>
+              @else
+                <i class="fa-solid fa-bell"></i>
+              @endif
+            </div>
+            
+            <img src="{{ $notification->fromUser->avatar ? asset('storage/' . $notification->fromUser->avatar) : asset('image/default-avatar.png') }}" 
+                 alt="{{ $notification->fromUser->name }}" class="notification-avatar"
+                 onclick="event.stopPropagation(); goToUserProfile('{{ $notification->fromUser->username ?? $notification->fromUser->id }}');">
+            
+            <div class="notification-content">
+              <div class="notification-text">
+                <span class="notification-user" 
+                      onclick="event.stopPropagation(); goToUserProfile('{{ $notification->fromUser->username ?? $notification->fromUser->id }}');">
+                  @{{ $notification->fromUser->username ?? $notification->fromUser->name }}
+                </span> 
+                {{ $notification->message }}
+              </div>
+              <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+              
+              @if($notification->video)
+                <div class="notification-preview">{{ $notification->video->caption ?? 'Check out this video' }}</div>
+              @endif
+              
+              <div class="notification-actions">
+                @if($notification->type == 'follow')
+                  <button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser({{ $notification->fromUser->id }}, this);">
+                    <i class="fa-solid fa-user-plus"></i> Follow back
+                  </button>
+                @elseif($notification->type == 'comment' && $notification->video)
+                  <button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
+                    <i class="fa-solid fa-eye"></i> View video
+                  </button>
+                @elseif($notification->type == 'like' && $notification->video)
+                  <button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
+                    <i class="fa-solid fa-eye"></i> View video
+                  </button>
+                @endif
+              </div>
+            </div>
+            
+            @if($notification->video && $notification->video->thumbnail_url)
+              <img src="{{ asset('storage/' . $notification->video->thumbnail_url) }}" 
+                   alt="Video thumbnail" 
+                   class="notification-media"
+                   onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
+            @elseif($notification->video && $notification->video->url)
+              <img src="{{ asset('storage/' . $notification->video->url) }}" 
+                   alt="Video thumbnail" 
+                   class="notification-media"
+                   onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
+            @endif
+          </div>
+        @endforeach
+      @else
+        <!-- Empty State (Explore Users button removed) -->
+        <div class="empty-state">
+          <i class="fa-regular fa-bell"></i>
+          <h3>No Notifications Yet</h3>
+          <p>When you get likes, comments, or new followers, they'll appear here.</p>
+        </div>
+      @endif
+    </div>
+  </div>
+
+  <script>
+    // Tab functionality
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabType = this.dataset.tab;
+        window.location.href = `{{ route('notifications') }}?tab=${tabType}`;
+      });
+    });
+
+    // Mark as read on click
+    function markAsRead(notificationId, element) {
+      if (element.classList.contains('unread')) {
+        fetch(`/notifications/${notificationId}/read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          }
+        }).then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              element.classList.remove('unread');
+              updateUnreadCounts();
+            }
+          });
+      }
+    }
+
+    function markAllAsRead() {
+      fetch(`/notifications/read-all`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+              item.classList.remove('unread');
+            });
+            updateUnreadCounts();
+          }
+        });
+    }
+
+    function updateUnreadCounts() {
+      // Update the unread counts in the UI
+      fetch(`/notifications/unread-count`)
+        .then(response => response.json())
+        .then(data => {
+          // Update sidebar notification count
+          const sidebarBadge = document.querySelector('.menu a.active .notification-dot');
+          if (data.count > 0) {
+            if (sidebarBadge) {
+              sidebarBadge.textContent = data.count;
+            } else {
+              // Create badge if it doesn't exist
+              const menuItem = document.querySelector('.menu a.active');
+              const badge = document.createElement('span');
+              badge.className = 'notification-dot';
+              badge.textContent = data.count;
+              menuItem.appendChild(badge);
+            }
+          } else if (sidebarBadge) {
+            sidebarBadge.remove();
+          }
+        });
+    }
+
+    function followUser(userId, button) {
+      fetch(`/follow/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            button.innerHTML = '<i class="fa-solid fa-check"></i> Following';
+            button.classList.remove('btn-follow');
+            button.classList.add('btn-reply');
+            button.onclick = null;
+          }
+        });
+    }
+
+    function viewVideo(videoId) {
+      if (videoId) {
+        window.location.href = `/video/${videoId}`;
+      }
+    }
+
+    function goToUserProfile(userIdentifier) {
+      if (userIdentifier && isNaN(userIdentifier)) {
+        window.location.href = `/user/${userIdentifier}`;
+      } else {
+        window.location.href = `/profile/${userIdentifier}`;
+      }
+    }
+
+    // Real-time updates (optional)
+    function setupRealTimeUpdates() {
+      // You can implement WebSocket or polling for real-time notifications
+      setInterval(() => {
+        updateUnreadCounts();
+      }, 30000); // Update every 30 seconds
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      setupRealTimeUpdates();
+    });
+  </script>
+</body>
+</html>
