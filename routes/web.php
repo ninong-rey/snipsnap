@@ -108,18 +108,16 @@ Route::get('/call/join/{roomId}', function ($roomId) {
 })->name('call.join')->middleware('auth');
 Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
-/// Simple public test route without auth
+// Public test route
 Route::get('/test-public', function () {
     return response()->json([
         'message' => 'Laravel public route is working!',
         'status' => 'success', 
-        'database' => 'SQLite file exists: ' . (file_exists(database_path('database.sqlite')) ? 'YES' : 'NO'),
-        'tables' => 'Migrations should be run',
         'time' => now()
     ]);
 });
 
-// Test route with auth (your existing one)
+// Test route with auth
 Route::get('/test-working', function () {
     return response()->json([
         'message' => 'Laravel is working with auth!',
@@ -128,17 +126,16 @@ Route::get('/test-working', function () {
     ]);
 })->middleware('auth');
 
-// Your existing routes...
-Route::get('/', [App\Http\Controllers\WebController::class, 'index'])->name('home');
-
-// Add this debug route
+// Debug route
 Route::get('/debug-session', function () {
     return response()->json([
         'session_driver' => config('session.driver'),
         'env_session_driver' => env('SESSION_DRIVER'),
         'app_env' => env('APP_ENV'),
-        'config_cached' => app()->configurationIsCached(),
-        'routes_cached' => app()->routesAreCached(),
     ]);
 });
+
+// MAIN APP ROUTE - NO AUTH MIDDLEWARE
+Route::get('/', [WebController::class, 'index'])->name('home');
 });
+
