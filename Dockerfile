@@ -43,7 +43,11 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
-# ✅ FIX: Safe cache clearing (no database dependencies)
+# ✅ NUCLEAR FIX: Force file sessions in config file
+RUN sed -i "s/'driver' => env('SESSION_DRIVER', 'database'),/'driver' => 'file',/g" config/session.php
+RUN echo "SESSION_DRIVER=file" >> .env
+
+# ✅ Safe cache clearing
 RUN rm -rf bootstrap/cache/*
 RUN php artisan config:clear
 RUN php artisan route:clear
