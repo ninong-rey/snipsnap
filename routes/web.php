@@ -108,7 +108,7 @@ Route::get('/call/join/{roomId}', function ($roomId) {
 })->name('call.join')->middleware('auth');
 Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
-// Simple public test route without auth
+/// Simple public test route without auth
 Route::get('/test-public', function () {
     return response()->json([
         'message' => 'Laravel public route is working!',
