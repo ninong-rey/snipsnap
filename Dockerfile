@@ -43,6 +43,9 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
+# ✅ NEW FIX: Run database migrations
+RUN php artisan migrate --force
+
 # Expose port 80
 EXPOSE 80
 
