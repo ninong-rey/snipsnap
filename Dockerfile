@@ -43,11 +43,6 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
-# ✅ DEBUG: Check if migrations exist and database is accessible
-RUN echo "=== DEBUG: Checking migrations ==="
-RUN ls -la database/migrations/
-RUN php artisan migrate:status
-
 # ✅ CRITICAL: Run database migrations to create tables
 RUN php artisan migrate --force
 
@@ -55,7 +50,7 @@ RUN php artisan migrate --force
 RUN sed -i "s/'driver' => env('SESSION_DRIVER', 'database'),/'driver' => 'file',/g" config/session.php
 RUN echo "SESSION_DRIVER=file" >> .env
 
-# ✅ Safe cache clearing
+# ✅ Safe cache clearing (NO commands that require database)
 RUN rm -rf bootstrap/cache/*
 RUN php artisan config:clear
 RUN php artisan route:clear
