@@ -31,11 +31,8 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Generate application key (only if .env exists)
-RUN if [ -f .env ]; then php artisan key:generate --force; fi
-
-# Create a simple test route to verify Laravel is working
-RUN echo "<?php echo '<h1>Laravel is Working!</h1><p>If you see this, Laravel routes are not configured properly.'; ?>" > /var/www/html/public/fallback.php
+# Generate application key
+RUN php artisan key:generate --force
 
 # Expose port 80
 EXPOSE 80
