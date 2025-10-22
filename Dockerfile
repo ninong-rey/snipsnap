@@ -31,8 +31,17 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Generate application key
-RUN php artisan key:generate --force
+# ✅ FIX: Create .env file if it doesn't exist and generate key
+RUN if [ ! -f .env ]; then \
+        cp .env.example .env && \
+        php artisan key:generate --force; \
+    else \
+        php artisan key:generate --force; \
+    fi
+
+# ✅ FIX: Create SQLite database file
+RUN touch /var/www/html/database/database.sqlite
+RUN chmod 775 /var/www/html/database/database.sqlite
 
 # Expose port 80
 EXPOSE 80
