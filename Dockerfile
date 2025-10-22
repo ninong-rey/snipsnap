@@ -43,6 +43,9 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
+# ✅ CRITICAL: Run database migrations to create tables
+RUN php artisan migrate --force
+
 # ✅ NUCLEAR FIX: Force file sessions in config file
 RUN sed -i "s/'driver' => env('SESSION_DRIVER', 'database'),/'driver' => 'file',/g" config/session.php
 RUN echo "SESSION_DRIVER=file" >> .env
