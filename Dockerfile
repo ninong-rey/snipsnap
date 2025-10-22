@@ -1,4 +1,4 @@
-# Use the official PHP image with Apache
+# Use the official PHP 8.2 image with Apache
 FROM php:8.2-apache
 
 # Enable necessary PHP extensions
@@ -7,23 +7,22 @@ RUN docker-php-ext-install pdo pdo_mysql
 # Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite
 
-# Set the working directory
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy all project files into the container
+# Copy project files
 COPY . .
 
-# Install Composer
-RUN apt-get update && apt-get install -y unzip git \
+# Install system dependencies and Composer
+RUN apt-get update && apt-get install -y unzip git curl \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install Laravel dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Copy environment example and generate application key safely
+RUN cp .env.example .env || true \
+    && composer install --no-interaction --prefer-dist --optimize-autoloader \
+    && php artisan key:generate || true
 
-# Generate the Laravel key
-RUN php artisan key:generate
-
-# Set proper permissions
+# Fix file permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose port 80
