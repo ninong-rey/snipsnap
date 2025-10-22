@@ -17,10 +17,13 @@ COPY . .
 RUN apt-get update && apt-get install -y unzip git curl \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install Laravel dependencies
+# Copy environment example
+RUN cp .env.example .env || true
+
+# Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set file permissions for storage and cache
+# Fix file permissions for Laravel storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose port 80
