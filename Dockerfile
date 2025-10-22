@@ -43,10 +43,9 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
-# ✅ CRITICAL FIX: Ensure migrations run (multiple approaches)
-RUN php artisan migrate:install --force || true
+# ✅ CRITICAL FIX: Create sessions table and run migrations
+RUN php artisan session:table
 RUN php artisan migrate --force
-RUN php artisan db:seed --force || true
 
 # Expose port 80
 EXPOSE 80
