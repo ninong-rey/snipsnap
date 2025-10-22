@@ -39,6 +39,10 @@ RUN if [ ! -f .env ]; then \
         php artisan key:generate --force; \
     fi
 
+# ✅ FIX: Create SQLite database file
+RUN touch /var/www/html/database/database.sqlite
+RUN chmod 775 /var/www/html/database/database.sqlite
+
 # Expose port 80
 EXPOSE 80
 
