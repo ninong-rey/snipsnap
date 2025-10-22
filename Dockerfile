@@ -20,11 +20,15 @@ RUN apt-get update && apt-get install -y unzip git curl \
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Fix file permissions
+# Copy environment example (safe fallback)
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Fix file permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# ✅ Start Laravel and Apache
+# Generate APP_KEY at runtime instead of build time (prevents build failure)
+CMD php artisan key:generate --force && apache2-foreground
