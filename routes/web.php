@@ -130,4 +130,15 @@ Route::get('/test-working', function () {
 
 // Your existing routes...
 Route::get('/', [App\Http\Controllers\WebController::class, 'index'])->name('home');
+
+// Add this debug route
+Route::get('/debug-session', function () {
+    return response()->json([
+        'session_driver' => config('session.driver'),
+        'env_session_driver' => env('SESSION_DRIVER'),
+        'app_env' => env('APP_ENV'),
+        'config_cached' => app()->configurationIsCached(),
+        'routes_cached' => app()->routesAreCached(),
+    ]);
+});
 });
