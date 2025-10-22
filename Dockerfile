@@ -17,12 +17,10 @@ COPY . .
 RUN apt-get update && apt-get install -y unzip git curl \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copy environment example and generate application key safely
-RUN cp .env.example .env || true \
-    && composer install --no-interaction --prefer-dist --optimize-autoloader \
-    && php artisan key:generate || true
+# Install Laravel dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Fix file permissions for storage and cache
+# Set file permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose port 80
