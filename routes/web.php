@@ -11,14 +11,13 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\UserController;
 
-
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 
-// Home
+// Home - NO AUTH MIDDLEWARE
 Route::get('/', [WebController::class, 'index'])->name('home');
 
 // Authentication
@@ -34,6 +33,24 @@ Route::post('/reset', [AuthController::class, 'otpRequest'])->name('otp.request'
 
 Route::get('/reset-password', [AuthController::class, 'resetPasswordView'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'otpVerify'])->name('otp.verify');
+
+// Public test route
+Route::get('/test-public', function () {
+    return response()->json([
+        'message' => 'Laravel public route is working!',
+        'status' => 'success', 
+        'time' => now()
+    ]);
+});
+
+// Debug route
+Route::get('/debug-session', function () {
+    return response()->json([
+        'session_driver' => config('session.driver'),
+        'env_session_driver' => env('SESSION_DRIVER'),
+        'app_env' => env('APP_ENV'),
+    ]);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -103,39 +120,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages/fetch-new/{receiverId}/{lastMessageId}', [MessagesController::class, 'fetchNew'])->name('messages.fetchNew');
 
     // Jitsi call join route
-Route::get('/call/join/{roomId}', function ($roomId) {
-    return view('call-join', ['roomId' => $roomId]);
-})->name('call.join')->middleware('auth');
-Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
+    Route::get('/call/join/{roomId}', function ($roomId) {
+        return view('call-join', ['roomId' => $roomId]);
+    })->name('call.join');
+    Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
-// Public test route
-Route::get('/test-public', function () {
-    return response()->json([
-        'message' => 'Laravel public route is working!',
-        'status' => 'success', 
-        'time' => now()
-    ]);
+    // Test route with auth
+    Route::get('/test-working', function () {
+        return response()->json([
+            'message' => 'Laravel is working with auth!',
+            'status' => 'success',
+            'time' => now()
+        ]);
+    });
 });
-
-// Test route with auth
-Route::get('/test-working', function () {
-    return response()->json([
-        'message' => 'Laravel is working with auth!',
-        'status' => 'success',
-        'time' => now()
-    ]);
-})->middleware('auth');
-
-// Debug route
-Route::get('/debug-session', function () {
-    return response()->json([
-        'session_driver' => config('session.driver'),
-        'env_session_driver' => env('SESSION_DRIVER'),
-        'app_env' => env('APP_ENV'),
-    ]);
-});
-
-// MAIN APP ROUTE - NO AUTH MIDDLEWARE
-Route::get('/', [WebController::class, 'index'])->name('home');
-});
-
