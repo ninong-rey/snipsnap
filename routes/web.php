@@ -108,13 +108,25 @@ Route::get('/call/join/{roomId}', function ($roomId) {
 })->name('call.join')->middleware('auth');
 Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
-Route::get('/test-working', function () {
+// Simple public test route without auth
+Route::get('/test-public', function () {
     return response()->json([
-        'message' => 'Laravel is working!',
-        'status' => 'success',
+        'message' => 'Laravel public route is working!',
+        'status' => 'success', 
+        'database' => 'SQLite file exists: ' . (file_exists(database_path('database.sqlite')) ? 'YES' : 'NO'),
+        'tables' => 'Migrations should be run',
         'time' => now()
     ]);
 });
+
+// Test route with auth (your existing one)
+Route::get('/test-working', function () {
+    return response()->json([
+        'message' => 'Laravel is working with auth!',
+        'status' => 'success',
+        'time' => now()
+    ]);
+})->middleware('auth');
 
 // Your existing routes...
 Route::get('/', [App\Http\Controllers\WebController::class, 'index'])->name('home');
