@@ -43,9 +43,13 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
-# ✅ CRITICAL FIX: Force file sessions and skip database migrations
+# ✅ CRITICAL FIX: Nuclear option for config cache
+RUN rm -rf bootstrap/cache/*
 RUN php artisan config:clear
 RUN php artisan cache:clear
+RUN php artisan route:clear
+RUN php artisan view:clear
+RUN php artisan optimize:clear
 
 # Expose port 80
 EXPOSE 80
