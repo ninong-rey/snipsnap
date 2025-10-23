@@ -43,8 +43,8 @@ RUN if [ ! -f .env ]; then \
 RUN touch /var/www/html/database/database.sqlite
 RUN chmod 775 /var/www/html/database/database.sqlite
 
-# ✅ CRITICAL: Run database migrations to create tables
-RUN php artisan migrate --force
+# ✅ CRITICAL: Remove migration from build phase - run it at startup instead
+# RUN php artisan migrate --force  # REMOVE THIS LINE
 
 # ✅ NUCLEAR FIX: Force file sessions in config file
 RUN sed -i "s/'driver' => env('SESSION_DRIVER', 'database'),/'driver' => 'file',/g" config/session.php
@@ -59,5 +59,12 @@ RUN php artisan view:clear
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Create a startup script that runs migrations and starts Apache
+RUN echo '#!/bin/bash\n\
+php artisan migrate --force\n\
+apache2-foreground' > /usr/local/bin/start.sh
+
+RUN chmod +x /usr/local/bin/start.sh
+
+# Use the startup script
+CMD ["/usr/local/bin/start.sh"]
