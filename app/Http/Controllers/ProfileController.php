@@ -54,11 +54,15 @@ class ProfileController extends Controller
     /**
      * Update the authenticated user's profile
      */
-    public function update(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+    /**
+ * Update the authenticated user's profile
+ */
+public function update(Request $request)
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
 
+    try {
         $data = $request->validate([
             'username' => [
                 'nullable',
@@ -84,31 +88,54 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('profile.show')->with('success', 'Profile updated successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully!'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
-     * Follow a user
-     */
-    public function follow(User $userToFollow)
-    {
-        $user = Auth::user();
+ * Follow a user
+ */
+public function follow(User $userToFollow)
+{
+    $user = Auth::user();
 
-        if ($user->id === $userToFollow->id) {
-            return back()->with('error', 'You cannot follow yourself.');
-        }
-
-        if (!Follow::where('follower_id', $user->id)
-            ->where('following_id', $userToFollow->id)
-            ->exists()) {
-            Follow::create([
-                'follower_id'  => $user->id,
-                'following_id' => $userToFollow->id,
-            ]);
-        }
-
-        return back()->with('success', 'User followed!');
+    if ($user->id === $userToFollow->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'You cannot follow yourself.'
+        ], 422);
     }
+
+    $isFollowing = Follow::where('follower_id', $user->id)
+        ->where('following_id', $userToFollow->id)
+        ->exists();
+
+    if (!$isFollowing) {
+        Follow::create([
+            'follower_id'  => $user->id,
+            'following_id' => $userToFollow->id,
+        ]);
+    }
+
+    $followersCount = $userToFollow->followers()->count();
+    $isNowFollowing = !$isFollowing;
+
+    return response()->json([
+        'success' => true,
+        'message' => $isNowFollowing ? 'User followed!' : 'Already following',
+        'following' => $isNowFollowing,
+        'followers_count' => $followersCount
+    ]);
+}
 
     /**
      * Unfollow a user
