@@ -106,6 +106,9 @@ RUN php artisan config:clear
 RUN php artisan route:clear
 RUN php artisan view:clear
 
+# Run database migrations  ← ADD THIS LINE
+RUN php artisan migrate --force
+
 # Expose port 80
 EXPOSE 80
 
