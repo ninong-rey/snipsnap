@@ -133,4 +133,45 @@ Route::middleware('auth')->group(function () {
             'time' => now()
         ]);
     });
+    // ==================== TEST ROUTES ====================
+Route::get('/test', function() {
+    try {
+        // Test database connection
+        \DB::connection()->getPdo();
+        $dbStatus = "✅ Database connected successfully!";
+    } catch (\Exception $e) {
+        $dbStatus = "❌ Database error: " . $e->getMessage();
+    }
+
+    try {
+        // Test if users table exists
+        $userCount = \DB::table('users')->count();
+        $tableStatus = "✅ Users table exists with $userCount users";
+    } catch (\Exception $e) {
+        $tableStatus = "❌ Users table error: " . $e->getMessage();
+    }
+
+    return [
+        'status' => 'OK',
+        'database' => $dbStatus,
+        'tables' => $tableStatus,
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+    ];
+});
+
+Route::get('/env-check', function() {
+    return [
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+        'db_connection' => config('database.default'),
+        'db_host' => config('database.connections.pgsql.host'),
+        'db_database' => config('database.connections.pgsql.database'),
+        'app_key_set' => !empty(config('app.key')),
+    ];
+});
+
+Route::get('/simple', function() {
+    return "✅ Simple route works! Your app is running.";
+});
 });
