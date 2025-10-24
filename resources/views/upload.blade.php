@@ -82,7 +82,7 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
+      <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap">
       SnipSnap Studio
     </div>
     <a href="{{ route('upload') }}" class="upload-btn active">
@@ -103,7 +103,7 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
     </div>
 
     <!-- Upload Form -->
-    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ route('upload.store') }}">
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ secure_url(route('upload.store')) }}">  
       @csrf
 
       <!-- Progress Bar -->
@@ -202,7 +202,7 @@ uploadForm.addEventListener('submit', e => {
     progressBar.textContent = '0%';
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', uploadForm.action, true);
+    xhr.open('POST', uploadForm.action.replace('http://', 'https://'), true);
     xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
     xhr.upload.addEventListener('progress', e => {
