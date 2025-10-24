@@ -7,16 +7,21 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && docker-php-ext-install pdo pdo_pgsql
 
+# Increase PHP limits for LARGE video uploads (5GB)
+RUN echo "upload_max_filesize = 5G" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "post_max_size = 5G" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "max_input_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Enable Apache rewrite and set up proper configuration
+# Enable Apache rewrite
 RUN a2enmod rewrite
-RUN a2enmod headers
 
 # Set document root to public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 
@@ -26,22 +31,11 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# ✅ CRITICAL: Generate application key if missing
-RUN if [ ! -f .env ]; then \
-        cp .env.example .env && \
-        php artisan key:generate --force; \
-    else \
-        php artisan key:generate --force; \
-    fi
+# Generate application key
+RUN php artisan key:generate --force
 
-# ✅ CRITICAL: Run database migrations
+# Run database migrations
 RUN php artisan migrate --force
-
-# ✅ CRITICAL: Clear all caches
-RUN php artisan config:clear
-RUN php artisan route:clear
-RUN php artisan view:clear
-RUN php artisan cache:clear
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
