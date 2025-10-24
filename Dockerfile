@@ -10,13 +10,11 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Enable Apache rewrite and set up proper configuration
+# Enable Apache rewrite
 RUN a2enmod rewrite
-RUN a2enmod headers
 
 # Set document root to public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 
@@ -26,26 +24,20 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# ✅ CRITICAL: Generate application key if missing
-RUN if [ ! -f .env ]; then \
-        cp .env.example .env && \
-        php artisan key:generate --force; \
-    else \
-        php artisan key:generate --force; \
-    fi
+# Generate application key
+RUN php artisan key:generate --force
 
-# ✅ CRITICAL: Run database migrations
-RUN php artisan migrate --force
-
-# ✅ CRITICAL: Clear all caches
-RUN php artisan config:clear
-RUN php artisan route:clear
-RUN php artisan view:clear
-RUN php artisan cache:clear
+# ✅ CRITICAL: Create storage directories and link
+RUN mkdir -p storage/app/public/videos
+RUN mkdir -p storage/app/public/images
+RUN php artisan storage:link
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache storage/app/public
+
+# Run database migrations
+RUN php artisan migrate --force
 
 # Start Apache
 CMD ["apache2-foreground"]

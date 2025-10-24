@@ -42,24 +42,33 @@ class VideoController extends Controller
         
         \Log::info('Validation passed');
 
+        // ✅ Ensure videos directory exists
+        $videosPath = storage_path('app/public/videos');
+        if (!is_dir($videosPath)) {
+            \Log::info('Creating videos directory');
+            mkdir($videosPath, 0755, true);
+        }
+
         // Store the video
         $videoPath = $request->file('video')->store('videos', 'public');
         \Log::info('File stored successfully', ['path' => $videoPath]);
 
-        // Create video record with full URL
+        // Create video record
         $video = Video::create([
             'user_id' => Auth::id(),
             'caption' => $request->caption ?: 'Untitled Video',
-            'url' => $videoPath, // Store the path
+            'url' => $videoPath,
         ]);
 
         \Log::info('Video created successfully', ['video_id' => $video->id]);
 
+        // Return success with test URL
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
             'redirect_url' => route('my-web'),
-            'video_url' => asset('storage/' . $videoPath), // Return full URL for testing
+            'test_video_url' => url('storage/' . $videoPath),
+            'video_id' => $video->id,
         ]);
 
     } catch (\Exception $e) {
