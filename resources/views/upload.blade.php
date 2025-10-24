@@ -202,8 +202,9 @@ uploadForm.addEventListener('submit', e => {
     progressBar.textContent = '0%';
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', uploadForm.action.replace('http://', 'https://'), true);
-    xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+xhr.open('POST', uploadForm.action.replace('http://', 'https://'), true);
+xhr.withCredentials = true; // ✅ important
+xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
     xhr.upload.addEventListener('progress', e => {
         if (e.lengthComputable) {

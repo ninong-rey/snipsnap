@@ -32,44 +32,34 @@ class VideoController extends Controller
      */
     public function store(Request $request)
 {
-    // ✅ Validate uploaded file and caption
+    // Ensure user is logged in
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'You must be logged in to upload.'], 401);
+    }
+
+    // Validate file
     $request->validate([
-        'video'   => 'required|file|mimetypes:video/mp4,video/quicktime,video/x-msvideo|max:51200',
-        'caption' => 'nullable|string|max:255',
+        'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
     ]);
 
-    try {
-        // ✅ Save uploaded file directly to /public/videos/
-        $file = $request->file('video');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('videos'), $filename);
+    // Store file
+    $path = $request->file('video')->store('videos', 'public');
 
-        // ✅ Save to the database
-        $video = Video::create([
-            'user_id' => Auth::id(),
-            'url' => $filename, // just filename, no 'videos/' prefix
-            'caption' => $request->caption,
-            'views' => 0,
-            'likes_count' => 0,
-            'comments_count' => 0,
-            'shares_count' => 0,
-        ]);
+    // Save to DB
+    $video = new Video();
+    $video->user_id = $user->id; // ✅ use $user->id safely
+    $video->url = $path;
+    $video->caption = $request->input('caption') ?? '';
+    $video->save();
 
-        // ✅ Return JSON for frontend JS
-        return response()->json([
-            'success' => true,
-            'message' => 'Video uploaded successfully!',
-            'redirect_url' => route('my-web'),
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Video upload error: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to upload video: ' . $e->getMessage(),
-        ], 500);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => 'Video uploaded successfully!',
+        'redirect_url' => route('my-web'),
+    ]);
 }
+
 
 
     /**
