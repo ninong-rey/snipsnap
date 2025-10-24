@@ -1,4 +1,4 @@
-FFROM php:8.2-apache
+FROM php:8.2-apache
 
 # Install system dependencies including PostgreSQL
 RUN apt-get update && apt-get install -y \
