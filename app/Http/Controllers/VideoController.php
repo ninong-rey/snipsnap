@@ -33,15 +33,8 @@ class VideoController extends Controller
     public function store(Request $request)
 {
     \Log::info('=== UPLOAD STARTED ===');
-    \Log::info('File received', [
-        'has_file' => $request->hasFile('video'),
-        'file_valid' => $request->file('video') ? $request->file('video')->isValid() : false,
-        'file_size' => $request->file('video') ? $request->file('video')->getSize() : 0,
-        'file_name' => $request->file('video') ? $request->file('video')->getClientOriginalName() : 'none',
-    ]);
 
     try {
-        // Validate the upload
         $validated = $request->validate([
             'video' => 'required|file|mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:51200',
             'caption' => 'nullable|string|max:500'
@@ -49,26 +42,15 @@ class VideoController extends Controller
         
         \Log::info('Validation passed');
 
-        // Check storage directory
-        $storagePath = storage_path('app/public/videos');
-        if (!is_dir($storagePath)) {
-            \Log::info('Creating storage directory');
-            mkdir($storagePath, 0755, true);
-        }
-
-        \Log::info('Attempting to store file');
-        
-        // Store the video - use 'url' column instead of 'video_path'
+        // Store the video
         $videoPath = $request->file('video')->store('videos', 'public');
         \Log::info('File stored successfully', ['path' => $videoPath]);
 
-        \Log::info('Creating video record');
-        
-        // Create video record - FIXED: use 'url' instead of 'video_path'
+        // Create video record with full URL
         $video = Video::create([
             'user_id' => Auth::id(),
-            'caption' => $request->caption ?: 'Untitled Video', // Use 'caption' for title
-            'url' => $videoPath, // Use 'url' column instead of 'video_path'
+            'caption' => $request->caption ?: 'Untitled Video',
+            'url' => $videoPath, // Store the path
         ]);
 
         \Log::info('Video created successfully', ['video_id' => $video->id]);
@@ -76,7 +58,8 @@ class VideoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
-            'redirect_url' => route('my-web')
+            'redirect_url' => route('my-web'),
+            'video_url' => asset('storage/' . $videoPath), // Return full URL for testing
         ]);
 
     } catch (\Exception $e) {

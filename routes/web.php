@@ -35,6 +35,39 @@ Route::get('/debug-views', function() {
         'Upload_file_exists' => in_array('Upload.blade.php', $viewFiles),
     ];
 });
+// Debug upload and storage issues
+Route::get('/upload-debug-files', function() {
+    try {
+        $videosPath = storage_path('app/public/videos');
+        $files = [];
+        
+        if (is_dir($videosPath)) {
+            $files = scandir($videosPath);
+            $files = array_filter($files, function($file) {
+                return !in_array($file, ['.', '..']);
+            });
+        }
+        
+        $latestVideo = \App\Models\Video::latest()->first();
+        
+        return [
+            'storage_path' => $videosPath,
+            'directory_exists' => is_dir($videosPath),
+            'videos_files' => array_values($files),
+            'file_count' => count($files),
+            'latest_video' => $latestVideo ? [
+                'id' => $latestVideo->id,
+                'url' => $latestVideo->url,
+                'video_url' => asset('storage/' . $latestVideo->url),
+                'caption' => $latestVideo->caption,
+                'created_at' => $latestVideo->created_at,
+            ] : null,
+            'storage_link_exists' => is_link(public_path('storage')),
+        ];
+    } catch (\Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+});
 
 // Upload - MOVED TO PUBLIC ROUTES
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
