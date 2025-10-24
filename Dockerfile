@@ -1,4 +1,3 @@
-
 FROM php:8.2-apache
 
 # Install system dependencies including PostgreSQL, git, and unzip
@@ -7,13 +6,6 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     && docker-php-ext-install pdo pdo_pgsql
-
-# Increase PHP limits for LARGE video uploads (5GB)
-RUN echo "upload_max_filesize = 5G" >> /usr/local/etc/php/conf.d/uploads.ini
-RUN echo "post_max_size = 5G" >> /usr/local/etc/php/conf.d/uploads.ini
-RUN echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
-RUN echo "max_input_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
-RUN echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -34,9 +26,6 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Generate application key
 RUN php artisan key:generate --force
-
-# Force file sessions by modifying the .env file
-RUN sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=file/g' .env || echo "SESSION_DRIVER=file" >> .env
 
 # Run database migrations
 RUN php artisan migrate --force
