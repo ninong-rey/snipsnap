@@ -68,6 +68,22 @@ Route::get('/upload-debug-files', function() {
         return ['error' => $e->getMessage()];
     }
 });
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+
+// ✅ Storage fallback route (must be last)
+Route::get('/storage/{path}', function ($path) {
+    $path = storage_path('app/public/' . $path);
+
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+
+    return Response::make($file, 200)->header("Content-Type", $type);
+})->where('path', '.*');
 
 // Upload - MOVED TO PUBLIC ROUTES
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
@@ -224,16 +240,4 @@ Route::middleware('auth')->group(function () {
             'time' => now()
         ]);
     });
-    Route::get('/storage/{path}', function ($path) {
-    $path = storage_path('app/public/' . $path);
-
-    if (!File::exists($path)) {
-        abort(404);
-    }
-
-    $file = File::get($path);
-    $type = File::mimeType($path);
-
-    return Response::make($file, 200)->header("Content-Type", $type);
-})->where('path', '.*');
 });

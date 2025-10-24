@@ -82,7 +82,7 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap">
+      <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar">
       SnipSnap Studio
     </div>
     <a href="{{ route('upload') }}" class="upload-btn active">

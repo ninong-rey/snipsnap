@@ -384,7 +384,7 @@
   <aside class="sidebar">
     <div>
       <div class="logo">
-        <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
+        <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap">
         SnipSnap
       </div>
 
