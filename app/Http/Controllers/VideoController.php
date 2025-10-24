@@ -22,66 +22,49 @@ class VideoController extends Controller
      * Show the upload page
      */
     public function create()
-{
-    $video = new Video([
-        'url' => null,
-        'caption' => null,
-    ]);
-
-    // Set user relation safely
-    $video->setRelation('user', Auth::user() ?? new User());
-
-    $video->setRelation('comments', collect());
-    $video->likes_count = 0;
-    $video->comments_count = 0;
-    $video->shares_count = 0;
-
-    return view('upload', compact('video'));
-}
-
+    {
+        // Simple create method - just return the view
+        return view('upload');
+    }
 
     /**
      * Handle video upload (AJAX)
      */
     public function store(Request $request)
     {
+        // Regenerate session to prevent timeout during upload
+        $request->session()->regenerate();
+        
+        // Validate the upload
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:5242880', // 5GB in KB
-            'caption' => 'nullable|string|max:500',
+            'video' => 'required|file|mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:51200', // 50MB max for testing
+            'caption' => 'nullable|string|max:500'
         ]);
 
         try {
-            $videoFile = $request->file('video');
-            $userId = Auth::id();
-            $basePath = 'users/' . $userId;
-
-            // Store uploaded video
-            $videoFileName = Str::uuid() . '.' . $videoFile->getClientOriginalExtension();
-            $videoPath = Storage::disk('public')->putFileAs($basePath, $videoFile, $videoFileName);
-
-            // Save to database
+            // Store the video
+            $videoPath = $request->file('video')->store('videos', 'public');
+            
+            // Create video record
             $video = Video::create([
-                'user_id' => $userId,
-                'caption' => $request->input('caption'),
-                'url' => $videoPath,
-                'likes_count' => 0,
-                'comments_count' => 0,
-                'shares_count' => 0,
+                'user_id' => Auth::id(),
+                'title' => $request->caption ?: 'Untitled Video',
+                'video_path' => $videoPath,
+                'caption' => $request->caption,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Video uploaded successfully!',
-                'video_id' => $video->id,
-                'video_url' => Storage::url($videoPath),
-                'redirect_url' => route('my-web'),
+                'redirect_url' => route('my-web')
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Video upload error: ' . $e->getMessage());
+            // Regenerate session on error
+            $request->session()->regenerate();
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to upload video: ' . $e->getMessage(),
+                'message' => 'Upload failed: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -156,34 +139,5 @@ class VideoController extends Controller
             'success' => true,
             'shares_count' => $video->fresh()->shares_count,
         ]);
-    }
-
-    /**
-     * Debug relationships (optional)
-     */
-    public function testRelationships()
-    {
-        $video = Video::first();
-
-        if (!$video) {
-            $video = Video::create([
-                'user_id' => Auth::id(),
-                'caption' => 'Test Video',
-                'url' => 'test/video.mp4',
-                'likes_count' => 0,
-                'comments_count' => 0,
-                'shares_count' => 0,
-            ]);
-        }
-
-        echo "<h1>Video Relationships Test</h1><pre>";
-        echo "Video ID: {$video->id}\n";
-        echo "Caption: {$video->caption}\n";
-        echo "User: " . ($video->user->name ?? 'Guest') . "\n";
-        echo "Comments Count: " . $video->comments()->count() . "\n";
-        echo "Likes Count: " . $video->likes_count . "\n";
-        echo "Shares Count: " . $video->shares_count . "\n";
-        echo "</pre>";
-        exit;
     }
 }
