@@ -20,31 +20,6 @@ use App\Http\Controllers\UserController;
 // Home - NO AUTH MIDDLEWARE
 Route::get('/', [WebController::class, 'index'])->name('home');
 
-// Simple session test route
-Route::get('/session-test', function() {
-    $session = app('session');
-    
-    // Test if session is working
-    $testValue = 'session_working_' . time();
-    $session->put('test_key', $testValue);
-    $retrieved = $session->get('test_key');
-    
-    return [
-        'session_driver' => config('session.driver'),
-        'session_id' => $session->getId(),
-        'session_working' => $retrieved === $testValue,
-        'session_test_value' => $retrieved,
-    ];
-});
-Route::get('/env-check', function() {
-    return [
-        'app_env' => config('app.env'),
-        'session_driver' => config('session.driver'),
-        'env_session_driver' => env('SESSION_DRIVER'),
-        'database_default' => config('database.default'),
-    ];
-});
-
 // Debug route to check view files
 Route::get('/debug-views', function() {
     $viewsPath = resource_path('views');
@@ -216,5 +191,4 @@ Route::middleware('auth')->group(function () {
             'time' => now()
         ]);
     });
-    
 });
