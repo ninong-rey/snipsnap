@@ -32,48 +32,45 @@ class VideoController extends Controller
      */
     public function store(Request $request)
 {
-    \Log::info('=== UPLOAD STARTED ===');
+    // ✅ Validate uploaded file and caption
+    $request->validate([
+        'video'   => 'required|file|mimetypes:video/mp4,video/quicktime,video/x-msvideo|max:51200',
+        'caption' => 'nullable|string|max:255',
+    ]);
 
     try {
-        $validated = $request->validate([
-            'video' => 'required|file|mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:51200',
-            'caption' => 'nullable|string|max:500'
-        ]);
-        
-        \Log::info('Validation passed');
+        // ✅ Save uploaded file directly to /public/videos/
+        $file = $request->file('video');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('videos'), $filename);
 
-        // Store the video
-        $videoPath = $request->file('video')->store('videos', 'public');
-        \Log::info('File stored successfully', ['path' => $videoPath]);
-
-        // Create video record with full URL
+        // ✅ Save to the database
         $video = Video::create([
             'user_id' => Auth::id(),
-            'caption' => $request->caption ?: 'Untitled Video',
-            'url' => $videoPath, // Store the path
+            'url' => $filename, // just filename, no 'videos/' prefix
+            'caption' => $request->caption,
+            'views' => 0,
+            'likes_count' => 0,
+            'comments_count' => 0,
+            'shares_count' => 0,
         ]);
 
-        \Log::info('Video created successfully', ['video_id' => $video->id]);
-
+        // ✅ Return JSON for frontend JS
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
             'redirect_url' => route('my-web'),
-            'video_url' => asset('storage/' . $videoPath), // Return full URL for testing
         ]);
 
     } catch (\Exception $e) {
-        \Log::error('UPLOAD FAILED', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        
+        \Log::error('Video upload error: ' . $e->getMessage());
         return response()->json([
             'success' => false,
-            'message' => 'Upload failed: ' . $e->getMessage()
+            'message' => 'Failed to upload video: ' . $e->getMessage(),
         ], 500);
     }
 }
+
 
     /**
      * Show a single video page
