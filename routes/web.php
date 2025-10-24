@@ -20,6 +20,10 @@ use App\Http\Controllers\UserController;
 // Home - NO AUTH MIDDLEWARE
 Route::get('/', [WebController::class, 'index'])->name('home');
 
+// Upload - MOVED TO PUBLIC ROUTES
+Route::get('/upload', [VideoController::class, 'create'])->name('upload');
+Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
+
 // Authentication
 Route::get('/login', [AuthController::class, 'loginView'])->name('login');
 Route::post('/login', [AuthController::class, 'loginPerform'])->name('login.perform');
@@ -52,6 +56,48 @@ Route::get('/debug-session', function () {
     ]);
 });
 
+// ==================== PUBLIC TEST ROUTES ====================
+Route::get('/test', function() {
+    try {
+        // Test database connection
+        \DB::connection()->getPdo();
+        $dbStatus = "✅ Database connected successfully!";
+    } catch (\Exception $e) {
+        $dbStatus = "❌ Database error: " . $e->getMessage();
+    }
+
+    try {
+        // Test if users table exists
+        $userCount = \DB::table('users')->count();
+        $tableStatus = "✅ Users table exists with $userCount users";
+    } catch (\Exception $e) {
+        $tableStatus = "❌ Users table error: " . $e->getMessage();
+    }
+
+    return [
+        'status' => 'OK',
+        'database' => $dbStatus,
+        'tables' => $tableStatus,
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+    ];
+});
+
+Route::get('/env-check', function() {
+    return [
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+        'db_connection' => config('database.default'),
+        'db_host' => config('database.connections.pgsql.host'),
+        'db_database' => config('database.connections.pgsql.database'),
+        'app_key_set' => !empty(config('app.key')),
+    ];
+});
+
+Route::get('/simple', function() {
+    return "✅ Simple route works! Your app is running.";
+});
+
 /*
 |--------------------------------------------------------------------------
 | PROTECTED ROUTES (Requires Login)
@@ -64,10 +110,6 @@ Route::middleware('auth')->group(function () {
 
     // Main Feed
     Route::get('/web', [WebController::class, 'index'])->name('my-web');
-
-    // Upload
-    Route::get('/upload', [VideoController::class, 'create'])->name('upload');
-    Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
 
     // Following Feed
     Route::get('/following', [FollowController::class, 'followingVideos'])->name('following.videos');
@@ -133,45 +175,4 @@ Route::middleware('auth')->group(function () {
             'time' => now()
         ]);
     });
-    // ==================== TEST ROUTES ====================
-Route::get('/test', function() {
-    try {
-        // Test database connection
-        \DB::connection()->getPdo();
-        $dbStatus = "✅ Database connected successfully!";
-    } catch (\Exception $e) {
-        $dbStatus = "❌ Database error: " . $e->getMessage();
-    }
-
-    try {
-        // Test if users table exists
-        $userCount = \DB::table('users')->count();
-        $tableStatus = "✅ Users table exists with $userCount users";
-    } catch (\Exception $e) {
-        $tableStatus = "❌ Users table error: " . $e->getMessage();
-    }
-
-    return [
-        'status' => 'OK',
-        'database' => $dbStatus,
-        'tables' => $tableStatus,
-        'app_env' => config('app.env'),
-        'app_debug' => config('app.debug'),
-    ];
-});
-
-Route::get('/env-check', function() {
-    return [
-        'app_env' => config('app.env'),
-        'app_debug' => config('app.debug'),
-        'db_connection' => config('database.default'),
-        'db_host' => config('database.connections.pgsql.host'),
-        'db_database' => config('database.connections.pgsql.database'),
-        'app_key_set' => !empty(config('app.key')),
-    ];
-});
-
-Route::get('/simple', function() {
-    return "✅ Simple route works! Your app is running.";
-});
 });
