@@ -14,6 +14,9 @@ RUN echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
 RUN echo "max_input_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
 RUN echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini
 
+# Force file sessions to prevent database session issues
+RUN echo "SESSION_DRIVER=file" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
