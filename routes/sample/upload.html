@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Video - SnipSnap</title>
+</head>
+<body>
+    <h1>Upload Your Video</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="video" accept="video/*" required>
+        <textarea name="caption" placeholder="Write a caption..."></textarea>
+        <button type="submit">Upload Video</button>
+    </form>
+    <a href="/">← Back to Home</a>
+</body>
+</html>

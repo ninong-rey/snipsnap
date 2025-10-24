@@ -20,6 +20,22 @@ use App\Http\Controllers\UserController;
 // Home - NO AUTH MIDDLEWARE
 Route::get('/', [WebController::class, 'index'])->name('home');
 
+// Debug route to check view files
+Route::get('/debug-views', function() {
+    $viewsPath = resource_path('views');
+    $files = scandir($viewsPath);
+    $viewFiles = array_filter($files, function($file) {
+        return str_ends_with($file, '.blade.php');
+    });
+    
+    return [
+        'views_directory' => $viewsPath,
+        'view_files' => array_values($viewFiles),
+        'upload_file_exists' => in_array('upload.blade.php', $viewFiles),
+        'Upload_file_exists' => in_array('Upload.blade.php', $viewFiles),
+    ];
+});
+
 // Upload - MOVED TO PUBLIC ROUTES
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
 Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
