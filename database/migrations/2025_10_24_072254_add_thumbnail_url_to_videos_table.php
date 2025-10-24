@@ -6,20 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::table('videos', function (Blueprint $table) {
-            if (!Schema::hasColumn('videos', 'views')) {
-                // Just add at the end, no 'after'
-                $table->unsignedBigInteger('views')->default(0);
-            }
+            $table->string('thumbnail_url')->nullable()->after('url');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::table('videos', function (Blueprint $table) {
-            $table->dropColumn('views');
+            $table->dropColumn('thumbnail_url');
         });
     }
 };

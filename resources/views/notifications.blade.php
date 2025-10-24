@@ -565,28 +565,61 @@
     }
 
     function updateUnreadCounts() {
-      // Update the unread counts in the UI
-      fetch(`/notifications/unread-count`)
-        .then(response => response.json())
-        .then(data => {
-          // Update sidebar notification count
-          const sidebarBadge = document.querySelector('.menu a.active .notification-dot');
-          if (data.count > 0) {
-            if (sidebarBadge) {
-              sidebarBadge.textContent = data.count;
-            } else {
-              // Create badge if it doesn't exist
-              const menuItem = document.querySelector('.menu a.active');
-              const badge = document.createElement('span');
-              badge.className = 'notification-dot';
-              badge.textContent = data.count;
-              menuItem.appendChild(badge);
-            }
-          } else if (sidebarBadge) {
-            sidebarBadge.remove();
-          }
-        });
-    }
+  fetch(`/notifications/unread-counts`)
+    .then(response => response.json())
+    .then(data => {
+      // Sidebar dot
+      const sidebarBadge = document.querySelector('.menu a.active .notification-dot');
+      if (data.unread > 0) {
+        if (sidebarBadge) {
+          sidebarBadge.textContent = data.unread;
+        } else {
+          const menuItem = document.querySelector('.menu a.active');
+          const badge = document.createElement('span');
+          badge.className = 'notification-dot';
+          badge.textContent = data.unread;
+          menuItem.appendChild(badge);
+        }
+      } else if (sidebarBadge) {
+        sidebarBadge.remove();
+      }
+
+      // Tabs badges
+      const likesTab = document.querySelector('.tab[data-tab="likes"] .tab-badge');
+      if (data.likes > 0) {
+        if (likesTab) likesTab.textContent = data.likes;
+        else {
+          const badge = document.createElement('span');
+          badge.className = 'tab-badge';
+          badge.textContent = data.likes;
+          document.querySelector('.tab[data-tab="likes"]').appendChild(badge);
+        }
+      } else if (likesTab) likesTab.remove();
+
+      const commentsTab = document.querySelector('.tab[data-tab="comments"] .tab-badge');
+      if (data.comments > 0) {
+        if (commentsTab) commentsTab.textContent = data.comments;
+        else {
+          const badge = document.createElement('span');
+          badge.className = 'tab-badge';
+          badge.textContent = data.comments;
+          document.querySelector('.tab[data-tab="comments"]').appendChild(badge);
+        }
+      } else if (commentsTab) commentsTab.remove();
+
+      const followsTab = document.querySelector('.tab[data-tab="follows"] .tab-badge');
+      if (data.follows > 0) {
+        if (followsTab) followsTab.textContent = data.follows;
+        else {
+          const badge = document.createElement('span');
+          badge.className = 'tab-badge';
+          badge.textContent = data.follows;
+          document.querySelector('.tab[data-tab="follows"]').appendChild(badge);
+        }
+      } else if (followsTab) followsTab.remove();
+    });
+}
+
 
     function followUser(userId, button) {
       fetch(`/follow/${userId}`, {
@@ -622,16 +655,92 @@
 
     // Real-time updates (optional)
     function setupRealTimeUpdates() {
-      // You can implement WebSocket or polling for real-time notifications
-      setInterval(() => {
-        updateUnreadCounts();
-      }, 30000); // Update every 30 seconds
-    }
+  setInterval(() => {
+    // Fetch new notifications
+    const tabType = document.querySelector('.tab.active').dataset.tab || 'all';
+    fetch(`/notifications/fetch-latest?tab=${tabType}`)
+      .then(response => response.json())
+      .then(data => {
+        renderNotifications(data.notifications);
+        updateUnreadCounts(); // update badges
+      });
+  }, 15000); // every 15 seconds
+}
+
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
       setupRealTimeUpdates();
     });
+    function renderNotifications(notifications) {
+  const container = document.querySelector('.notifications-list');
+  container.innerHTML = '';
+
+  if (notifications.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-regular fa-bell"></i>
+        <h3>No Notifications Yet</h3>
+        <p>When you get likes, comments, or new followers, they'll appear here.</p>
+      </div>`;
+    return;
+  }
+
+  notifications.forEach(notification => {
+    const isUnread = !notification.read ? 'unread' : '';
+    const videoThumbnail = notification.video?.thumbnail_url || notification.video?.url || '';
+    const videoCaption = notification.video?.caption || 'Check out this video';
+
+    const notificationHTML = `
+      <div class="notification-item ${isUnread}" 
+           data-notification-id="${notification.id}"
+           onclick="markAsRead(${notification.id}, this)">
+        <div class="notification-icon icon-${notification.type}">
+          ${
+            notification.type === 'like' ? '<i class="fa-solid fa-heart"></i>' :
+            notification.type === 'comment' ? '<i class="fa-solid fa-comment"></i>' :
+            notification.type === 'follow' ? '<i class="fa-solid fa-user-plus"></i>' :
+            notification.type === 'share' ? '<i class="fa-solid fa-share"></i>' :
+            '<i class="fa-solid fa-bell"></i>'
+          }
+        </div>
+
+        <img src="${notification.from_user.avatar ? '/storage/' + notification.from_user.avatar : '/image/default-avatar.png'}"
+             alt="${notification.from_user.name}" class="notification-avatar"
+             onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+
+        <div class="notification-content">
+          <div class="notification-text">
+            <span class="notification-user" onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+              ${notification.from_user.username || notification.from_user.name}
+            </span> 
+            ${notification.message}
+          </div>
+          <div class="notification-time">${moment(notification.created_at).fromNow()}</div>
+          ${notification.video ? `<div class="notification-preview">${videoCaption}</div>` : ''}
+          <div class="notification-actions">
+            ${
+              notification.type === 'follow' ? `<button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser(${notification.from_user.id}, this);">
+                <i class="fa-solid fa-user-plus"></i> Follow back
+              </button>` :
+              (notification.type === 'comment' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                <i class="fa-solid fa-eye"></i> View video
+              </button>` :
+              (notification.type === 'like' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                <i class="fa-solid fa-eye"></i> View video
+              </button>` : '')
+            )
+            }
+          </div>
+        </div>
+
+        ${videoThumbnail ? `<img src="/storage/${videoThumbnail}" class="notification-media" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">` : ''}
+      </div>`;
+    
+    container.insertAdjacentHTML('beforeend', notificationHTML);
+  });
+}
+
   </script>
 </body>
 </html>

@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
@@ -27,24 +26,21 @@ class NotificationController extends Controller
         
         $notifications = $query->paginate(20);
         
-        // Counts for each tab
+        // Counts for tabs & unread
         $unreadCount = Notification::where('to_user_id', $user->id)
             ->where('read', false)
             ->count();
             
         $likeCount = Notification::where('to_user_id', $user->id)
             ->where('type', 'like')
-            ->where('read', false)
             ->count();
             
         $commentCount = Notification::where('to_user_id', $user->id)
             ->where('type', 'comment')
-            ->where('read', false)
             ->count();
             
         $followCount = Notification::where('to_user_id', $user->id)
             ->where('type', 'follow')
-            ->where('read', false)
             ->count();
         
         return view('notifications', compact(
@@ -77,12 +73,38 @@ class NotificationController extends Controller
         return response()->json(['success' => true]);
     }
     
-    public function getUnreadCount()
-    {
-        $count = Notification::where('to_user_id', Auth::id())
-            ->where('read', false)
-            ->count();
-            
-        return response()->json(['count' => $count]);
+    // Updated to return all counts for AJAX
+    // In NotificationController.php
+public function getUnreadCounts()
+{
+    $user = Auth::user();
+
+    return response()->json([
+        'unread'   => Notification::where('to_user_id', $user->id)->where('read', false)->count(),
+        'likes'    => Notification::where('to_user_id', $user->id)->where('type', 'like')->count(),
+        'comments' => Notification::where('to_user_id', $user->id)->where('type', 'comment')->count(),
+        'follows'  => Notification::where('to_user_id', $user->id)->where('type', 'follow')->count(),
+    ]);
+}
+public function fetchLatest(Request $request)
+{
+    $user = Auth::user();
+    $tab = $request->get('tab', 'all');
+
+    $query = Notification::where('to_user_id', $user->id)
+        ->with(['fromUser', 'video'])
+        ->latest();
+
+    if ($tab !== 'all') {
+        $query->where('type', $tab);
     }
+
+    $notifications = $query->take(20)->get(); // latest 20
+
+    return response()->json([
+        'notifications' => $notifications,
+    ]);
+}
+
+
 }

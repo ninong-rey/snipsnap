@@ -394,7 +394,6 @@
       </div>
 
       <div class="menu">
-        <!-- FIXED: Changed href from "#" to actual route -->
         <a href="{{ route('my-web') }}" class="active"><i class="fa-solid fa-house"></i>For You</a>
         <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
         <a href="{{ route('following.videos') }}"><i class="fa-solid fa-user-group"></i>Following</a>
@@ -413,103 +412,91 @@
       <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
     </form>
   </aside>
+
   @if(request()->has('uploaded_video'))
-<!-- TikTok-style overlay -->
-<div id="uploadOverlay" style="position: fixed; top: 20px; right: 20px; width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; background: #000; transition: opacity 0.5s ease;">
-  <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop style="width:100%; display:block;"></video>
-  <div id="spinnerOverlay" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
-    <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
+  <div id="uploadOverlay" style="position: fixed; top: 20px; right: 20px; width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; background: #000;">
+    <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop style="width:100%; display:block;"></video>
+    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+      <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
+    </div>
   </div>
-</div>
-
-<script>
-const overlay = document.getElementById('uploadOverlay');
-const spinner = document.getElementById('spinnerOverlay');
-const video = document.getElementById('processingVideo');
-
-// Hide spinner when video is ready
-video.addEventListener('loadeddata', () => {
-    if(spinner) spinner.style.display = 'none';
-});
-
-// Fade out overlay smoothly after 5s
-setTimeout(() => {
-    if(overlay) {
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 500); // Remove from DOM after fade
-    }
-}, 5000);
-</script>
-@endif
-
+  <script>
+    setTimeout(()=>document.getElementById('uploadOverlay').remove(), 5000);
+  </script>
+  @endif
 
   <!-- Feed -->
   <main class="feed-container">
     @foreach($videos as $video)
     <div class="video-post" data-video-id="{{ $video->id }}">
       <div class="video-wrapper">
-        @php $videoUrl = $video->url ?? $video->file_path ?? null; @endphp
-        @if($videoUrl)
-        <!-- FIXED: Removed autoplay and muted attributes to fix playback issues -->
-       <video src="{{ asset('videos/' . $video->url) }}" controls loop playsinline preload="metadata"></video>
+    @php
+        $videoUrl = $video->url ?? null;
+        if (!$videoUrl && !empty($video->file_path)) {
+            $videoUrl = asset('storage/' . $video->file_path);
+        }
+    @endphp
 
-
+    @if($videoUrl)
+        <video src="{{ asset('storage/' . ($video->file_path ?? $video->url)) }}" controls loop playsinline preload="metadata"></video>
 
         @else
         <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">
-          Video not available
+            Video not available
+        </div>
+    @endif
+
+    <!-- Play/Pause animation -->
+    <div class="play-pause-animation">
+        <i class="fas fa-pause"></i>
+    </div>
+
+    <!-- Overlay for tap actions -->
+    <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
+
+    <!-- Video controls -->
+    <div class="video-controls">
+        <div class="volume-container">
+            <button class="control-btn volume-btn" onclick="toggleMute(this)">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <div class="volume-slider">
+                <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions (like, comment, share) -->
+    <div class="actions">
+        @php $videoUser = $video->user; @endphp
+        @if($videoUser)
+        <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
+                 alt="{{ $videoUser->username ?? $videoUser->name }}">
         </div>
         @endif
 
-        <div class="play-pause-animation">
-          <i class="fas fa-pause"></i>
-        </div>
-
-        <div class="video-controls">
-          <div class="volume-container">
-            <button class="control-btn volume-btn" onclick="toggleMute(this)">
-              <i class="fas fa-volume-up"></i>
-            </button>
-            <div class="volume-slider">
-              <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
-
-        <div class="actions">
-          <!-- NEW: User avatar button above heart -->
-          @php $videoUser = $video->user; @endphp
-          @if($videoUser)
-          <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')" title="View {{ $videoUser->username ?? $videoUser->name }}'s profile">
-            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
-                 alt="{{ $videoUser->username ?? $videoUser->name }}">
-          </div>
-          @endif
-
-          <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+        <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
             <i class="fa-solid fa-heart"></i>
             <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="toggleComments(this)">
+        </div>
+        <div class="action-btn" onclick="toggleComments(this)">
             <i class="fa-solid fa-comment"></i>
             <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+        </div>
+        <div class="action-btn" onclick="shareVideo({{ $video->id }})">
             <i class="fa-solid fa-share"></i>
             <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-          </div>
         </div>
+    </div>
 
-        <div class="caption">
-          @php $videoUser = $video->user; @endphp
-          <strong>
-            {{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}
-          </strong><br>
-          {{ $video->caption ?? '' }}
-        </div>
-      </div>
+    <!-- Caption -->
+    <div class="caption">
+        <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
+        {{ $video->caption ?? '' }}
+    </div>
+</div>
+
 
       <div class="comments-panel">
         <div class="comments-header">
@@ -538,19 +525,14 @@ setTimeout(() => {
     const likedVideos = new Set();
     let lastTapTime = 0;
 
-    // NEW: Function to navigate to user profile
     function goToUserProfile(userIdentifier) {
-      // Try to use username route first, fallback to ID
       if (userIdentifier && isNaN(userIdentifier)) {
-        // It's a username
         window.location.href = `/user/${userIdentifier}`;
       } else {
-        // It's an ID or we don't have username
         window.location.href = `/profile`;
       }
     }
 
-    // FIXED: Improved video play/pause function with better error handling
     function togglePlayPause(overlay, event) {
       const currentTime = new Date().getTime();
       const timeSinceLastTap = currentTime - lastTapTime;
@@ -571,38 +553,19 @@ setTimeout(() => {
       animation.classList.add('active');
 
       if (video.paused) {
-        video.play().then(() => {
-          icon.classList.remove('fa-play'); 
-          icon.classList.add('fa-pause');
-        }).catch(error => {
-          console.error('Error playing video:', error);
-          // Fallback: try playing with muted
-          video.muted = true;
-          video.play().then(() => {
-            icon.classList.remove('fa-play'); 
-            icon.classList.add('fa-pause');
-          });
-        });
+        video.play().catch(()=>{video.muted=true; video.play()});
+        icon.classList.replace('fa-play','fa-pause');
       } else {
         video.pause();
-        icon.classList.remove('fa-pause'); 
-        icon.classList.add('fa-play');
+        icon.classList.replace('fa-pause','fa-play');
       }
     }
 
     function toggleMute(btn) {
       const video = btn.closest('.video-wrapper').querySelector('video');
       const icon = btn.querySelector('i');
-      const slider = btn.closest('.volume-container').querySelector('input');
-
       video.muted = !video.muted;
-      if (video.muted) { 
-        icon.classList.replace('fa-volume-up','fa-volume-mute'); 
-        slider.value = 0; 
-      } else { 
-        icon.classList.replace('fa-volume-mute','fa-volume-up'); 
-        slider.value = video.volume; 
-      }
+      icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
     }
 
     function changeVolume(slider) {
@@ -610,10 +573,7 @@ setTimeout(() => {
       const icon = slider.closest('.volume-container').querySelector('i');
       video.volume = slider.value;
       video.muted = slider.value == 0;
-      if (slider.value == 0) 
-        icon.classList.replace('fa-volume-up','fa-volume-mute');
-      else 
-        icon.classList.replace('fa-volume-mute','fa-volume-up');
+      icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
     }
 
     function createHeart(x, y, container) {
@@ -653,7 +613,7 @@ setTimeout(() => {
     function incrementLike(videoId) {
       const countEl = document.querySelector(`.like-count-${videoId}`);
       countEl.textContent = parseInt(countEl.textContent)+1;
-      fetch(`/video/${videoId}/like`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}}).catch(e=>console.log(e));
+      fetch(`/video/${videoId}/like`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}}).catch(console.log);
     }
 
     function shareVideo(videoId) {
@@ -679,52 +639,25 @@ setTimeout(() => {
       const div = document.createElement('div'); div.className='comment'; div.innerHTML=`<strong>@you</strong> ${text}`;
       list.appendChild(div);
       document.querySelector(`.comment-count-${videoId}`).textContent = parseInt(document.querySelector(`.comment-count-${videoId}`).textContent)+1;
-      fetch('{{ route("comment.store") }}', {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({video_id:videoId,content:text,_token:'{{ csrf_token() }}'})}).catch(e=>console.log(e));
+      fetch('{{ route("comment.store") }}', {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({video_id:videoId,content:text,_token:'{{ csrf_token() }}'})}).catch(console.log);
       input.value=''; list.scrollTop=list.scrollHeight;
     }
 
-    // FIXED: Improved Intersection Observer with better error handling
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         const video = entry.target.querySelector('video');
         const icon = entry.target.querySelector('.play-pause-animation i');
-        
         if (entry.isIntersecting) {
-          video.play().then(() => {
-            icon.classList.replace('fa-play','fa-pause');
-          }).catch(error => {
-            console.error('Auto-play failed:', error);
-            // Try muted autoplay as fallback
-            video.muted = true;
-            video.play().then(() => {
-              icon.classList.replace('fa-play','fa-pause');
-            }).catch(e => {
-              console.error('Muted autoplay also failed:', e);
-            });
-          });
+          video.play().catch(()=>{video.muted=true; video.play()});
+          icon.classList.replace('fa-play','fa-pause');
         } else {
-          video.pause(); 
+          video.pause();
           icon.classList.replace('fa-pause','fa-play');
         }
       });
     }, { threshold: 0.8 });
 
-    // Initialize observer for all video posts
-    document.querySelectorAll('.video-post').forEach(post => {
-      observer.observe(post);
-    });
-
-    // FIXED: Initialize videos properly on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.video-post video').forEach(video => {
-        video.addEventListener('loadeddata', function() {
-          console.log('Video loaded:', this.src);
-        });
-        video.addEventListener('error', function() {
-          console.error('Error loading video:', this.src);
-        });
-      });
-    });
+    document.querySelectorAll('.video-post').forEach(post => observer.observe(post));
   </script>
 </body>
 </html>

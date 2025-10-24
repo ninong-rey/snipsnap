@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebController;
@@ -10,8 +14,8 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
+use App\Notifications\TestNotification;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,60 +23,23 @@ use Illuminate\Support\Facades\Response;
 |--------------------------------------------------------------------------
 */
 
-// Home - NO AUTH MIDDLEWARE
+// Home
 Route::get('/', [WebController::class, 'index'])->name('home');
 
-// Debug route to check view files
-Route::get('/debug-views', function() {
-    $viewsPath = resource_path('views');
-    $files = scandir($viewsPath);
-    $viewFiles = array_filter($files, function($file) {
-        return str_ends_with($file, '.blade.php');
-    });
-    
-    return [
-        'views_directory' => $viewsPath,
-        'view_files' => array_values($viewFiles),
-        'upload_file_exists' => in_array('upload.blade.php', $viewFiles),
-        'Upload_file_exists' => in_array('Upload.blade.php', $viewFiles),
-    ];
+
+
+Route::get('/test-notification', function () {
+    $user = User::first(); // or Auth::user()
+    $user->notify(new TestNotification("Hello from Render!"));
+    return 'Notification sent!';
 });
 
-// Debug upload and storage issues
-Route::get('/upload-debug-files', function() {
-    try {
-        $videosPath = storage_path('app/public/videos');
-        $files = [];
-        
-        if (is_dir($videosPath)) {
-            $files = scandir($videosPath);
-            $files = array_filter($files, function($file) {
-                return !in_array($file, ['.', '..']);
-            });
-        }
-        
-        $latestVideo = \App\Models\Video::latest()->first();
-        
-        return [
-            'storage_path' => $videosPath,
-            'directory_exists' => is_dir($videosPath),
-            'videos_files' => array_values($files),
-            'file_count' => count($files),
-            'latest_video' => $latestVideo ? [
-                'id' => $latestVideo->id,
-                'url' => $latestVideo->url,
-                'video_url' => url('media/' . $latestVideo->url), // ✅ use /media
-                'caption' => $latestVideo->caption,
-                'created_at' => $latestVideo->created_at,
-            ] : null,
-            'storage_link_exists' => is_link(public_path('storage')),
-        ];
-    } catch (\Exception $e) {
-        return ['error' => $e->getMessage()];
-    }
+Route::get('/fake-notification', function () {
+    return view('fake-notification');
 });
 
-// ✅ FIXED: Serve uploaded videos safely on Render (use /media instead of /storage)
+
+// Serve uploaded videos safely
 Route::get('/media/{path}', function ($path) {
     $path = storage_path('app/public/' . $path);
 
@@ -86,7 +53,22 @@ Route::get('/media/{path}', function ($path) {
     return Response::make($file, 200)->header("Content-Type", $type);
 })->where('path', '.*');
 
-// Upload
+// Video upload route (Ajax/Fetch)
+Route::post('/upload', function(Request $request){
+    $request->validate([
+        'video' => 'required|mimes:mp4,mov,avi,webm|max:51200', // 50MB max
+    ]);
+
+    $path = $request->file('video')->store('videos', 'public');
+    $url = Storage::url($path);
+
+    return response()->json([
+        'success' => true,
+        'url' => $url
+    ]);
+})->name('upload.store');
+
+// Upload page
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
 Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
 
@@ -97,72 +79,11 @@ Route::post('/login', [AuthController::class, 'loginPerform'])->name('login.perf
 Route::get('/signup', [AuthController::class, 'signupView'])->name('signup.view');
 Route::post('/signup', [AuthController::class, 'signupPerform'])->name('signup.perform');
 
-// Forgot / Reset Password (OTP Flow)
 Route::get('/reset', [AuthController::class, 'forgotPasswordView'])->name('password.request');
 Route::post('/reset', [AuthController::class, 'otpRequest'])->name('otp.request');
 
 Route::get('/reset-password', [AuthController::class, 'resetPasswordView'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'otpVerify'])->name('otp.verify');
-
-// Public test route
-Route::get('/test-public', function () {
-    return response()->json([
-        'message' => 'Laravel public route is working!',
-        'status' => 'success', 
-        'time' => now()
-    ]);
-});
-
-// Debug route
-Route::get('/debug-session', function () {
-    return response()->json([
-        'session_driver' => config('session.driver'),
-        'env_session_driver' => env('SESSION_DRIVER'),
-        'app_env' => env('APP_ENV'),
-    ]);
-});
-
-// ==================== PUBLIC TEST ROUTES ====================
-Route::get('/test', function() {
-    try {
-        // Test database connection
-        \DB::connection()->getPdo();
-        $dbStatus = "✅ Database connected successfully!";
-    } catch (\Exception $e) {
-        $dbStatus = "❌ Database error: " . $e->getMessage();
-    }
-
-    try {
-        // Test if users table exists
-        $userCount = \DB::table('users')->count();
-        $tableStatus = "✅ Users table exists with $userCount users";
-    } catch (\Exception $e) {
-        $tableStatus = "❌ Users table error: " . $e->getMessage();
-    }
-
-    return [
-        'status' => 'OK',
-        'database' => $dbStatus,
-        'tables' => $tableStatus,
-        'app_env' => config('app.env'),
-        'app_debug' => config('app.debug'),
-    ];
-});
-
-Route::get('/env-check', function() {
-    return [
-        'app_env' => config('app.env'),
-        'app_debug' => config('app.debug'),
-        'db_connection' => config('database.default'),
-        'db_host' => config('database.connections.mysql.host'),
-        'db_database' => config('database.connections.mysql.database'),
-        'app_key_set' => !empty(config('app.key')),
-    ];
-});
-
-Route::get('/simple', function() {
-    return "✅ Simple route works! Your app is running.";
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -176,8 +97,6 @@ Route::middleware('auth')->group(function () {
 
     // Main Feed
     Route::get('/web', [WebController::class, 'index'])->name('my-web');
-
-    // Following Feed
     Route::get('/following', [FollowController::class, 'followingVideos'])->name('following.videos');
 
     // Profile
@@ -219,7 +138,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/unread-counts', [NotificationController::class, 'getUnreadCounts']);
+    Route::get('/notifications/fetch-latest', [NotificationController::class, 'fetchLatest']);
+
 
     // Messages
     Route::get('/messages', [MessagesController::class, 'index'])->name('messages.index');
@@ -227,18 +148,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/send', [MessagesController::class, 'send'])->name('messages.send');
     Route::get('/messages/fetch-new/{receiverId}/{lastMessageId}', [MessagesController::class, 'fetchNew'])->name('messages.fetchNew');
 
-    // Jitsi call join route
+    // Jitsi call join
     Route::get('/call/join/{roomId}', function ($roomId) {
         return view('call-join', ['roomId' => $roomId]);
     })->name('call.join');
     Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
-    // Test route with auth
-    Route::get('/test-working', function () {
-        return response()->json([
-            'message' => 'Laravel is working with auth!',
-            'status' => 'success',
-            'time' => now()
-        ]);
-    });
+    
 });

@@ -4,13 +4,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up()
     {
         Schema::table('notifications', function (Blueprint $table) {
-            // Check if columns exist before adding them
             if (!Schema::hasColumn('notifications', 'to_user_id')) {
                 $table->unsignedBigInteger('to_user_id')->after('id');
             }
@@ -20,7 +20,7 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('notifications', 'type')) {
-                $table->string('type'); // like, comment, follow, share
+                $table->string('type');
             }
             
             if (!Schema::hasColumn('notifications', 'message')) {
@@ -38,12 +38,29 @@ return new class extends Migration
             if (!Schema::hasColumn('notifications', 'read')) {
                 $table->boolean('read')->default(false);
             }
+        });
 
-            // Add foreign key constraints
-            $table->foreign('to_user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('from_user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('video_id')->references('id')->on('videos')->onDelete('cascade');
-            $table->foreign('comment_id')->references('id')->on('comments')->onDelete('cascade');
+        // Add foreign keys **safely**
+        $foreignKeys = DB::select("SELECT CONSTRAINT_NAME 
+                                   FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+                                   WHERE TABLE_SCHEMA = DATABASE() 
+                                   AND TABLE_NAME = 'notifications' 
+                                   AND CONSTRAINT_TYPE = 'FOREIGN KEY'");
+        $existing = array_map(fn($fk) => $fk->CONSTRAINT_NAME, $foreignKeys);
+
+        Schema::table('notifications', function (Blueprint $table) use ($existing) {
+            if (!in_array('notifications_to_user_id_foreign', $existing)) {
+                $table->foreign('to_user_id')->references('id')->on('users')->onDelete('cascade');
+            }
+            if (!in_array('notifications_from_user_id_foreign', $existing)) {
+                $table->foreign('from_user_id')->references('id')->on('users')->onDelete('cascade');
+            }
+            if (!in_array('notifications_video_id_foreign', $existing)) {
+                $table->foreign('video_id')->references('id')->on('videos')->onDelete('cascade');
+            }
+            if (!in_array('notifications_comment_id_foreign', $existing)) {
+                $table->foreign('comment_id')->references('id')->on('comments')->onDelete('cascade');
+            }
         });
     }
 

@@ -1,0 +1,32 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fake Notification Test</title>
+</head>
+<body>
+<h2>Fake Notification Test</h2>
+<p>Click the button below to show a fake notification.</p>
+<button id="notifyBtn">Show Notification</button>
+
+<script>
+// Request notification permission
+if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+        console.log("Notification permission:", permission);
+    });
+}
+
+document.getElementById("notifyBtn").addEventListener("click", () => {
+    if (Notification.permission === "granted") {
+        new Notification("Test Notification", {
+            body: "This is a fake notification for testing!",
+            icon: "https://cdn-icons-png.flaticon.com/512/1827/1827504.png"
+        });
+    } else {
+        alert("Please allow notifications in your browser settings.");
+    }
+});
+</script>
+</body>
+</html>
