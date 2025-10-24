@@ -413,6 +413,35 @@
       <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
     </form>
   </aside>
+  @if(request()->has('uploaded_video'))
+<!-- TikTok-style overlay -->
+<div id="uploadOverlay" style="position: fixed; top: 20px; right: 20px; width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; background: #000; transition: opacity 0.5s ease;">
+  <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop style="width:100%; display:block;"></video>
+  <div id="spinnerOverlay" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+    <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
+  </div>
+</div>
+
+<script>
+const overlay = document.getElementById('uploadOverlay');
+const spinner = document.getElementById('spinnerOverlay');
+const video = document.getElementById('processingVideo');
+
+// Hide spinner when video is ready
+video.addEventListener('loadeddata', () => {
+    if(spinner) spinner.style.display = 'none';
+});
+
+// Fade out overlay smoothly after 5s
+setTimeout(() => {
+    if(overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500); // Remove from DOM after fade
+    }
+}, 5000);
+</script>
+@endif
+
 
   <!-- Feed -->
   <main class="feed-container">

@@ -11,7 +11,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; overflow: hidden; }
 .container { display: flex; width: 100%; }
-
 /* ==== SIDEBAR ==== */
 .sidebar { width: 240px; background: #fff; border-right: 1px solid #eee; display: flex; flex-direction: column; padding: 24px 0; }
 .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 22px; color: #161823; padding: 0 20px 24px; }
@@ -57,19 +56,6 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
 .upload-success { background: #e6ffe6; color: #0f5132; border: 1px solid #b6f2b6; padding: 14px; border-radius: 6px; text-align: center; margin-top: 20px; display: none; }
 .upload-success.show { display: block; }
 
-/* ==== PROGRESS BAR ==== */
-#uploadProgressBar {
-    width: 0%;
-    height: 100%;
-    background: #fe2c55;
-    text-align: center;
-    color: #fff;
-    line-height: 20px;
-    transition: width 0.4s ease; /* smooth animation */
-}
-
-#progressContainer { display:none; margin-top: 10px; }
-
 @media (max-width: 768px) {
   .container { flex-direction: column; }
   .sidebar { width: 100%; flex-direction: row; justify-content: space-around; border-right: none; border-bottom: 1px solid #eee; }
@@ -78,42 +64,27 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
 </style>
 </head>
 <body>
+  <!-- Add this in your <body> somewhere near the top -->
+<div id="uploadOverlayContainer"></div>
+
 <div class="container">
-  <!-- Sidebar -->
   <div class="sidebar">
-    <div class="logo">
-      <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar">
-      SnipSnap Studio
-    </div>
-    <a href="{{ route('upload') }}" class="upload-btn active">
-      <i class="fas fa-plus"></i> Upload
-    </a>
+    <div class="logo"><img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar">SnipSnap Studio</div>
+    <a href="{{ route('upload') }}" class="upload-btn active"><i class="fas fa-plus"></i> Upload</a>
     <a href="{{ route('my-web') }}" class="menu-item"><i class="fas fa-home"></i> Home</a>
   </div>
 
-  <!-- Main -->
   <div class="main-content">
     <div class="header">
       <h1>Upload Your Video</h1>
       <p>Share your moments with the SnipSnap community</p>
     </div>
 
-    <div id="successBox" class="upload-success">
-      <i class="fas fa-check-circle"></i> Video uploaded successfully!
-    </div>
+    <div id="successBox" class="upload-success"><i class="fas fa-check-circle"></i> Video uploaded successfully!</div>
 
-    <!-- Upload Form -->
-    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ secure_url(route('upload.store')) }}">  
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ secure_url(route('upload.store')) }}">
       @csrf
 
-      <!-- Progress Bar -->
-      <div id="uploadProgressContainer" style="display:none; margin-top: 20px;">
-        <div style="background: #eee; border-radius: 6px; overflow: hidden; height: 20px;">
-          <div id="uploadProgressBar">0%</div>
-        </div>
-      </div>
-
-      <!-- Upload Area -->
       <div class="upload-area" id="uploadArea">
         <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <div class="upload-text">Select video to upload</div>
@@ -122,23 +93,16 @@ body { background-color: #f9f9f9; color: #161823; display: flex; height: 100vh; 
         <input type="file" id="videoFile" name="video" class="file-input" accept="video/*">
       </div>
 
-      <!-- Preview -->
-      <div class="video-preview" id="videoPreview">
-        <video controls></video>
-      </div>
+      <div class="video-preview" id="videoPreview"><video controls></video></div>
 
-      <!-- Caption -->
       <div class="caption-section">
         <h3>Caption</h3>
         <textarea id="captionInput" name="caption" class="caption-input" placeholder="Write a caption..."></textarea>
       </div>
 
-      <!-- Actions -->
       <div class="upload-actions">
         <button type="button" class="cancel-btn" onclick="window.location.href='{{ route('my-web') }}'">Cancel</button>
-        <button type="submit" id="uploadSubmitBtn" class="upload-submit-btn" disabled>
-          <i class="fas fa-upload"></i> Upload Video
-        </button>
+        <button type="submit" id="uploadSubmitBtn" class="upload-submit-btn" disabled><i class="fas fa-upload"></i> Upload Video</button>
       </div>
     </form>
   </div>
@@ -153,12 +117,12 @@ const uploadBtn = document.getElementById('uploadSubmitBtn');
 const successBox = document.getElementById('successBox');
 const uploadForm = document.getElementById('uploadForm');
 const uploadArea = document.getElementById('uploadArea');
+const progressContainer = document.getElementById('uploadProgressContainer');
 const progressBar = document.getElementById('uploadProgressBar');
+const progressText = document.getElementById('uploadProgressBarText');
 
-// --- Open file dialog ---
+// ----- File selection -----
 selectBtn.addEventListener('click', () => fileInput.click());
-
-// --- Preview video ---
 fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (file) {
@@ -168,7 +132,7 @@ fileInput.addEventListener('change', () => {
     }
 });
 
-// --- Drag & drop ---
+// ----- Drag & Drop -----
 uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
 uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
 uploadArea.addEventListener('drop', e => {
@@ -183,34 +147,30 @@ uploadArea.addEventListener('drop', e => {
     }
 });
 
-// --- Submit form via AJAX ---
+// ----- AJAX Upload -----
 uploadForm.addEventListener('submit', e => {
     e.preventDefault();
     const file = fileInput.files[0];
     if (!file) return alert('Please select a video.');
 
     const formData = new FormData(uploadForm);
-
     uploadBtn.disabled = true;
     uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
     successBox.classList.remove('show');
 
-    // Show progress container
-    const progressContainer = document.getElementById('uploadProgressContainer');
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
-    progressBar.textContent = '0%';
+    progressText.textContent = '0%';
 
     const xhr = new XMLHttpRequest();
-xhr.open('POST', uploadForm.action.replace('http://', 'https://'), true);
-xhr.withCredentials = true; // ✅ important
-xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    xhr.open('POST', uploadForm.action.replace('http://','https://'), true);
+    xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
     xhr.upload.addEventListener('progress', e => {
         if (e.lengthComputable) {
             const percent = Math.round((e.loaded / e.total) * 100);
             progressBar.style.width = percent + '%';
-            progressBar.textContent = percent + '%';
+            progressText.textContent = percent + '%';
         }
     });
 
@@ -219,12 +179,39 @@ xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-tok
             const data = JSON.parse(xhr.responseText);
             if (data.success) {
                 progressBar.style.width = '100%';
-                progressBar.textContent = '100%';
+                progressText.textContent = 'Processing...';
                 successBox.classList.add('show');
                 uploadBtn.innerHTML = '<i class="fas fa-check"></i> Uploaded!';
-                setTimeout(() => {
-                    window.location.href = data.redirect_url || "{{ route('my-web') }}";
-                }, 1500);
+                
+                // Update main preview
+                previewVideo.src = "{{ asset('storage/videos') }}/" + data.filename;
+                previewVideo.load();
+                previewVideo.play();
+
+                // ----- TikTok-style overlay -----
+                const overlayContainer = document.getElementById('uploadOverlayContainer');
+                const overlay = document.createElement('div');
+                overlay.id = 'uploadOverlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    width: 160px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 9999;
+                    background: #000;
+                `;
+                overlay.innerHTML = `
+                    <video src="{{ asset('storage/videos') }}/`+data.filename+`" autoplay muted loop style="width:100%; display:block;"></video>
+                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
+                    </div>
+                `;
+                overlayContainer.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 5000);
+
             } else {
                 alert('Upload failed: ' + (data.message || 'Unknown error'));
                 uploadBtn.disabled = false;
@@ -240,6 +227,6 @@ xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-tok
     xhr.send(formData);
 });
 </script>
+
 </body>
 </html>
-
