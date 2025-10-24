@@ -68,23 +68,6 @@ Route::get('/upload-debug-files', function() {
         return ['error' => $e->getMessage()];
     }
 });
-// Test storage setup
-Route::get('/storage-test', function() {
-    // Test creating a file
-    $testPath = storage_path('app/public/test.txt');
-    file_put_contents($testPath, 'Storage test - ' . now());
-    
-    // Test if file is accessible via web
-    $webUrl = url('storage/test.txt');
-    
-    return [
-        'file_created' => file_exists($testPath),
-        'file_content' => file_get_contents($testPath),
-        'web_url' => $webUrl,
-        'storage_link_exists' => is_link(public_path('storage')),
-        'public_storage_exists' => file_exists(public_path('storage/test.txt')),
-    ];
-});
 
 // Upload - MOVED TO PUBLIC ROUTES
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
