@@ -422,14 +422,14 @@
         @php $videoUrl = $video->url ?? $video->file_path ?? null; @endphp
         @if($videoUrl)
         <!-- FIXED: Removed autoplay and muted attributes to fix playback issues -->
-        <video 
-    src="{{ url('media/' . $videoUrl) }}" 
+       <video 
+    src="{{ asset('storage/' . $video->url) }}" 
+    controls 
     loop 
     playsinline 
-    preload="metadata"
-    controlslist="nodownload"
-    style="width:100%;border-radius:12px;">
+    preload="metadata">
 </video>
+
 
         @else
         <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">

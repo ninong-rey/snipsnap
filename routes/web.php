@@ -10,6 +10,8 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,7 @@ Route::get('/debug-views', function() {
         'Upload_file_exists' => in_array('Upload.blade.php', $viewFiles),
     ];
 });
+
 // Debug upload and storage issues
 Route::get('/upload-debug-files', function() {
     try {
@@ -58,7 +61,7 @@ Route::get('/upload-debug-files', function() {
             'latest_video' => $latestVideo ? [
                 'id' => $latestVideo->id,
                 'url' => $latestVideo->url,
-                'video_url' => asset('storage/' . $latestVideo->url),
+                'video_url' => url('media/' . $latestVideo->url), // ✅ use /media
                 'caption' => $latestVideo->caption,
                 'created_at' => $latestVideo->created_at,
             ] : null,
@@ -68,11 +71,9 @@ Route::get('/upload-debug-files', function() {
         return ['error' => $e->getMessage()];
     }
 });
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
 
-// ✅ Storage fallback route (must be last)
-Route::get('/storage/{path}', function ($path) {
+// ✅ FIXED: Serve uploaded videos safely on Render (use /media instead of /storage)
+Route::get('/media/{path}', function ($path) {
     $path = storage_path('app/public/' . $path);
 
     if (!File::exists($path)) {
@@ -85,7 +86,7 @@ Route::get('/storage/{path}', function ($path) {
     return Response::make($file, 200)->header("Content-Type", $type);
 })->where('path', '.*');
 
-// Upload - MOVED TO PUBLIC ROUTES
+// Upload
 Route::get('/upload', [VideoController::class, 'create'])->name('upload');
 Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
 
@@ -153,8 +154,8 @@ Route::get('/env-check', function() {
         'app_env' => config('app.env'),
         'app_debug' => config('app.debug'),
         'db_connection' => config('database.default'),
-        'db_host' => config('database.connections.pgsql.host'),
-        'db_database' => config('database.connections.pgsql.database'),
+        'db_host' => config('database.connections.mysql.host'),
+        'db_database' => config('database.connections.mysql.database'),
         'app_key_set' => !empty(config('app.key')),
     ];
 });
