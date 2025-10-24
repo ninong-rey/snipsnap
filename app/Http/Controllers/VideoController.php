@@ -31,43 +31,66 @@ class VideoController extends Controller
      * Handle video upload (AJAX)
      */
     public function store(Request $request)
-    {
-        // Regenerate session to prevent timeout during upload
-        $request->session()->regenerate();
-        
+{
+    \Log::info('=== UPLOAD STARTED ===');
+    \Log::info('File received', [
+        'has_file' => $request->hasFile('video'),
+        'file_valid' => $request->file('video') ? $request->file('video')->isValid() : false,
+        'file_size' => $request->file('video') ? $request->file('video')->getSize() : 0,
+        'file_name' => $request->file('video') ? $request->file('video')->getClientOriginalName() : 'none',
+    ]);
+
+    try {
         // Validate the upload
-        $request->validate([
-            'video' => 'required|file|mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:51200', // 50MB max for testing
+        $validated = $request->validate([
+            'video' => 'required|file|mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:51200',
             'caption' => 'nullable|string|max:500'
         ]);
+        
+        \Log::info('Validation passed');
 
-        try {
-            // Store the video
-            $videoPath = $request->file('video')->store('videos', 'public');
-            
-            // Create video record
-            $video = Video::create([
-                'user_id' => Auth::id(),
-                'title' => $request->caption ?: 'Untitled Video',
-                'video_path' => $videoPath,
-                'caption' => $request->caption,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Video uploaded successfully!',
-                'redirect_url' => route('my-web')
-            ]);
-
-        } catch (\Exception $e) {
-            // Regenerate session on error
-            $request->session()->regenerate();
-            return response()->json([
-                'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage()
-            ], 500);
+        // Check storage directory
+        $storagePath = storage_path('app/public/videos');
+        if (!is_dir($storagePath)) {
+            \Log::info('Creating storage directory');
+            mkdir($storagePath, 0755, true);
         }
+
+        \Log::info('Attempting to store file');
+        
+        // Store the video - use 'url' column instead of 'video_path'
+        $videoPath = $request->file('video')->store('videos', 'public');
+        \Log::info('File stored successfully', ['path' => $videoPath]);
+
+        \Log::info('Creating video record');
+        
+        // Create video record - FIXED: use 'url' instead of 'video_path'
+        $video = Video::create([
+            'user_id' => Auth::id(),
+            'caption' => $request->caption ?: 'Untitled Video', // Use 'caption' for title
+            'url' => $videoPath, // Use 'url' column instead of 'video_path'
+        ]);
+
+        \Log::info('Video created successfully', ['video_id' => $video->id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Video uploaded successfully!',
+            'redirect_url' => route('my-web')
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('UPLOAD FAILED', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Upload failed: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Show a single video page
