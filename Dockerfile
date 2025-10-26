@@ -1,8 +1,15 @@
 FROM php:8.2-apache
 
-# Install PostgreSQL support
-RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+# Install system dependencies including git, unzip, and PostgreSQL
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -21,5 +28,5 @@ RUN a2enmod rewrite
 
 EXPOSE 80
 
-# Run migrations with error handling
-CMD sh -c "php artisan config:clear && php artisan migrate --force || true && apache2-foreground"
+# Run migrations and start server
+CMD sh -c "php artisan migrate --force && apache2-foreground"
