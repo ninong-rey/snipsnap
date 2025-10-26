@@ -1,7 +1,6 @@
 services:
   - type: web
     name: snipsnap
-    env: php
     plan: free
     buildCommand: composer install --no-dev --optimize-autoloader && php artisan migrate --force
     startCommand: php -S 0.0.0.0:8000 -t public
