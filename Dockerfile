@@ -20,11 +20,15 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
-RUN chmod -R 775 storage bootstrap/cache
+# Copy our custom Apache configuration
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Enable mod_rewrite
 RUN a2enmod rewrite
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 80
 
