@@ -1,5 +1,9 @@
 FROM php:8.2-apache
 
+# Create a fixed Dockerfile that doesn't run migrations during build
+cat > Dockerfile << 'EOF'
+FROM php:8.2-apache
+
 # Install system dependencies and PostgreSQL support
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -26,11 +30,11 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Run database migrations
-RUN php artisan migrate --force
-
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+
+# Run migrations at RUNTIME, not build time
+CMD sh -c "php artisan migrate --force && apache2-foreground"
+EOF
