@@ -21,6 +21,70 @@
       overflow: hidden;
     }
 
+    /* ==== BLUR LOADER STYLES ==== */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(15px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+      transition: opacity 0.3s ease;
+    }
+
+    .loader-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .loader-overlay.fade-out {
+      opacity: 0;
+    }
+
+    .loader-container {
+      text-align: center;
+      padding: 40px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Spinner */
+    .loader-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #fe2c55;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Loading Text */
+    .loader-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #161823;
+      margin-bottom: 10px;
+    }
+
+    .loader-subtext {
+      font-size: 14px;
+      color: #8a8b8f;
+    }
+
     /* Sidebar */
     .sidebar {
       position: fixed;
@@ -380,6 +444,15 @@
 </head>
 
 <body>
+  <!-- Blur Loader Overlay -->
+  <div class="loader-overlay" id="globalLoader">
+    <div class="loader-container">
+      <div class="loader-spinner"></div>
+      <div class="loader-text" id="loaderText">Loading</div>
+      <div class="loader-subtext" id="loaderSubtext">Please wait...</div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <div>
@@ -522,6 +595,58 @@
   </main>
 
   <script>
+    // Loader functions
+    function showLoader(text = 'Loading', subtext = 'Please wait...') {
+      const loader = document.getElementById('globalLoader');
+      const loaderText = document.getElementById('loaderText');
+      const loaderSubtext = document.getElementById('loaderSubtext');
+      
+      loaderText.textContent = text;
+      loaderSubtext.textContent = subtext;
+      loader.classList.add('active');
+      
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoader() {
+      const loader = document.getElementById('globalLoader');
+      loader.classList.add('fade-out');
+      setTimeout(() => {
+        loader.classList.remove('active', 'fade-out');
+        document.body.style.overflow = 'auto';
+      }, 300);
+    }
+
+    // Show loader on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Hide loader after page is fully loaded
+      if (document.readyState === 'complete') {
+        setTimeout(hideLoader, 500);
+      } else {
+        window.addEventListener('load', function() {
+          setTimeout(hideLoader, 500);
+        });
+      }
+    });
+
+    // Add click handlers to sidebar links
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarLinks = document.querySelectorAll('.menu a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          // Don't show loader for active page or external links
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+            return;
+          }
+          
+          showLoader('Navigating', 'Taking you there...');
+          
+          // If navigation takes too long, hide loader after 3 seconds
+          setTimeout(hideLoader, 3000);
+        });
+      });
+    });
+
     const likedVideos = new Set();
     let lastTapTime = 0;
 
