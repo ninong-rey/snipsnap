@@ -12,6 +12,248 @@
 body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:hidden; }
 .container { display:flex; width:100%; }
 
+/* ==== SKELETON LOADER BASE STYLES ==== */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmerSlide 2s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes shimmerSlide {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ==== SIDEBAR SKELETON ==== */
+.sidebar.skeleton-loading .logo,
+.sidebar.skeleton-loading .upload-btn,
+.sidebar.skeleton-loading .menu-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar.skeleton-loading .logo::before,
+.sidebar.skeleton-loading .upload-btn::before,
+.sidebar.skeleton-loading .menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+.sidebar.skeleton-loading .logo > *,
+.sidebar.skeleton-loading .upload-btn > *,
+.sidebar.skeleton-loading .menu-item > * {
+  opacity: 0;
+}
+
+/* ==== MAIN CONTENT SKELETON ==== */
+.main-content.skeleton-loading .header h1,
+.main-content.skeleton-loading .header p,
+.main-content.skeleton-loading .upload-area,
+.main-content.skeleton-loading .caption-section,
+.main-content.skeleton-loading .upload-actions {
+  position: relative;
+}
+
+/* Hide actual content during skeleton loading */
+.main-content.skeleton-loading .header h1,
+.main-content.skeleton-loading .header p,
+.main-content.skeleton-loading .upload-icon,
+.main-content.skeleton-loading .upload-text,
+.main-content.skeleton-loading .upload-subtext,
+.main-content.skeleton-loading .select-video-btn,
+.main-content.skeleton-loading .caption-section h3,
+.main-content.skeleton-loading .caption-input,
+.main-content.skeleton-loading .cancel-btn,
+.main-content.skeleton-loading .upload-submit-btn {
+  opacity: 0;
+}
+
+/* Skeleton for header */
+.main-content.skeleton-loading .header h1::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.main-content.skeleton-loading .header p::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 400px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+}
+
+/* Skeleton for upload area */
+.main-content.skeleton-loading .upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+}
+
+.main-content.skeleton-loading .upload-area::after {
+  content: '';
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 50%;
+  margin-bottom: 18px;
+}
+
+.main-content.skeleton-loading .upload-text::before {
+  content: '';
+  width: 200px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.main-content.skeleton-loading .upload-subtext::before {
+  content: '';
+  width: 300px;
+  height: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.main-content.skeleton-loading .select-video-btn::before {
+  content: '';
+  width: 140px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 8px;
+}
+
+/* Skeleton for caption section */
+.main-content.skeleton-loading .caption-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+}
+
+.main-content.skeleton-loading .caption-section h3::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 80px;
+  height: 18px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.main-content.skeleton-loading .caption-input::before {
+  content: '';
+  position: absolute;
+  top: 60px;
+  left: 24px;
+  width: calc(100% - 48px);
+  height: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+/* Skeleton for action buttons */
+.main-content.skeleton-loading .upload-actions::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.main-content.skeleton-loading .cancel-btn::before {
+  content: '';
+  width: 80px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+.main-content.skeleton-loading .upload-submit-btn::before {
+  content: '';
+  width: 120px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
 /* ==== SIDEBAR ==== */
 .sidebar { width:240px; background:#fff; border-right:1px solid #eee; display:flex; flex-direction:column; padding:24px 0; }
 .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:22px; color:#161823; padding:0 20px 24px; }
@@ -23,11 +265,12 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 .menu-item:hover, .menu-item.active { background:#f7f7f7; color:#fe2c55; font-weight:600; }
 
 /* ==== MAIN ==== */
-.main-content { flex:1; padding:40px; overflow-y:auto; }
+.main-content { flex:1; padding:40px; overflow-y:auto; transition: opacity 0.3s ease; }
+.main-content.skeleton-loading { opacity: 0.9; }
 .header h1 { font-size:28px; font-weight:700; margin-bottom:8px; }
 .header p { color:#8a8b8f; font-size:16px; }
 
-.upload-area { background:#fff; border:2px dashed #e5e5e5; border-radius:10px; text-align:center; padding:80px 40px; margin-top:30px; transition:0.3s border-color; }
+.upload-area { background:#fff; border:2px dashed #e5e5e5; border-radius:10px; text-align:center; padding:80px 40px; margin-top:30px; transition:0.3s border-color; position: relative; }
 .upload-area.drag-over { border-color:#fe2c55; background:#fff5f7; }
 
 .upload-icon { font-size:56px; color:#fe2c55; margin-bottom:18px; }
@@ -41,13 +284,13 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 .video-preview { display:none; max-width:380px; margin:30px auto 0; border-radius:8px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
 .video-preview video { width:100%; display:block; }
 
-.caption-section { background:#fff; border-radius:8px; margin-top:40px; padding:24px; }
+.caption-section { background:#fff; border-radius:8px; margin-top:40px; padding:24px; position: relative; }
 .caption-section h3 { font-size:18px; margin-bottom:12px; font-weight:600; }
 .caption-input { width:100%; border:1px solid #ddd; border-radius:6px; padding:14px; font-size:16px; resize:vertical; min-height:80px; }
 .caption-input:focus { outline:none; border-color:#fe2c55; }
 
 /* ==== ACTIONS ==== */
-.upload-actions { display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid #eee; padding-top:20px; }
+.upload-actions { display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid #eee; padding-top:20px; position: relative; }
 .cancel-btn { background:#f8f8f8; color:#161823; border:1px solid #ddd; border-radius:6px; padding:12px 24px; font-weight:600; cursor:pointer; transition:background 0.2s; }
 .cancel-btn:hover { background:#eee; }
 .upload-submit-btn { background:#fe2c55; color:#fff; border:none; border-radius:6px; padding:12px 24px; font-weight:600; cursor:pointer; transition:background 0.2s; }
@@ -71,7 +314,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 <body>
 <div class="container">
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="logo">
       <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar">
       SnipSnap Studio
@@ -81,7 +324,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
   </div>
 
   <!-- Main -->
-  <div class="main-content">
+  <div class="main-content" id="mainContent">
     <div class="header">
       <h1>Upload Your Video</h1>
       <p>Share your moments with the SnipSnap community</p>
@@ -133,6 +376,73 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 </div>
 
 <script>
+// ===== SKELETON LOADER FUNCTIONS =====
+let loaderTimeout;
+
+// Show skeleton loading
+function showSkeleton() {
+  const mainContent = document.getElementById('mainContent');
+  const sidebar = document.getElementById('sidebar');
+  
+  if (mainContent) {
+    mainContent.classList.add('skeleton-loading');
+  }
+  if (sidebar) {
+    sidebar.classList.add('skeleton-loading');
+  }
+}
+
+// Hide skeleton loading
+function hideSkeleton() {
+  const mainContent = document.getElementById('mainContent');
+  const sidebar = document.getElementById('sidebar');
+  
+  if (mainContent) {
+    mainContent.classList.remove('skeleton-loading');
+  }
+  if (sidebar) {
+    sidebar.classList.remove('skeleton-loading');
+  }
+}
+
+// Initialize skeleton loader on page load
+function initSkeletonLoader() {
+  // Show skeleton immediately
+  showSkeleton();
+  
+  // Hide loader after content is loaded (simulate loading time)
+  setTimeout(() => {
+    hideSkeleton();
+  }, 2000); // 2 seconds loading time
+}
+
+// Enhanced navigation with skeleton loaders
+function initNavigation() {
+  const sidebarLinks = document.querySelectorAll('.menu-item');
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+        return;
+      }
+      
+      // Show skeleton for navigation
+      showSkeleton();
+      
+      // Set timeout to hide loader (in case navigation is slow)
+      loaderTimeout = setTimeout(() => {
+        hideSkeleton();
+      }, 3000);
+    });
+  });
+}
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  initSkeletonLoader();
+  initNavigation();
+});
+
+// ===== UPLOAD FUNCTIONALITY =====
 const fileInput = document.getElementById('videoFile');
 const selectBtn = document.getElementById('selectVideoBtn');
 const previewBox = document.getElementById('videoPreview');

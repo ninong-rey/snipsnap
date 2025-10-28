@@ -21,6 +21,284 @@
       overflow: hidden;
     }
 
+    /* ==== SKELETON LOADER BASE STYLES ==== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmerSlide 2s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes shimmerSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* ==== SIDEBAR SKELETON ==== */
+    .sidebar.skeleton-loading .logo,
+    .sidebar.skeleton-loading .search-box,
+    .sidebar.skeleton-loading .menu a,
+    .sidebar.skeleton-loading form button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before,
+    .sidebar.skeleton-loading form button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > *,
+    .sidebar.skeleton-loading form button > * {
+      opacity: 0;
+    }
+
+    /* ==== CONTENT SKELETON STATES ==== */
+    .friends-container.skeleton-loading .friends-title,
+    .friends-container.skeleton-loading .friends-tabs,
+    .friends-container.skeleton-loading .friend-item,
+    .friends-container.skeleton-loading .section-title,
+    .friends-container.skeleton-loading .active-friend,
+    .friends-container.skeleton-loading .empty-state > * {
+      position: relative;
+    }
+
+    .friends-container.skeleton-loading .friends-title::before,
+    .friends-container.skeleton-loading .section-title::before,
+    .friends-container.skeleton-loading .empty-state h3::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Hide actual content during skeleton loading */
+    .friends-container.skeleton-loading .friends-title,
+    .friends-container.skeleton-loading .tab,
+    .friends-container.skeleton-loading .friend-avatar,
+    .friends-container.skeleton-loading .friend-name,
+    .friends-container.skeleton-loading .friend-username,
+    .friends-container.skeleton-loading .friend-bio,
+    .friends-container.skeleton-loading .friend-stats,
+    .friends-container.skeleton-loading .btn,
+    .friends-container.skeleton-loading .active-avatar,
+    .friends-container.skeleton-loading .active-name,
+    .friends-container.skeleton-loading .empty-state i,
+    .friends-container.skeleton-loading .empty-state h3,
+    .friends-container.skeleton-loading .empty-state p,
+    .friends-container.skeleton-loading .find-friends-btn {
+      opacity: 0;
+    }
+
+    /* Skeleton for tabs */
+    .friends-container.skeleton-loading .friends-tabs::before {
+      content: '';
+      display: flex;
+      gap: 20px;
+    }
+
+    .friends-container.skeleton-loading .friends-tabs::before .skeleton-tab {
+      width: 100px;
+      height: 40px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for friend items */
+    .friends-container.skeleton-loading .friend-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+
+    .friends-container.skeleton-loading .friend-item::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      transform: translateY(-50%);
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .friends-container.skeleton-loading .friend-info::before {
+      content: '';
+      position: absolute;
+      left: 84px;
+      top: 20px;
+      width: 120px;
+      height: 16px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .friends-container.skeleton-loading .friend-info::after {
+      content: '';
+      position: absolute;
+      left: 84px;
+      top: 45px;
+      width: 80px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .friends-container.skeleton-loading .friend-actions::before {
+      content: '';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 32px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+    }
+
+    /* Skeleton for active friends */
+    .friends-container.skeleton-loading .active-friend::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .friends-container.skeleton-loading .active-friend::after {
+      content: '';
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .friends-container.skeleton-loading .active-friend .active-name::before {
+      content: '';
+      width: 50px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for empty state */
+    .friends-container.skeleton-loading .empty-state::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .friends-container.skeleton-loading .empty-state::after {
+      content: '';
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+      margin-bottom: 16px;
+    }
+
+    .friends-container.skeleton-loading .empty-state h3::before {
+      content: '';
+      width: 200px;
+      height: 18px;
+      margin-bottom: 8px;
+    }
+
+    .friends-container.skeleton-loading .empty-state p::before {
+      content: '';
+      width: 300px;
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .friends-container.skeleton-loading .empty-state .find-friends-btn::before {
+      content: '';
+      width: 120px;
+      height: 24px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
     /* Sidebar - Same as your other pages */
     .sidebar {
       position: fixed;
@@ -99,6 +377,11 @@
       height: 100vh;
       overflow-y: auto;
       background: #fff;
+      transition: opacity 0.3s ease;
+    }
+
+    .friends-container.skeleton-loading {
+      opacity: 0.9;
     }
 
     .friends-header {
@@ -157,6 +440,7 @@
       border-radius: 12px;
       transition: background 0.2s;
       cursor: pointer;
+      position: relative;
     }
 
     .friend-item:hover {
@@ -189,6 +473,7 @@
 
     .friend-info {
       flex: 1;
+      position: relative;
     }
 
     .friend-main {
@@ -225,6 +510,7 @@
     .friend-actions {
       display: flex;
       gap: 8px;
+      position: relative;
     }
 
     .btn {
@@ -262,6 +548,7 @@
     .active-now {
       padding: 16px;
       border-bottom: 1px solid #eee;
+      position: relative;
     }
 
     .section-title {
@@ -290,6 +577,7 @@
       align-items: center;
       gap: 8px;
       cursor: pointer;
+      position: relative;
     }
 
     .active-avatar {
@@ -315,6 +603,7 @@
     .empty-state {
       text-align: center;
       padding: 80px 20px;
+      position: relative;
     }
 
     .empty-state i {
@@ -342,23 +631,24 @@
 
     /* Smaller Find Friends Button */
     .find-friends-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;      /* ← Less padding */
-    font-size: 12px;        /* ← Smaller text */
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;               /* ← Less space between icon and text */
-    transition: all 0.2s;
-}
-.find-friends-btn i {
-    font-size: 20px;        /* Small icon */
-}
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .find-friends-btn i {
+      font-size: 20px;
+    }
 
     .find-friends-btn:hover {
       background: #e00040;
@@ -379,7 +669,7 @@
 </head>
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
         <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
@@ -412,7 +702,7 @@
   </aside>
 
   <!-- Friends Content -->
-  <div class="friends-container">
+  <div class="friends-container" id="friendsContainer">
     @if($friends->isEmpty())
       <!-- Empty State when no friends -->
       <div class="empty-state">
@@ -503,6 +793,72 @@
   </div>
 
   <script>
+    // ===== SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
+
+    // Show skeleton loading
+    function showSkeleton() {
+      const friendsContainer = document.getElementById('friendsContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (friendsContainer) {
+        friendsContainer.classList.add('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.add('skeleton-loading');
+      }
+    }
+
+    // Hide skeleton loading
+    function hideSkeleton() {
+      const friendsContainer = document.getElementById('friendsContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (friendsContainer) {
+        friendsContainer.classList.remove('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.remove('skeleton-loading');
+      }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+      // Show skeleton immediately
+      showSkeleton();
+      
+      // Hide loader after content is loaded (simulate loading time)
+      setTimeout(() => {
+        hideSkeleton();
+      }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initNavigation() {
+      const sidebarLinks = document.querySelectorAll('.menu a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+            return;
+          }
+          
+          // Show skeleton for navigation
+          showSkeleton();
+          
+          // Set timeout to hide loader (in case navigation is slow)
+          loaderTimeout = setTimeout(() => {
+            hideSkeleton();
+          }, 3000);
+        });
+      });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      initSkeletonLoader();
+      initNavigation();
+    });
+
     // Function to navigate to user profile
     function goToUserProfile(userIdentifier) {
       if (userIdentifier && isNaN(userIdentifier)) {

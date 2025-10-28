@@ -22,6 +22,283 @@
       overflow: hidden;
     }
 
+    /* ==== SKELETON LOADER BASE STYLES ==== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmerSlide 2s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes shimmerSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* ==== SIDEBAR SKELETON ==== */
+    .sidebar.skeleton-loading .logo,
+    .sidebar.skeleton-loading .search-box,
+    .sidebar.skeleton-loading .menu a,
+    .sidebar.skeleton-loading form button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before,
+    .sidebar.skeleton-loading form button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > *,
+    .sidebar.skeleton-loading form button > * {
+      opacity: 0;
+    }
+
+    /* ==== NOTIFICATIONS CONTENT SKELETON ==== */
+    .notifications-container.skeleton-loading .notifications-title,
+    .notifications-container.skeleton-loading .mark-all-read,
+    .notifications-container.skeleton-loading .tab,
+    .notifications-container.skeleton-loading .notification-item,
+    .notifications-container.skeleton-loading .empty-state > * {
+      position: relative;
+    }
+
+    /* Hide actual content during skeleton loading */
+    .notifications-container.skeleton-loading .notifications-title,
+    .notifications-container.skeleton-loading .mark-all-read,
+    .notifications-container.skeleton-loading .tab,
+    .notifications-container.skeleton-loading .notification-icon,
+    .notifications-container.skeleton-loading .notification-avatar,
+    .notifications-container.skeleton-loading .notification-text,
+    .notifications-container.skeleton-loading .notification-time,
+    .notifications-container.skeleton-loading .notification-preview,
+    .notifications-container.skeleton-loading .notification-actions,
+    .notifications-container.skeleton-loading .notification-media,
+    .notifications-container.skeleton-loading .empty-state i,
+    .notifications-container.skeleton-loading .empty-state h3,
+    .notifications-container.skeleton-loading .empty-state p {
+      opacity: 0;
+    }
+
+    /* Skeleton for header */
+    .notifications-container.skeleton-loading .notifications-title::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 28px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .notifications-container.skeleton-loading .mark-all-read::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 120px;
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for tabs */
+    .notifications-container.skeleton-loading .notifications-tabs::before {
+      content: '';
+      display: flex;
+      gap: 20px;
+    }
+
+    .notifications-container.skeleton-loading .tab::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for notification items */
+    .notifications-container.skeleton-loading .notification-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px;
+    }
+
+    .notifications-container.skeleton-loading .notification-item::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .notifications-container.skeleton-loading .notification-avatar::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 52px;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .notifications-container.skeleton-loading .notification-content::before {
+      content: '';
+      position: absolute;
+      left: 108px;
+      top: 20px;
+      width: 60%;
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .notifications-container.skeleton-loading .notification-content::after {
+      content: '';
+      position: absolute;
+      left: 108px;
+      top: 42px;
+      width: 100px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .notifications-container.skeleton-loading .notification-actions::before {
+      content: '';
+      position: absolute;
+      left: 108px;
+      top: 62px;
+      width: 80px;
+      height: 24px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .notifications-container.skeleton-loading .notification-media::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      width: 50px;
+      height: 70px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for empty state */
+    .notifications-container.skeleton-loading .empty-state::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .notifications-container.skeleton-loading .empty-state::after {
+      content: '';
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+      margin-bottom: 16px;
+    }
+
+    .notifications-container.skeleton-loading .empty-state h3::before {
+      content: '';
+      width: 200px;
+      height: 18px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .notifications-container.skeleton-loading .empty-state p::before {
+      content: '';
+      width: 300px;
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
     /* Sidebar - Same as your other pages */
     .sidebar {
       position: fixed;
@@ -109,6 +386,11 @@
       height: 100vh;
       overflow-y: auto;
       background: #fff;
+      transition: opacity 0.3s ease;
+    }
+
+    .notifications-container.skeleton-loading {
+      opacity: 0.9;
     }
 
     .notifications-header {
@@ -179,6 +461,7 @@
       transition: background 0.2s;
       cursor: pointer;
       gap: 12px;
+      position: relative;
     }
 
     .notification-item:hover {
@@ -204,6 +487,7 @@
     .notification-content {
       flex: 1;
       min-width: 0;
+      position: relative;
     }
 
     .notification-text {
@@ -281,6 +565,7 @@
       display: flex;
       gap: 8px;
       margin-top: 8px;
+      position: relative;
     }
 
     .btn-small {
@@ -316,6 +601,7 @@
     .empty-state {
       text-align: center;
       padding: 80px 20px;
+      position: relative;
     }
 
     .empty-state i {
@@ -361,12 +647,13 @@
       font-size: 14px;
       font-weight: 600;
       margin-left: auto;
+      position: relative;
     }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
         <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
@@ -403,7 +690,7 @@
   </aside>
 
   <!-- Notifications Content -->
-  <div class="notifications-container">
+  <div class="notifications-container" id="notificationsContainer">
     <div class="notifications-header">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h1 class="notifications-title">Notifications</h1>
@@ -519,6 +806,72 @@
   </div>
 
   <script>
+    // ===== SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
+
+    // Show skeleton loading
+    function showSkeleton() {
+      const notificationsContainer = document.getElementById('notificationsContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (notificationsContainer) {
+        notificationsContainer.classList.add('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.add('skeleton-loading');
+      }
+    }
+
+    // Hide skeleton loading
+    function hideSkeleton() {
+      const notificationsContainer = document.getElementById('notificationsContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (notificationsContainer) {
+        notificationsContainer.classList.remove('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.remove('skeleton-loading');
+      }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+      // Show skeleton immediately
+      showSkeleton();
+      
+      // Hide loader after content is loaded (simulate loading time)
+      setTimeout(() => {
+        hideSkeleton();
+      }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initNavigation() {
+      const sidebarLinks = document.querySelectorAll('.menu a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+            return;
+          }
+          
+          // Show skeleton for navigation
+          showSkeleton();
+          
+          // Set timeout to hide loader (in case navigation is slow)
+          loaderTimeout = setTimeout(() => {
+            hideSkeleton();
+          }, 3000);
+        });
+      });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      initSkeletonLoader();
+      initNavigation();
+    });
+
     // Tab functionality
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', function() {
@@ -565,61 +918,60 @@
     }
 
     function updateUnreadCounts() {
-  fetch(`/notifications/unread-counts`)
-    .then(response => response.json())
-    .then(data => {
-      // Sidebar dot
-      const sidebarBadge = document.querySelector('.menu a.active .notification-dot');
-      if (data.unread > 0) {
-        if (sidebarBadge) {
-          sidebarBadge.textContent = data.unread;
-        } else {
-          const menuItem = document.querySelector('.menu a.active');
-          const badge = document.createElement('span');
-          badge.className = 'notification-dot';
-          badge.textContent = data.unread;
-          menuItem.appendChild(badge);
-        }
-      } else if (sidebarBadge) {
-        sidebarBadge.remove();
-      }
+      fetch(`/notifications/unread-counts`)
+        .then(response => response.json())
+        .then(data => {
+          // Sidebar dot
+          const sidebarBadge = document.querySelector('.menu a.active .notification-dot');
+          if (data.unread > 0) {
+            if (sidebarBadge) {
+              sidebarBadge.textContent = data.unread;
+            } else {
+              const menuItem = document.querySelector('.menu a.active');
+              const badge = document.createElement('span');
+              badge.className = 'notification-dot';
+              badge.textContent = data.unread;
+              menuItem.appendChild(badge);
+            }
+          } else if (sidebarBadge) {
+            sidebarBadge.remove();
+          }
 
-      // Tabs badges
-      const likesTab = document.querySelector('.tab[data-tab="likes"] .tab-badge');
-      if (data.likes > 0) {
-        if (likesTab) likesTab.textContent = data.likes;
-        else {
-          const badge = document.createElement('span');
-          badge.className = 'tab-badge';
-          badge.textContent = data.likes;
-          document.querySelector('.tab[data-tab="likes"]').appendChild(badge);
-        }
-      } else if (likesTab) likesTab.remove();
+          // Tabs badges
+          const likesTab = document.querySelector('.tab[data-tab="likes"] .tab-badge');
+          if (data.likes > 0) {
+            if (likesTab) likesTab.textContent = data.likes;
+            else {
+              const badge = document.createElement('span');
+              badge.className = 'tab-badge';
+              badge.textContent = data.likes;
+              document.querySelector('.tab[data-tab="likes"]').appendChild(badge);
+            }
+          } else if (likesTab) likesTab.remove();
 
-      const commentsTab = document.querySelector('.tab[data-tab="comments"] .tab-badge');
-      if (data.comments > 0) {
-        if (commentsTab) commentsTab.textContent = data.comments;
-        else {
-          const badge = document.createElement('span');
-          badge.className = 'tab-badge';
-          badge.textContent = data.comments;
-          document.querySelector('.tab[data-tab="comments"]').appendChild(badge);
-        }
-      } else if (commentsTab) commentsTab.remove();
+          const commentsTab = document.querySelector('.tab[data-tab="comments"] .tab-badge');
+          if (data.comments > 0) {
+            if (commentsTab) commentsTab.textContent = data.comments;
+            else {
+              const badge = document.createElement('span');
+              badge.className = 'tab-badge';
+              badge.textContent = data.comments;
+              document.querySelector('.tab[data-tab="comments"]').appendChild(badge);
+            }
+          } else if (commentsTab) commentsTab.remove();
 
-      const followsTab = document.querySelector('.tab[data-tab="follows"] .tab-badge');
-      if (data.follows > 0) {
-        if (followsTab) followsTab.textContent = data.follows;
-        else {
-          const badge = document.createElement('span');
-          badge.className = 'tab-badge';
-          badge.textContent = data.follows;
-          document.querySelector('.tab[data-tab="follows"]').appendChild(badge);
-        }
-      } else if (followsTab) followsTab.remove();
-    });
-}
-
+          const followsTab = document.querySelector('.tab[data-tab="follows"] .tab-badge');
+          if (data.follows > 0) {
+            if (followsTab) followsTab.textContent = data.follows;
+            else {
+              const badge = document.createElement('span');
+              badge.className = 'tab-badge';
+              badge.textContent = data.follows;
+              document.querySelector('.tab[data-tab="follows"]').appendChild(badge);
+            }
+          } else if (followsTab) followsTab.remove();
+        });
+    }
 
     function followUser(userId, button) {
       fetch(`/follow/${userId}`, {
@@ -655,92 +1007,91 @@
 
     // Real-time updates (optional)
     function setupRealTimeUpdates() {
-  setInterval(() => {
-    // Fetch new notifications
-    const tabType = document.querySelector('.tab.active').dataset.tab || 'all';
-    fetch(`/notifications/fetch-latest?tab=${tabType}`)
-      .then(response => response.json())
-      .then(data => {
-        renderNotifications(data.notifications);
-        updateUnreadCounts(); // update badges
-      });
-  }, 15000); // every 15 seconds
-}
-
+      setInterval(() => {
+        // Fetch new notifications
+        const tabType = document.querySelector('.tab.active').dataset.tab || 'all';
+        fetch(`/notifications/fetch-latest?tab=${tabType}`)
+          .then(response => response.json())
+          .then(data => {
+            renderNotifications(data.notifications);
+            updateUnreadCounts(); // update badges
+          });
+      }, 15000); // every 15 seconds
+    }
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
       setupRealTimeUpdates();
     });
+
     function renderNotifications(notifications) {
-  const container = document.querySelector('.notifications-list');
-  container.innerHTML = '';
+      const container = document.querySelector('.notifications-list');
+      container.innerHTML = '';
 
-  if (notifications.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <i class="fa-regular fa-bell"></i>
-        <h3>No Notifications Yet</h3>
-        <p>When you get likes, comments, or new followers, they'll appear here.</p>
-      </div>`;
-    return;
-  }
+      if (notifications.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-bell"></i>
+            <h3>No Notifications Yet</h3>
+            <p>When you get likes, comments, or new followers, they'll appear here.</p>
+          </div>`;
+        return;
+      }
 
-  notifications.forEach(notification => {
-    const isUnread = !notification.read ? 'unread' : '';
-    const videoThumbnail = notification.video?.thumbnail_url || notification.video?.url || '';
-    const videoCaption = notification.video?.caption || 'Check out this video';
+      notifications.forEach(notification => {
+        const isUnread = !notification.read ? 'unread' : '';
+        const videoThumbnail = notification.video?.thumbnail_url || notification.video?.url || '';
+        const videoCaption = notification.video?.caption || 'Check out this video';
 
-    const notificationHTML = `
-      <div class="notification-item ${isUnread}" 
-           data-notification-id="${notification.id}"
-           onclick="markAsRead(${notification.id}, this)">
-        <div class="notification-icon icon-${notification.type}">
-          ${
-            notification.type === 'like' ? '<i class="fa-solid fa-heart"></i>' :
-            notification.type === 'comment' ? '<i class="fa-solid fa-comment"></i>' :
-            notification.type === 'follow' ? '<i class="fa-solid fa-user-plus"></i>' :
-            notification.type === 'share' ? '<i class="fa-solid fa-share"></i>' :
-            '<i class="fa-solid fa-bell"></i>'
-          }
-        </div>
+        const notificationHTML = `
+          <div class="notification-item ${isUnread}" 
+               data-notification-id="${notification.id}"
+               onclick="markAsRead(${notification.id}, this)">
+            <div class="notification-icon icon-${notification.type}">
+              ${
+                notification.type === 'like' ? '<i class="fa-solid fa-heart"></i>' :
+                notification.type === 'comment' ? '<i class="fa-solid fa-comment"></i>' :
+                notification.type === 'follow' ? '<i class="fa-solid fa-user-plus"></i>' :
+                notification.type === 'share' ? '<i class="fa-solid fa-share"></i>' :
+                '<i class="fa-solid fa-bell"></i>'
+              }
+            </div>
 
-        <img src="${notification.from_user.avatar ? '/storage/' + notification.from_user.avatar : '/image/default-avatar.png'}"
-             alt="${notification.from_user.name}" class="notification-avatar"
-             onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+            <img src="${notification.from_user.avatar ? '/storage/' + notification.from_user.avatar : '/image/default-avatar.png'}"
+                 alt="${notification.from_user.name}" class="notification-avatar"
+                 onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
 
-        <div class="notification-content">
-          <div class="notification-text">
-            <span class="notification-user" onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
-              ${notification.from_user.username || notification.from_user.name}
-            </span> 
-            ${notification.message}
-          </div>
-          <div class="notification-time">${moment(notification.created_at).fromNow()}</div>
-          ${notification.video ? `<div class="notification-preview">${videoCaption}</div>` : ''}
-          <div class="notification-actions">
-            ${
-              notification.type === 'follow' ? `<button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser(${notification.from_user.id}, this);">
-                <i class="fa-solid fa-user-plus"></i> Follow back
-              </button>` :
-              (notification.type === 'comment' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
-                <i class="fa-solid fa-eye"></i> View video
-              </button>` :
-              (notification.type === 'like' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
-                <i class="fa-solid fa-eye"></i> View video
-              </button>` : '')
-            )
-            }
-          </div>
-        </div>
+            <div class="notification-content">
+              <div class="notification-text">
+                <span class="notification-user" onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+                  ${notification.from_user.username || notification.from_user.name}
+                </span> 
+                ${notification.message}
+              </div>
+              <div class="notification-time">${moment(notification.created_at).fromNow()}</div>
+              ${notification.video ? `<div class="notification-preview">${videoCaption}</div>` : ''}
+              <div class="notification-actions">
+                ${
+                  notification.type === 'follow' ? `<button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser(${notification.from_user.id}, this);">
+                    <i class="fa-solid fa-user-plus"></i> Follow back
+                  </button>` :
+                  (notification.type === 'comment' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                    <i class="fa-solid fa-eye"></i> View video
+                  </button>` :
+                  (notification.type === 'like' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                    <i class="fa-solid fa-eye"></i> View video
+                  </button>` : '')
+                )
+                }
+              </div>
+            </div>
 
-        ${videoThumbnail ? `<img src="/storage/${videoThumbnail}" class="notification-media" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">` : ''}
-      </div>`;
-    
-    container.insertAdjacentHTML('beforeend', notificationHTML);
-  });
-}
-
+            ${videoThumbnail ? `<img src="/storage/${videoThumbnail}" class="notification-media" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">` : ''}
+          </div>`;
+        
+        container.insertAdjacentHTML('beforeend', notificationHTML);
+      });
+    }
   </script>
 </body>
 </html>

@@ -27,6 +27,323 @@ use Illuminate\Support\Facades\Storage;
       height: 100vh;
     }
 
+    /* ==== SKELETON LOADER BASE STYLES ==== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmerSlide 2s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes shimmerSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* ==== SIDEBAR SKELETON ==== */
+    .sidebar.skeleton-loading .logo,
+    .sidebar.skeleton-loading .search-box,
+    .sidebar.skeleton-loading .menu a,
+    .sidebar.skeleton-loading form button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before,
+    .sidebar.skeleton-loading form button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > *,
+    .sidebar.skeleton-loading form button > * {
+      opacity: 0;
+    }
+
+    /* ==== MESSAGES CONTENT SKELETON ==== */
+    .messages-container.skeleton-loading .messages-title,
+    .messages-container.skeleton-loading .new-chat-btn,
+    .messages-container.skeleton-loading .conversations-search input,
+    .messages-container.skeleton-loading .conversation-item,
+    .messages-container.skeleton-loading .chat-header,
+    .messages-container.skeleton-loading .message,
+    .messages-container.skeleton-loading .chat-input,
+    .messages-container.skeleton-loading .send-btn {
+      position: relative;
+    }
+
+    /* Hide actual content during skeleton loading */
+    .messages-container.skeleton-loading .messages-title,
+    .messages-container.skeleton-loading .new-chat-btn,
+    .messages-container.skeleton-loading .conversations-search input,
+    .messages-container.skeleton-loading .conversation-avatar,
+    .messages-container.skeleton-loading .conversation-name,
+    .messages-container.skeleton-loading .conversation-time,
+    .messages-container.skeleton-loading .conversation-preview,
+    .messages-container.skeleton-loading .unread-badge,
+    .messages-container.skeleton-loading .chat-user-avatar,
+    .messages-container.skeleton-loading .chat-user-name,
+    .messages-container.skeleton-loading .chat-user-status,
+    .messages-container.skeleton-loading .chat-actions button,
+    .messages-container.skeleton-loading .message-text,
+    .messages-container.skeleton-loading .message-time,
+    .messages-container.skeleton-loading .chat-input,
+    .messages-container.skeleton-loading .send-btn {
+      opacity: 0;
+    }
+
+    /* Skeleton for messages header */
+    .messages-container.skeleton-loading .messages-title::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 28px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .messages-container.skeleton-loading .new-chat-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    /* Skeleton for search input */
+    .messages-container.skeleton-loading .conversations-search input::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 20px;
+    }
+
+    /* Skeleton for conversation items */
+    .messages-container.skeleton-loading .conversation-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+    }
+
+    .messages-container.skeleton-loading .conversation-item::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .messages-container.skeleton-loading .conversation-name::before {
+      content: '';
+      position: absolute;
+      left: 82px;
+      top: 20px;
+      width: 120px;
+      height: 16px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .messages-container.skeleton-loading .conversation-preview::before {
+      content: '';
+      position: absolute;
+      left: 82px;
+      top: 42px;
+      width: 180px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for chat header */
+    .messages-container.skeleton-loading .chat-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 24px;
+    }
+
+    .messages-container.skeleton-loading .chat-user-avatar::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .messages-container.skeleton-loading .chat-user-name::before {
+      content: '';
+      position: absolute;
+      left: 80px;
+      top: 20px;
+      width: 150px;
+      height: 18px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    .messages-container.skeleton-loading .chat-user-status::before {
+      content: '';
+      position: absolute;
+      left: 80px;
+      top: 42px;
+      width: 80px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* Skeleton for chat actions */
+    .messages-container.skeleton-loading .chat-actions::before {
+      content: '';
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 8px;
+    }
+
+    .messages-container.skeleton-loading .chat-actions button::before {
+      content: '';
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    /* Skeleton for messages */
+    .messages-container.skeleton-loading .message::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 12px 16px;
+      border-radius: 18px;
+    }
+
+    .messages-container.skeleton-loading .message.sent::before {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+    }
+
+    .messages-container.skeleton-loading .message.received::before {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+    }
+
+    /* Skeleton for chat input */
+    .messages-container.skeleton-loading .chat-input::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 24px;
+    }
+
+    .messages-container.skeleton-loading .send-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
     /* Sidebar */
     .sidebar {
       position: fixed;
@@ -64,7 +381,13 @@ use Illuminate\Support\Facades\Storage;
       height: 100vh;
       display: flex;
       background: #fff;
+      transition: opacity 0.3s ease;
     }
+
+    .messages-container.skeleton-loading {
+      opacity: 0.9;
+    }
+
     .conversations-sidebar {
       width: 380px; height: 100vh;
       border-right: 1px solid var(--border);
@@ -91,6 +414,7 @@ use Illuminate\Support\Facades\Storage;
       display: flex; align-items: center;
       padding: 16px 20px; border-bottom: 1px solid var(--border);
       cursor: pointer; transition: background 0.2s; gap: 12px;
+      position: relative;
     }
     .conversation-item:hover { background: var(--light-bg); }
     .conversation-item.active { background: #fff5f7; border-right: 3px solid var(--accent); }
@@ -114,6 +438,7 @@ use Illuminate\Support\Facades\Storage;
     .chat-header {
       padding: 16px 24px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; gap: 12px;
+      position: relative;
     }
     .chat-user-avatar {
       width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
@@ -124,6 +449,7 @@ use Illuminate\Support\Facades\Storage;
     .chat-actions button {
       background: none; border: none; color: var(--muted); cursor: pointer;
       font-size: 18px; padding: 8px; border-radius: 50%; transition: 0.2s;
+      position: relative;
     }
     .chat-actions button:hover { background: var(--light-bg); color: var(--accent); }
 
@@ -135,6 +461,7 @@ use Illuminate\Support\Facades\Storage;
     .message {
       max-width: 70%; padding: 12px 16px; border-radius: 18px;
       word-wrap: break-word;
+      position: relative;
     }
     .message.sent { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
     .message.received { align-self: flex-start; background: white; color: var(--text-color); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
@@ -149,11 +476,13 @@ use Illuminate\Support\Facades\Storage;
       flex: 1; padding: 12px 16px; border: 1px solid var(--border);
       border-radius: 24px; font-size: 14px; outline: none; resize: none;
       min-height: 44px; max-height: 120px;
+      position: relative;
     }
     .send-btn {
       background: var(--accent); color: white; border: none;
       border-radius: 50%; width: 44px; height: 44px; font-size: 18px;
       cursor: pointer;
+      position: relative;
     }
     /* Call Options Dropdown */
 .call-options-dropdown {
@@ -333,7 +662,7 @@ use Illuminate\Support\Facades\Storage;
 <body>
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
         <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap"> SnipSnap
@@ -365,7 +694,7 @@ use Illuminate\Support\Facades\Storage;
   </aside>
 
   <!-- Messages Container -->
-  <div class="messages-container">
+  <div class="messages-container" id="messagesContainer">
 
     <!-- Conversations Sidebar -->
     <div class="conversations-sidebar">
@@ -530,6 +859,72 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
   <script>
+    // ===== SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
+
+    // Show skeleton loading
+    function showSkeleton() {
+      const messagesContainer = document.getElementById('messagesContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (messagesContainer) {
+        messagesContainer.classList.add('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.add('skeleton-loading');
+      }
+    }
+
+    // Hide skeleton loading
+    function hideSkeleton() {
+      const messagesContainer = document.getElementById('messagesContainer');
+      const sidebar = document.getElementById('sidebar');
+      
+      if (messagesContainer) {
+        messagesContainer.classList.remove('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.remove('skeleton-loading');
+      }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+      // Show skeleton immediately
+      showSkeleton();
+      
+      // Hide loader after content is loaded (simulate loading time)
+      setTimeout(() => {
+        hideSkeleton();
+      }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initNavigation() {
+      const sidebarLinks = document.querySelectorAll('.menu a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+            return;
+          }
+          
+          // Show skeleton for navigation
+          showSkeleton();
+          
+          // Set timeout to hide loader (in case navigation is slow)
+          loaderTimeout = setTimeout(() => {
+            hideSkeleton();
+          }, 3000);
+        });
+      });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      initSkeletonLoader();
+      initNavigation();
+    });
+
     let currentConversationId = {{ $currentConversationUser->id ?? 0 }};
     
     function autoResize(t) {

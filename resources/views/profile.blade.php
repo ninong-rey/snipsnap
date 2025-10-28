@@ -27,6 +27,225 @@
             overflow-x: hidden;
         }
 
+        /* ==== SKELETON LOADER BASE STYLES ==== */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmerSlide 2s infinite ease-in-out;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes shimmerSlide {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* ==== SIDEBAR SKELETON ==== */
+        .sidebar.skeleton-loading .logo,
+        .sidebar.skeleton-loading .search-box,
+        .sidebar.skeleton-loading .menu a,
+        .sidebar.skeleton-loading form button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar.skeleton-loading .logo::before,
+        .sidebar.skeleton-loading .search-box::before,
+        .sidebar.skeleton-loading .menu a::before,
+        .sidebar.skeleton-loading form button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 8px;
+            z-index: 1;
+        }
+
+        .sidebar.skeleton-loading .logo > *,
+        .sidebar.skeleton-loading .search-box > *,
+        .sidebar.skeleton-loading .menu a > *,
+        .sidebar.skeleton-loading form button > * {
+            opacity: 0;
+        }
+
+        /* ==== PROFILE CONTENT SKELETON ==== */
+        .profile-container.skeleton-loading .profile-avatar,
+        .profile-container.skeleton-loading .username,
+        .profile-container.skeleton-loading .name,
+        .profile-container.skeleton-loading .stat-value,
+        .profile-container.skeleton-loading .stat-label,
+        .profile-container.skeleton-loading .profile-bio,
+        .profile-container.skeleton-loading .btn,
+        .profile-container.skeleton-loading .tab-item,
+        .profile-container.skeleton-loading .video-preview {
+            position: relative;
+        }
+
+        /* Hide actual content during skeleton loading */
+        .profile-container.skeleton-loading .profile-avatar,
+        .profile-container.skeleton-loading .username,
+        .profile-container.skeleton-loading .name,
+        .profile-container.skeleton-loading .stat-value,
+        .profile-container.skeleton-loading .stat-label,
+        .profile-container.skeleton-loading .profile-bio,
+        .profile-container.skeleton-loading .btn,
+        .profile-container.skeleton-loading .tab-item,
+        .profile-container.skeleton-loading .video-preview video,
+        .profile-container.skeleton-loading .video-stats,
+        .profile-container.skeleton-loading .video-overlay {
+            opacity: 0;
+        }
+
+        /* Skeleton for profile header */
+        .profile-container.skeleton-loading .profile-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 50%;
+        }
+
+        .profile-container.skeleton-loading .username::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 32px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .profile-container.skeleton-loading .name::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 0;
+            width: 150px;
+            height: 18px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        /* Skeleton for stats */
+        .profile-container.skeleton-loading .stat-value::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 20px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+        }
+
+        .profile-container.skeleton-loading .stat-label::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 60px;
+            height: 14px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+        }
+
+        /* Skeleton for bio */
+        .profile-container.skeleton-loading .profile-bio::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        /* Skeleton for buttons */
+        .profile-container.skeleton-loading .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 8px;
+        }
+
+        /* Skeleton for tabs */
+        .profile-container.skeleton-loading .tab-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 4px;
+        }
+
+        /* Skeleton for video grid */
+        .profile-container.skeleton-loading .video-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite ease-in-out;
+            border-radius: 8px;
+        }
+
         /* Sidebar */
         .sidebar {
             position: fixed;
@@ -103,6 +322,11 @@
             width: calc(100% - 260px);
             max-width: 800px;
             padding: 40px 30px;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-container.skeleton-loading {
+            opacity: 0.9;
         }
 
         .profile-header {
@@ -119,6 +343,7 @@
             border-radius: 50%;
             object-fit: cover;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
         .profile-info {
             flex-grow: 1;
@@ -127,11 +352,13 @@
             font-size: 32px;
             font-weight: 700;
             margin: 0 0 5px 0;
+            position: relative;
         }
         .name {
             font-size: 18px;
             color: var(--muted);
             margin-bottom: 10px;
+            position: relative;
         }
         .stats {
             display: flex;
@@ -143,20 +370,24 @@
             flex-direction: column;
             align-items: center;
             font-size: 16px;
+            position: relative;
         }
         .stat-value {
             font-weight: 700;
+            position: relative;
         }
         .stat-label {
             color: var(--muted);
             font-weight: 400;
             font-size: 14px;
+            position: relative;
         }
         .profile-bio {
             margin-top: 15px;
             font-size: 16px;
             color: var(--text);
             line-height: 1.4;
+            position: relative;
         }
         .profile-actions {
             display: flex;
@@ -174,6 +405,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            position: relative;
         }
         .btn-primary {
             background: var(--accent);
@@ -207,6 +439,7 @@
             cursor: pointer;
             border-bottom: 2px solid transparent;
             transition: all 0.2s;
+            position: relative;
         }
         .tab-item.active {
             color: var(--text);
@@ -458,7 +691,7 @@
 <body>
 
 <!-- Sidebar -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div>
         <div class="logo">
             <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
@@ -491,7 +724,7 @@
 </aside>
 
 <!-- Main Content -->
-<div class="profile-container">
+<div class="profile-container" id="profileContainer">
     <!-- Success Message -->
     @if(session('success'))
         <div class="alert-success">
@@ -660,6 +893,72 @@
 </div>
 
 <script>
+    // ===== SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
+
+    // Show skeleton loading
+    function showSkeleton() {
+        const profileContainer = document.getElementById('profileContainer');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (profileContainer) {
+            profileContainer.classList.add('skeleton-loading');
+        }
+        if (sidebar) {
+            sidebar.classList.add('skeleton-loading');
+        }
+    }
+
+    // Hide skeleton loading
+    function hideSkeleton() {
+        const profileContainer = document.getElementById('profileContainer');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (profileContainer) {
+            profileContainer.classList.remove('skeleton-loading');
+        }
+        if (sidebar) {
+            sidebar.classList.remove('skeleton-loading');
+        }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+        // Show skeleton immediately
+        showSkeleton();
+        
+        // Hide loader after content is loaded (simulate loading time)
+        setTimeout(() => {
+            hideSkeleton();
+        }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initNavigation() {
+        const sidebarLinks = document.querySelectorAll('.menu a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+                    return;
+                }
+                
+                // Show skeleton for navigation
+                showSkeleton();
+                
+                // Set timeout to hide loader (in case navigation is slow)
+                loaderTimeout = setTimeout(() => {
+                    hideSkeleton();
+                }, 3000);
+            });
+        });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initSkeletonLoader();
+        initNavigation();
+    });
+
     // =============================
     // Modal functionality
     // =============================
@@ -894,4 +1193,4 @@
 </script>
 
 </body>
-</html> 
+</html>

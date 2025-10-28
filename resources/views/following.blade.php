@@ -21,6 +21,262 @@
       overflow: hidden;
     }
 
+    /* ==== SKELETON LOADER STYLES ==== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmerSlide 2s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes shimmerSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* ==== SIDEBAR SKELETON LOADER ==== */
+    .sidebar.skeleton-loading {
+      background: #fff;
+    }
+
+    .sidebar.skeleton-loading .logo,
+    .sidebar.skeleton-loading .search-box,
+    .sidebar.skeleton-loading .menu a,
+    .sidebar.skeleton-loading form button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before,
+    .sidebar.skeleton-loading form button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > *,
+    .sidebar.skeleton-loading form button > * {
+      opacity: 0;
+    }
+
+    /* ==== CONTENT SKELETON LOADER ==== */
+    .feed-container.skeleton-loading .video-post {
+      position: relative;
+    }
+
+    .feed-container.skeleton-loading .video-wrapper video,
+    .feed-container.skeleton-loading .actions,
+    .feed-container.skeleton-loading .caption,
+    .feed-container.skeleton-loading .video-controls,
+    .feed-container.skeleton-loading .play-pause-animation,
+    .feed-container.skeleton-loading .overlay {
+      opacity: 0;
+    }
+
+    /* Skeleton video placeholder */
+    .feed-container.skeleton-loading .video-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 16px;
+      z-index: 2;
+    }
+
+    /* Skeleton actions placeholder */
+    .feed-container.skeleton-loading .actions::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 48px;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 24px;
+    }
+
+    /* Skeleton action buttons */
+    .feed-container.skeleton-loading .action-btn {
+      position: relative;
+    }
+
+    .feed-container.skeleton-loading .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .feed-container.skeleton-loading .action-count::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+
+    /* Skeleton caption */
+    .feed-container.skeleton-loading .caption::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 70%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    /* ==== EMPTY STATE SKELETON ==== */
+    .feed-container.skeleton-loading .empty-state {
+      position: relative;
+    }
+
+    .feed-container.skeleton-loading .empty-state i,
+    .feed-container.skeleton-loading .empty-state h2,
+    .feed-container.skeleton-loading .empty-state p,
+    .feed-container.skeleton-loading .empty-state .explore-btn {
+      opacity: 0;
+    }
+
+    .feed-container.skeleton-loading .empty-state::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feed-container.skeleton-loading .empty-state::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+      margin-bottom: 15px;
+    }
+
+    .feed-container.skeleton-loading .empty-state h2::before {
+      content: '';
+      display: block;
+      width: 200px;
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .feed-container.skeleton-loading .empty-state p::before {
+      content: '';
+      display: block;
+      width: 300px;
+      height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .feed-container.skeleton-loading .empty-state .explore-btn::before {
+      content: '';
+      display: block;
+      width: 120px;
+      height: 32px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
+    /* ==== SIDEBAR SKELETON STATES ==== */
+    .menu a.loading {
+      position: relative;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .menu a.loading .menu-text,
+    .menu a.loading i {
+      opacity: 0;
+    }
+
+    .menu a.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      width: calc(100% - 24px);
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+    }
+
     /* Sidebar */
     .sidebar {
       position: fixed;
@@ -109,6 +365,11 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       background: #fff;
+      transition: opacity 0.3s ease;
+    }
+
+    .feed-container.skeleton-loading {
+      opacity: 0.9;
     }
 
     .video-post {
@@ -355,7 +616,7 @@
       font-size: 16px;
     }
 
-        /* Empty State - Reduced Size */
+    /* Empty State - Reduced Size */
     .empty-state {
       display: flex;
       flex-direction: column;
@@ -416,7 +677,7 @@
 
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
         <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
@@ -450,7 +711,7 @@
   </aside>
 
   <!-- Feed -->
-  <main class="feed-container">
+  <main class="feed-container" id="feedContainer">
     @if($followingVideos && $followingVideos->count() > 0)
       @foreach($followingVideos as $video)
       <div class="video-post" data-video-id="{{ $video->id }}">
@@ -540,6 +801,97 @@
   </main>
 
   <script>
+    // ===== SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
+
+    // Show content skeleton loading
+    function showContentSkeleton() {
+      const feedContainer = document.getElementById('feedContainer');
+      const sidebar = document.getElementById('sidebar');
+      if (feedContainer) {
+        feedContainer.classList.add('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.add('skeleton-loading');
+      }
+    }
+
+    // Hide content skeleton loading
+    function hideContentSkeleton() {
+      const feedContainer = document.getElementById('feedContainer');
+      const sidebar = document.getElementById('sidebar');
+      if (feedContainer) {
+        feedContainer.classList.remove('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.remove('skeleton-loading');
+      }
+    }
+
+    // Show individual sidebar link skeleton
+    function showSidebarSkeleton(link) {
+      if (link) {
+        link.classList.add('loading');
+      }
+    }
+
+    // Hide sidebar skeleton
+    function hideSidebarSkeleton() {
+      document.querySelectorAll('.menu a.loading').forEach(link => {
+        link.classList.remove('loading');
+      });
+    }
+
+    // Show active page skeleton on reload
+    function showActivePageSkeleton() {
+      const activeLink = document.querySelector('.menu a.active');
+      if (activeLink) {
+        showSidebarSkeleton(activeLink);
+      }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+      // Show skeleton immediately
+      showContentSkeleton();
+      showActivePageSkeleton();
+      
+      // Hide loader after content is loaded
+      setTimeout(() => {
+        hideContentSkeleton();
+        hideSidebarSkeleton();
+      }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initSidebarNavigation() {
+      const sidebarLinks = document.querySelectorAll('.menu a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
+            return;
+          }
+          
+          // Show skeleton for clicked link and content
+          showSidebarSkeleton(this);
+          showContentSkeleton();
+          
+          // Set timeout to hide loader
+          loaderTimeout = setTimeout(() => {
+            hideContentSkeleton();
+            hideSidebarSkeleton();
+          }, 3000);
+        });
+      });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      initSkeletonLoader();
+      initSidebarNavigation();
+    });
+
+    // ===== VIDEO FUNCTIONS =====
     const likedVideos = new Set();
     let lastTapTime = 0;
 

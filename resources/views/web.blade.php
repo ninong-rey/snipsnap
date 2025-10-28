@@ -21,71 +21,179 @@
       overflow: hidden;
     }
 
-    /* ==== BLUR LOADER STYLES ==== */
-    .loader-overlay {
-      position: fixed;
+    /* ==== CONTENT SKELETON LOADER STYLES ==== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmerSlide 2s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes shimmerSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Feed container skeleton state */
+    .feed-container.skeleton-loading .video-post {
+      position: relative;
+    }
+
+    .feed-container.skeleton-loading .video-wrapper video,
+    .feed-container.skeleton-loading .actions,
+    .feed-container.skeleton-loading .caption,
+    .feed-container.skeleton-loading .video-controls,
+    .feed-container.skeleton-loading .play-pause-animation,
+    .feed-container.skeleton-loading .overlay {
+      opacity: 0;
+    }
+
+    /* Skeleton video placeholder - EXACT SAME POSITION */
+    .feed-container.skeleton-loading .video-wrapper::before {
+      content: '';
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(15px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      flex-direction: column;
-      transition: opacity 0.3s ease;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 16px;
+      z-index: 2;
     }
 
-    .loader-overlay.active {
-      display: flex;
-      opacity: 1;
+    /* Skeleton actions placeholder - EXACT SAME POSITION */
+    .feed-container.skeleton-loading .actions::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 48px;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 24px;
     }
 
-    .loader-overlay.fade-out {
+    /* Skeleton user avatar - EXACT SAME POSITION */
+    .feed-container.skeleton-loading .user-avatar-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    /* Skeleton action buttons - EXACT SAME POSITION */
+    .feed-container.skeleton-loading .action-btn {
+      position: relative;
+    }
+
+    .feed-container.skeleton-loading .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 50%;
+    }
+
+    .feed-container.skeleton-loading .action-count::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 12px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+
+    /* Skeleton caption - EXACT SAME POSITION */
+    .feed-container.skeleton-loading .caption::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 70%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    /* ==== SIDEBAR SKELETON LOADER ==== */
+    .sidebar.skeleton-loading {
+      background: #fff;
+    }
+
+    .sidebar.skeleton-loading .logo,
+    .sidebar.skeleton-loading .search-box,
+    .sidebar.skeleton-loading .menu a,
+    .sidebar.skeleton-loading form button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before,
+    .sidebar.skeleton-loading form button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > *,
+    .sidebar.skeleton-loading form button > * {
       opacity: 0;
     }
 
-    .loader-container {
-      text-align: center;
-      padding: 40px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    /* Spinner */
-    .loader-spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #fe2c55;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Loading Text */
-    .loader-text {
-      font-size: 18px;
-      font-weight: 600;
-      color: #161823;
-      margin-bottom: 10px;
-    }
-
-    .loader-subtext {
-      font-size: 14px;
-      color: #8a8b8f;
-    }
-
-    /* Sidebar */
+    /* ==== SIDEBAR ==== */
     .sidebar {
       position: fixed;
       top: 0;
@@ -99,6 +207,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      z-index: 100;
+      transition: all 0.3s ease;
     }
 
     .logo {
@@ -109,9 +219,14 @@
       font-size: 20px;
       margin-bottom: 20px;
       color: var(--text-color);
+      transition: all 0.3s ease;
     }
 
-    .logo img { width: 28px; height: 28px; }
+    .logo img { 
+      width: 28px; 
+      height: 28px; 
+      border-radius: 6px;
+    }
 
     .search-box {
       background: #f3f3f3;
@@ -120,6 +235,13 @@
       display: flex;
       align-items: center;
       margin-bottom: 24px;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus-within {
+      background: #e8e8e8;
+      box-shadow: 0 0 0 2px rgba(254, 44, 85, 0.1);
     }
 
     .search-box input {
@@ -131,7 +253,12 @@
       color: var(--text-color);
     }
 
-    .menu { flex-grow: 1; }
+    .menu { 
+      flex-grow: 1; 
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
     .menu a {
       display: flex;
@@ -139,33 +266,55 @@
       gap: 12px;
       color: var(--text-color);
       text-decoration: none;
-      padding: 10px 0;
+      padding: 10px 12px;
       font-size: 15px;
-      transition: 0.2s;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(254, 44, 85, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .menu a:hover::before,
+    .menu a.active::before {
+      left: 100%;
     }
 
     .menu a:hover,
     .menu a.active {
       color: var(--accent);
       font-weight: bold;
+      background: #f7f7f7;
+      transform: translateX(4px);
     }
 
     .menu i {
       font-size: 18px;
       width: 22px;
       text-align: center;
+      transition: transform 0.3s ease;
     }
 
-    .notification-dot {
-      background: var(--accent);
-      color: #fff;
-      border-radius: 50%;
-      font-size: 10px;
-      padding: 2px 5px;
-      margin-left: auto;
+    .menu a:hover i,
+    .menu a.active i {
+      transform: scale(1.1);
     }
 
-    /* Feed */
+    .menu-text {
+      transition: opacity 0.3s ease;
+    }
+
+    /* ==== FEED ==== */
     .feed-container {
       margin-left: 260px;
       width: calc(100% - 260px);
@@ -173,6 +322,11 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       background: #fff;
+      transition: opacity 0.3s ease;
+    }
+
+    .feed-container.skeleton-loading {
+      opacity: 0.9;
     }
 
     .video-post {
@@ -206,7 +360,7 @@
       transition: opacity 0.3s ease;
     }
 
-    /* Video controls - top right */
+    /* ==== VIDEO CONTROLS ==== */
     .video-controls {
       position: absolute;
       top: 10px;
@@ -235,11 +389,12 @@
       justify-content: center;
       cursor: pointer;
       font-size: 16px;
-      transition: background 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .control-btn:hover {
       background: rgba(0, 0, 0, 0.7);
+      transform: scale(1.1);
     }
 
     .volume-slider {
@@ -262,7 +417,7 @@
       cursor: pointer;
     }
 
-    /* Play/Pause animation */
+    /* ==== ANIMATIONS ==== */
     .play-pause-animation {
       position: absolute;
       top: 50%;
@@ -286,7 +441,6 @@
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
 
-    /* Floating heart */
     .heart {
       position: absolute;
       color: var(--accent);
@@ -308,7 +462,7 @@
       100% { transform: scale(0.8) translateY(-150px) rotate(-10deg); opacity: 0; }
     }
 
-    /* Buttons & Caption */
+    /* ==== ACTIONS ==== */
     .actions {
       position: absolute;
       right: 25px;
@@ -323,23 +477,36 @@
       color: #fff;
       font-size: 26px;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
+      position: relative;
     }
 
-    .action-btn:hover { transform: scale(1.2); }
-    .liked { color: var(--accent); }
+    .action-btn:hover { 
+      transform: scale(1.2); 
+    }
+
+    .liked { 
+      color: var(--accent); 
+      animation: heartBeat 0.6s ease;
+    }
+
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
 
     .action-count {
       font-size: 12px;
       font-weight: 600;
       color: #fff;
+      transition: all 0.3s ease;
     }
 
-    /* NEW: User avatar above heart */
     .user-avatar-btn {
       width: 48px;
       height: 48px;
@@ -347,12 +514,14 @@
       border: 2px solid #fff;
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
       background: #fff;
+      position: relative;
     }
 
     .user-avatar-btn:hover {
       transform: scale(1.1);
+      border-color: var(--accent);
     }
 
     .user-avatar-btn img {
@@ -370,11 +539,16 @@
       font-weight: 500;
       width: 70%;
       line-height: 1.4;
+      position: relative;
     }
 
-    .overlay { position: absolute; inset: 0; cursor: pointer; }
+    .overlay { 
+      position: absolute; 
+      inset: 0; 
+      cursor: pointer; 
+    }
 
-    /* Comments Panel */
+    /* ==== COMMENTS PANEL ==== */
     .comments-panel {
       position: fixed;
       right: -400px;
@@ -390,7 +564,9 @@
       z-index: 20;
     }
 
-    .comments-panel.active { right: 0; }
+    .comments-panel.active { 
+      right: 0; 
+    }
 
     .comments-header {
       padding: 16px;
@@ -411,9 +587,17 @@
     .comment {
       padding: 8px 0;
       border-bottom: 1px solid #f2f2f2;
+      animation: slideInComment 0.3s ease;
     }
 
-    .comment strong { color: var(--accent); }
+    @keyframes slideInComment {
+      from { transform: translateX(-10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .comment strong { 
+      color: var(--accent); 
+    }
 
     .comment-input {
       border-top: 1px solid #eee;
@@ -428,6 +612,12 @@
       border-radius: 20px;
       padding: 8px 12px;
       outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .comment-input input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(254, 44, 85, 0.1);
     }
 
     .comment-input button {
@@ -439,22 +629,43 @@
       height: 38px;
       cursor: pointer;
       font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .comment-input button:hover {
+      background: #e0264c;
+      transform: scale(1.1);
+    }
+
+    /* ==== UPLOAD OVERLAY ==== */
+    #uploadOverlay {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 160px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      background: #000;
+      animation: slideInRight 0.5s ease;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    #uploadOverlay video {
+      width: 100%;
+      display: block;
     }
   </style>
 </head>
 
 <body>
-  <!-- Blur Loader Overlay -->
-  <div class="loader-overlay" id="globalLoader">
-    <div class="loader-container">
-      <div class="loader-spinner"></div>
-      <div class="loader-text" id="loaderText">Loading</div>
-      <div class="loader-subtext" id="loaderSubtext">Please wait...</div>
-    </div>
-  </div>
-
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
         <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap">
@@ -467,110 +678,147 @@
       </div>
 
       <div class="menu">
-        <a href="{{ route('my-web') }}" class="active"><i class="fa-solid fa-house"></i>For You</a>
-        <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
-        <a href="{{ route('following.videos') }}"><i class="fa-solid fa-user-group"></i>Following</a>
-        <a href="{{ route('friends') }}"><i class="fa-solid fa-user-friends"></i>Friends</a>
-        <a href="{{ route('upload') }}"><i class="fa-solid fa-plus-square"></i>Upload</a>
-        <a href="{{ route('notifications') }}"><i class="fa-regular fa-comment-dots"></i>Notifications</a>
-        <a href="{{ route('messages.index') }}"><i class="fa-regular fa-paper-plane"></i>Messages</a>
-        <a href="#"><i class="fa-solid fa-tv"></i>LIVE</a>
-        <a href="{{ route('profile.show') }}"><i class="fa-solid fa-user"></i>Profile</a>
-        <a href="#"><i class="fa-solid fa-ellipsis"></i>More</a>
+        <a href="{{ route('my-web') }}" class="active" data-route="for-you">
+          <i class="fa-solid fa-house"></i>
+          <span class="menu-text">For You</span>
+        </a>
+        <a href="{{ route('explore.users') }}" data-route="explore">
+          <i class="fa-regular fa-compass"></i>
+          <span class="menu-text">Explore</span>
+        </a>
+        <a href="{{ route('following.videos') }}" data-route="following">
+          <i class="fa-solid fa-user-group"></i>
+          <span class="menu-text">Following</span>
+        </a>
+        <a href="{{ route('friends') }}" data-route="friends">
+          <i class="fa-solid fa-user-friends"></i>
+          <span class="menu-text">Friends</span>
+        </a>
+        <a href="{{ route('upload') }}" data-route="upload">
+          <i class="fa-solid fa-plus-square"></i>
+          <span class="menu-text">Upload</span>
+        </a>
+        <a href="{{ route('notifications') }}" data-route="notifications">
+          <i class="fa-regular fa-comment-dots"></i>
+          <span class="menu-text">Notifications</span>
+        </a>
+        <a href="{{ route('messages.index') }}" data-route="messages">
+          <i class="fa-regular fa-paper-plane"></i>
+          <span class="menu-text">Messages</span>
+        </a>
+        <a href="#" data-route="live">
+          <i class="fa-solid fa-tv"></i>
+          <span class="menu-text">LIVE</span>
+        </a>
+        <a href="{{ route('profile.show') }}" data-route="profile">
+          <i class="fa-solid fa-user"></i>
+          <span class="menu-text">Profile</span>
+        </a>
+        <a href="#" data-route="more">
+          <i class="fa-solid fa-ellipsis"></i>
+          <span class="menu-text">More</span>
+        </a>
       </div>
     </div>
 
     <form method="POST" action="{{ route('logout.perform') }}">
       @csrf
-      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;transition:all 0.3s ease;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
     </form>
   </aside>
 
   @if(request()->has('uploaded_video'))
-  <div id="uploadOverlay" style="position: fixed; top: 20px; right: 20px; width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; background: #000;">
-    <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop style="width:100%; display:block;"></video>
+  <div id="uploadOverlay">
+    <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop></video>
     <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
       <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
     </div>
   </div>
   <script>
-    setTimeout(()=>document.getElementById('uploadOverlay').remove(), 5000);
+    setTimeout(() => {
+      const overlay = document.getElementById('uploadOverlay');
+      if (overlay) {
+        overlay.style.animation = 'slideInRight 0.5s ease reverse';
+        setTimeout(() => overlay.remove(), 500);
+      }
+    }, 5000);
   </script>
   @endif
 
   <!-- Feed -->
-  <main class="feed-container">
+  <main class="feed-container" id="feedContainer">
     @foreach($videos as $video)
     <div class="video-post" data-video-id="{{ $video->id }}">
       <div class="video-wrapper">
-    @php
-        $videoUrl = $video->url ?? null;
-        if (!$videoUrl && !empty($video->file_path)) {
+        @php
+          $videoUrl = $video->url ?? null;
+          if (!$videoUrl && !empty($video->file_path)) {
             $videoUrl = asset('storage/' . $video->file_path);
-        }
-    @endphp
+          }
+        @endphp
 
-    @if($videoUrl)
-        <video src="{{ asset('storage/' . ($video->file_path ?? $video->url)) }}" controls loop playsinline preload="metadata"></video>
-
+        @if($videoUrl)
+          <video src="{{ asset('storage/' . ($video->file_path ?? $video->url)) }}" controls loop playsinline preload="metadata"></video>
         @else
-        <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">
+          <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">
             Video not available
-        </div>
-    @endif
-
-    <!-- Play/Pause animation -->
-    <div class="play-pause-animation">
-        <i class="fas fa-pause"></i>
-    </div>
-
-    <!-- Overlay for tap actions -->
-    <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
-
-    <!-- Video controls -->
-    <div class="video-controls">
-        <div class="volume-container">
-            <button class="control-btn volume-btn" onclick="toggleMute(this)">
-                <i class="fas fa-volume-up"></i>
-            </button>
-            <div class="volume-slider">
-                <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions (like, comment, share) -->
-    <div class="actions">
-        @php $videoUser = $video->user; @endphp
-        @if($videoUser)
-        <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
-                 alt="{{ $videoUser->username ?? $videoUser->name }}">
-        </div>
+          </div>
         @endif
 
-        <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+        <!-- Play/Pause animation -->
+        <div class="play-pause-animation">
+          <i class="fas fa-pause"></i>
+        </div>
+
+        <!-- Overlay for tap actions -->
+        <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
+
+        <!-- Video controls -->
+        <div class="video-controls">
+          <div class="volume-container">
+            <button class="control-btn volume-btn" onclick="toggleMute(this)">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <div class="volume-slider">
+              <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions (like, comment, share) -->
+        <div class="actions">
+          @php $videoUser = $video->user; @endphp
+          @if($videoUser)
+          <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
+                 alt="{{ $videoUser->username ?? $videoUser->name }}">
+          </div>
+          @endif
+
+          <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
             <i class="fa-solid fa-heart"></i>
             <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-        </div>
-        <div class="action-btn" onclick="toggleComments(this)">
+          </div>
+          <div class="action-btn" onclick="toggleComments(this)">
             <i class="fa-solid fa-comment"></i>
             <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-        </div>
-        <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+          </div>
+          <div class="action-btn" onclick="shareVideo({{ $video->id }})">
             <i class="fa-solid fa-share"></i>
             <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
+          </div>
         </div>
-    </div>
 
-    <!-- Caption -->
-    <div class="caption">
-        <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-        {{ $video->caption ?? '' }}
-    </div>
-</div>
+        <!-- Caption -->
+        <div class="caption">
+          <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
+          {{ $video->caption ?? '' }}
+        </div>
+      </div>
 
-
+      <!-- Comments Panel -->
       <div class="comments-panel">
         <div class="comments-header">
           Comments
@@ -595,62 +843,104 @@
   </main>
 
   <script>
-    // Loader functions
-    function showLoader(text = 'Loading', subtext = 'Please wait...') {
-      const loader = document.getElementById('globalLoader');
-      const loaderText = document.getElementById('loaderText');
-      const loaderSubtext = document.getElementById('loaderSubtext');
-      
-      loaderText.textContent = text;
-      loaderSubtext.textContent = subtext;
-      loader.classList.add('active');
-      
-      document.body.style.overflow = 'hidden';
-    }
+    // ===== CONTENT SKELETON LOADER FUNCTIONS =====
+    let loaderTimeout;
 
-    function hideLoader() {
-      const loader = document.getElementById('globalLoader');
-      loader.classList.add('fade-out');
-      setTimeout(() => {
-        loader.classList.remove('active', 'fade-out');
-        document.body.style.overflow = 'auto';
-      }, 300);
-    }
-
-    // Show loader on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Hide loader after page is fully loaded
-      if (document.readyState === 'complete') {
-        setTimeout(hideLoader, 500);
-      } else {
-        window.addEventListener('load', function() {
-          setTimeout(hideLoader, 500);
-        });
+    // Show content skeleton loading
+    function showContentSkeleton() {
+      const feedContainer = document.getElementById('feedContainer');
+      const sidebar = document.getElementById('sidebar');
+      if (feedContainer) {
+        feedContainer.classList.add('skeleton-loading');
       }
-    });
+      if (sidebar) {
+        sidebar.classList.add('skeleton-loading');
+      }
+    }
 
-    // Add click handlers to sidebar links
-    document.addEventListener('DOMContentLoaded', function() {
+    // Hide content skeleton loading
+    function hideContentSkeleton() {
+      const feedContainer = document.getElementById('feedContainer');
+      const sidebar = document.getElementById('sidebar');
+      if (feedContainer) {
+        feedContainer.classList.remove('skeleton-loading');
+      }
+      if (sidebar) {
+        sidebar.classList.remove('skeleton-loading');
+      }
+    }
+
+    // Show individual sidebar link skeleton
+    function showSidebarSkeleton(link) {
+      if (link) {
+        link.classList.add('loading');
+      }
+    }
+
+    // Hide sidebar skeleton
+    function hideSidebarSkeleton() {
+      document.querySelectorAll('.menu a.loading').forEach(link => {
+        link.classList.remove('loading');
+      });
+    }
+
+    // Show active page skeleton on reload
+    function showActivePageSkeleton() {
+      const activeLink = document.querySelector('.menu a.active');
+      if (activeLink) {
+        showSidebarSkeleton(activeLink);
+      }
+    }
+
+    // Initialize skeleton loader on page load
+    function initSkeletonLoader() {
+      // Show skeleton immediately
+      showContentSkeleton();
+      showActivePageSkeleton();
+      
+      // Hide loader after content is loaded
+      setTimeout(() => {
+        hideContentSkeleton();
+        hideSidebarSkeleton();
+      }, 2000); // 2 seconds loading time
+    }
+
+    // Enhanced navigation with skeleton loaders
+    function initSidebarNavigation() {
       const sidebarLinks = document.querySelectorAll('.menu a');
       sidebarLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-          // Don't show loader for active page or external links
           if (this.classList.contains('active') || this.getAttribute('href') === '#') {
             return;
           }
           
-          showLoader('Navigating', 'Taking you there...');
+          // Show skeleton for clicked link and content
+          showSidebarSkeleton(this);
+          showContentSkeleton();
           
-          // If navigation takes too long, hide loader after 3 seconds
-          setTimeout(hideLoader, 3000);
+          // Set timeout to hide loader
+          loaderTimeout = setTimeout(() => {
+            hideContentSkeleton();
+            hideSidebarSkeleton();
+          }, 3000);
         });
       });
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      initSkeletonLoader();
+      initSidebarNavigation();
     });
 
+    // ===== VIDEO FUNCTIONS =====
     const likedVideos = new Set();
     let lastTapTime = 0;
 
     function goToUserProfile(userIdentifier) {
+      const profileLink = document.querySelector('a[data-route="profile"]');
+      showSidebarSkeleton(profileLink);
+      showContentSkeleton();
       if (userIdentifier && isNaN(userIdentifier)) {
         window.location.href = `/user/${userIdentifier}`;
       } else {
@@ -678,11 +968,11 @@
       animation.classList.add('active');
 
       if (video.paused) {
-        video.play().catch(()=>{video.muted=true; video.play()});
-        icon.classList.replace('fa-play','fa-pause');
+        video.play().catch(() => { video.muted = true; video.play(); });
+        icon.classList.replace('fa-play', 'fa-pause');
       } else {
         video.pause();
-        icon.classList.replace('fa-pause','fa-play');
+        icon.classList.replace('fa-pause', 'fa-play');
       }
     }
 
@@ -737,20 +1027,37 @@
 
     function incrementLike(videoId) {
       const countEl = document.querySelector(`.like-count-${videoId}`);
-      countEl.textContent = parseInt(countEl.textContent)+1;
-      fetch(`/video/${videoId}/like`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}}).catch(console.log);
+      if (countEl) {
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+      }
+      fetch(`/video/${videoId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      }).catch(console.log);
     }
 
     function shareVideo(videoId) {
       const countEl = document.querySelector(`.share-count-${videoId}`);
-      countEl.textContent = parseInt(countEl.textContent)+1;
-      fetch(`/video/${videoId}/share`, {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}});
-      navigator.clipboard.writeText(`${window.location.origin}/video/${videoId}`).then(()=>alert('Video link copied!'));
+      if (countEl) {
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+      }
+      fetch(`/video/${videoId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      });
+      navigator.clipboard.writeText(`${window.location.origin}/video/${videoId}`)
+        .then(() => alert('Video link copied!'));
     }
 
     function toggleComments(el) {
       const panel = el.closest('.video-post').querySelector('.comments-panel');
-      document.querySelectorAll('.comments-panel').forEach(p=>p!==panel&&p.classList.remove('active'));
+      document.querySelectorAll('.comments-panel').forEach(p => p !== panel && p.classList.remove('active'));
       panel.classList.toggle('active');
     }
 
@@ -760,24 +1067,46 @@
       const videoId = input.dataset.videoId;
       const text = input.value.trim();
       if (!text) return;
+      
       const list = panel.querySelector('.comments-list');
-      const div = document.createElement('div'); div.className='comment'; div.innerHTML=`<strong>@you</strong> ${text}`;
+      const div = document.createElement('div'); 
+      div.className = 'comment'; 
+      div.innerHTML = `<strong>@you</strong> ${text}`;
       list.appendChild(div);
-      document.querySelector(`.comment-count-${videoId}`).textContent = parseInt(document.querySelector(`.comment-count-${videoId}`).textContent)+1;
-      fetch('{{ route("comment.store") }}', {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:JSON.stringify({video_id:videoId,content:text,_token:'{{ csrf_token() }}'})}).catch(console.log);
-      input.value=''; list.scrollTop=list.scrollHeight;
+      
+      const countEl = document.querySelector(`.comment-count-${videoId}`);
+      if (countEl) {
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+      }
+      
+      fetch('{{ route("comment.store") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+          video_id: videoId,
+          content: text,
+          _token: '{{ csrf_token() }}'
+        })
+      }).catch(console.log);
+      
+      input.value = ''; 
+      list.scrollTop = list.scrollHeight;
     }
 
+    // Auto-play videos when in view
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         const video = entry.target.querySelector('video');
         const icon = entry.target.querySelector('.play-pause-animation i');
         if (entry.isIntersecting) {
-          video.play().catch(()=>{video.muted=true; video.play()});
-          icon.classList.replace('fa-play','fa-pause');
+          video.play().catch(() => { video.muted = true; video.play(); });
+          if (icon) icon.classList.replace('fa-play', 'fa-pause');
         } else {
           video.pause();
-          icon.classList.replace('fa-pause','fa-play');
+          if (icon) icon.classList.replace('fa-pause', 'fa-play');
         }
       });
     }, { threshold: 0.8 });
