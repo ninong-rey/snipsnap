@@ -126,9 +126,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 <div class="container">
   <div class="sidebar" id="sidebar">
    <div class="logo">
-  <img src="{{ asset('default-avatar.png') }}" alt="Avatar" 
-       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-       style="width:32px;height:32px;">
+  <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
   <div style="display:none; width:32px;height:32px;background:#fe2c55;border-radius:6px;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;">
     SS
   </div>
@@ -393,10 +391,12 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM loaded - setting up event listeners');
   
   const fileInput = document.getElementById('videoFile');
-  const uploadBtn = document.getElementById('uploadSubmitBtn');
+  const uploadBtn = document.getElementById('testUploadBtn'); // FIXED ID
+  const selectBtn = document.getElementById('selectVideoBtn');
   
   console.log('File input:', fileInput);
   console.log('Upload button:', uploadBtn);
+  console.log('Select button:', selectBtn);
 
   // Upload button click
   if (uploadBtn) {
@@ -409,6 +409,14 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('Upload button not found!');
   }
 
+  // Select video button
+  if (selectBtn && fileInput) {
+    selectBtn.addEventListener('click', () => {
+      console.log('Select button clicked');
+      fileInput.click();
+    });
+  }
+
   // File input change
   if (fileInput) {
     fileInput.addEventListener('change', function() {
@@ -416,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const file = this.files[0];
       if (file) {
         console.log('File selected:', file.name, file.size, file.type);
-        document.getElementById('uploadSubmitBtn').disabled = false;
+        if (uploadBtn) uploadBtn.disabled = false;
       }
     });
   }
