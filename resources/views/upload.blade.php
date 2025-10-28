@@ -414,27 +414,18 @@ const UPLOAD_CONFIG = {
 let currentXHR = null;
 let loaderTimeout;
 
-// ===== DOM ELEMENT SAFETY CHECK =====
-function getElement(id) {
-  const element = document.getElementById(id);
-  if (!element) {
-    console.warn(`Element with id '${id}' not found`);
-  }
-  return element;
-}
-
 // ===== SKELETON LOADER FUNCTIONS =====
 function showSkeleton() {
-  const mainContent = getElement('mainContent');
-  const sidebar = getElement('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  const sidebar = document.getElementById('sidebar');
   
   if (mainContent) mainContent.classList.add('skeleton-loading');
   if (sidebar) sidebar.classList.add('skeleton-loading');
 }
 
 function hideSkeleton() {
-  const mainContent = getElement('mainContent');
-  const sidebar = getElement('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  const sidebar = document.getElementById('sidebar');
   
   if (mainContent) mainContent.classList.remove('skeleton-loading');
   if (sidebar) sidebar.classList.remove('skeleton-loading');
@@ -442,7 +433,9 @@ function hideSkeleton() {
 
 function initSkeletonLoader() {
   showSkeleton();
-  setTimeout(() => hideSkeleton(), 2000);
+  setTimeout(() => {
+    hideSkeleton();
+  }, 1500);
 }
 
 function initNavigation() {
@@ -450,30 +443,25 @@ function initNavigation() {
   sidebarLinks.forEach(link => {
     link.addEventListener('click', function(e) {
       if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
+      
+      e.preventDefault();
+      const targetUrl = this.getAttribute('href');
+      
       showSkeleton();
-      loaderTimeout = setTimeout(() => hideSkeleton(), 3000);
+      setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 500);
     });
   });
 }
 
-// ===== FILE VALIDATION =====
-function validateFile(file) {
-  if (!file) return false;
-  
-  // Check file type
-  if (!UPLOAD_CONFIG.ALLOWED_TYPES.includes(file.type)) {
-    showError('Please select a valid video file (MP4, AVI, MOV, WMV)');
-    return false;
+// ===== HELPER FUNCTIONS =====
+function getElement(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    console.warn(`Element with id '${id}' not found`);
   }
-
-  // Check file size
-  if (file.size > UPLOAD_CONFIG.MAX_FILE_SIZE) {
-    const maxSizeMB = UPLOAD_CONFIG.MAX_FILE_SIZE / (1024 * 1024);
-    showError(`File too large. Please select a video under ${maxSizeMB}MB.`);
-    return false;
-  }
-
-  return true;
+  return element;
 }
 
 function formatFileSize(bytes) {
@@ -484,29 +472,36 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function showFileInfo(file) {
-  const fileName = getElement('fileName');
-  const fileSize = getElement('fileSize');
-  const fileType = getElement('fileType');
-  const fileInfo = getElement('fileInfo');
+function showError(message) {
+  const errorMessage = getElement('errorMessage');
+  const errorBox = getElement('errorBox');
   
-  if (fileName) fileName.textContent = file.name;
-  if (fileSize) fileSize.textContent = formatFileSize(file.size);
-  if (fileType) fileType.textContent = file.type;
-  if (fileInfo) fileInfo.classList.add('show');
+  if (errorMessage) errorMessage.textContent = message;
+  if (errorBox) {
+    errorBox.classList.add('show');
+    setTimeout(() => {
+      errorBox.classList.remove('show');
+    }, 5000);
+  }
+  console.error('Upload Error:', message);
 }
 
-// ===== UPLOAD MANAGEMENT =====
+function showSuccess() {
+  const successBox = getElement('successBox');
+  if (successBox) {
+    successBox.classList.add('show');
+    setTimeout(() => {
+      successBox.classList.remove('show');
+    }, 3000);
+  }
+}
+
 function toggleUploadButtons(uploading) {
   const cancelUploadBtn = getElement('cancelUploadBtn');
   const backBtn = getElement('backBtn');
   
-  if (cancelUploadBtn) {
-    cancelUploadBtn.style.display = uploading ? 'block' : 'none';
-  }
-  if (backBtn) {
-    backBtn.style.display = uploading ? 'none' : 'block';
-  }
+  if (cancelUploadBtn) cancelUploadBtn.style.display = uploading ? 'block' : 'none';
+  if (backBtn) backBtn.style.display = uploading ? 'none' : 'block';
 }
 
 function resetUploadForm() {
@@ -525,54 +520,58 @@ function resetUploadForm() {
   if (progressContainer) progressContainer.style.display = 'none';
   if (progressBar) progressBar.style.width = '0%';
   if (progressText) progressText.textContent = '0%';
-  if (fileInfo) fileInfo.classList.remove('show');
+  if (fileInfo) fileInfo.style.display = 'none';
   if (previewBox) previewBox.style.display = 'none';
   if (fileInput) fileInput.value = '';
   
   toggleUploadButtons(false);
-  hideError();
 }
 
-function showError(message) {
-  const errorMessage = getElement('errorMessage');
-  const errorBox = getElement('errorBox');
+function validateFile(file) {
+  if (!file) {
+    showError('Please select a file');
+    return false;
+  }
+
+  if (!UPLOAD_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+    showError('Please select a valid video file (MP4, AVI, MOV, WMV)');
+    return false;
+  }
+
+  if (file.size > UPLOAD_CONFIG.MAX_FILE_SIZE) {
+    const maxSizeMB = UPLOAD_CONFIG.MAX_FILE_SIZE / (1024 * 1024);
+    showError(`File too large. Maximum size is ${maxSizeMB}MB. Your file is ${formatFileSize(file.size)}`);
+    return false;
+  }
+
+  return true;
+}
+
+function showFileInfo(file) {
+  const fileName = getElement('fileName');
+  const fileSize = getElement('fileSize');
+  const fileType = getElement('fileType');
+  const fileInfo = getElement('fileInfo');
   
-  if (errorMessage) errorMessage.textContent = message;
-  if (errorBox) {
-    errorBox.classList.add('show');
-    setTimeout(() => {
-      if (errorBox) errorBox.classList.remove('show');
-    }, 5000);
-  }
-}
-
-function hideError() {
-  const errorBox = getElement('errorBox');
-  if (errorBox) errorBox.classList.remove('show');
-}
-
-function showSuccess() {
-  const successBox = getElement('successBox');
-  if (successBox) {
-    successBox.classList.add('show');
-    setTimeout(() => {
-      if (successBox) successBox.classList.remove('show');
-    }, 3000);
-  }
+  if (fileName) fileName.textContent = file.name;
+  if (fileSize) fileSize.textContent = formatFileSize(file.size);
+  if (fileType) fileType.textContent = file.type;
+  if (fileInfo) fileInfo.style.display = 'block';
 }
 
 function cancelUpload() {
   if (currentXHR) {
     currentXHR.abort();
-    resetUploadForm();
-    showError('Upload cancelled');
+    console.log('Upload cancelled by user');
   }
+  resetUploadForm();
+  showError('Upload cancelled');
 }
 
 // ===== UPLOAD EVENT HANDLERS =====
 function setupEventListeners() {
-  const selectBtn = getElement('selectVideoBtn');
   const fileInput = getElement('videoFile');
+  const selectBtn = getElement('selectVideoBtn');
   const uploadArea = getElement('uploadArea');
   const uploadForm = getElement('uploadForm');
   const cancelUploadBtn = getElement('cancelUploadBtn');
@@ -582,37 +581,45 @@ function setupEventListeners() {
 
   // Select video button
   if (selectBtn && fileInput) {
-    selectBtn.addEventListener('click', () => fileInput.click());
+    selectBtn.addEventListener('click', () => {
+      console.log('Select button clicked');
+      fileInput.click();
+    });
   }
 
   // File input change
   if (fileInput) {
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (file) {
-        if (!validateFile(file)) {
-          fileInput.value = '';
-          return;
-        }
-        
+    fileInput.addEventListener('change', function() {
+      console.log('File selected:', this.files[0]);
+      const file = this.files[0];
+      
+      if (file && validateFile(file)) {
+        showFileInfo(file);
+
+        // Show preview
         if (previewVideo) {
           previewVideo.src = URL.createObjectURL(file);
         }
         if (previewBox) {
           previewBox.style.display = 'block';
         }
+
+        // Enable upload button
         if (uploadBtn) {
           uploadBtn.disabled = false;
         }
-        showFileInfo(file);
-        hideError();
+
+        console.log('File validated and ready for upload');
+      } else {
+        this.value = '';
+        if (uploadBtn) uploadBtn.disabled = true;
       }
     });
   }
 
   // Drag and drop
   if (uploadArea) {
-    uploadArea.addEventListener('dragover', e => {
+    uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadArea.classList.add('drag-over');
     });
@@ -621,28 +628,34 @@ function setupEventListeners() {
       uploadArea.classList.remove('drag-over');
     });
 
-    uploadArea.addEventListener('drop', e => {
+    uploadArea.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadArea.classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
       
-      if (file) {
-        if (!validateFile(file)) return;
-        
+      const file = e.dataTransfer.files[0];
+      console.log('File dropped:', file);
+      
+      if (file && validateFile(file)) {
         if (fileInput) {
           fileInput.files = e.dataTransfer.files;
         }
+        
+        showFileInfo(file);
+
+        // Show preview
         if (previewVideo) {
           previewVideo.src = URL.createObjectURL(file);
         }
         if (previewBox) {
           previewBox.style.display = 'block';
         }
+
+        // Enable upload button
         if (uploadBtn) {
           uploadBtn.disabled = false;
         }
-        showFileInfo(file);
-        hideError();
+
+        console.log('Dropped file validated and ready for upload');
       }
     });
   }
@@ -651,21 +664,24 @@ function setupEventListeners() {
   if (uploadForm) {
     uploadForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      console.log('Form submission started');
+
       const fileInput = getElement('videoFile');
       const file = fileInput ? fileInput.files[0] : null;
       
       if (!file) {
-        showError('Please select a video file.');
+        showError('Please select a video file first');
         return;
       }
 
-      if (!validateFile(file)) return;
+      if (!validateFile(file)) {
+        return;
+      }
 
-      const formData = new FormData(this);
-      
-      // Update UI for upload state
+      console.log('Starting upload process for file:', file.name);
+
+      // Update UI
       const uploadBtn = getElement('uploadSubmitBtn');
-      const successBox = getElement('successBox');
       const progressContainer = getElement('uploadProgressContainer');
       const progressBar = getElement('uploadProgressBar');
       const progressText = getElement('uploadProgressBarText');
@@ -674,81 +690,87 @@ function setupEventListeners() {
         uploadBtn.disabled = true;
         uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
       }
-      if (successBox) successBox.classList.remove('show');
-      hideError();
-
       if (progressContainer) progressContainer.style.display = 'block';
       if (progressBar) progressBar.style.width = '0%';
       if (progressText) progressText.textContent = '0%';
       
       toggleUploadButtons(true);
 
+      const formData = new FormData(this);
+      
+      // Log FormData contents for debugging
+      for (let [key, value] of formData.entries()) {
+        console.log('FormData:', key, value instanceof File ? value.name : value);
+      }
+
       currentXHR = new XMLHttpRequest();
       currentXHR.timeout = UPLOAD_CONFIG.TIMEOUT;
 
       currentXHR.open('POST', this.action, true);
       currentXHR.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+      currentXHR.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
       // Progress tracking
-      currentXHR.upload.addEventListener('progress', e => {
+      currentXHR.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
-          let percent = Math.round((e.loaded / e.total) * 100);
+          const percent = Math.round((e.loaded / e.total) * 100);
           const progressBar = getElement('uploadProgressBar');
           const progressText = getElement('uploadProgressBarText');
           
           if (progressBar) progressBar.style.width = percent + '%';
+          if (progressText) progressText.textContent = percent + '%';
           
-          // Show detailed progress info
-          const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
-          const totalMB = (e.total / (1024 * 1024)).toFixed(1);
-          if (progressText) {
-            progressText.textContent = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
-          }
+          console.log(`Upload progress: ${percent}%`);
         }
       });
 
-      // Timeout handler
-      currentXHR.ontimeout = function() {
-        showError('Upload timed out. Please try again with a smaller file or better connection.');
-        resetUploadForm();
-      };
-
-      // Load handler
       currentXHR.onload = function() {
+        console.log('Upload response received. Status:', currentXHR.status);
+        console.log('Response:', currentXHR.responseText);
+
         if (currentXHR.status === 200) {
           try {
-            const data = JSON.parse(currentXHR.responseText);
-            if (data.success) {
+            const response = JSON.parse(currentXHR.responseText);
+            if (response.success) {
               showSuccess();
+              console.log('Upload successful, redirecting...');
               setTimeout(() => {
-                window.location.href = "{{ route('my-web') }}?uploaded_video=" + encodeURIComponent(data.url);
-              }, 1000);
+                window.location.href = "{{ route('my-web') }}?uploaded_video=" + encodeURIComponent(response.url);
+              }, 1500);
             } else {
-              showError('Upload failed: ' + (data.message || 'Unknown error'));
+              showError('Upload failed: ' + (response.message || 'Unknown error'));
               resetUploadForm();
             }
           } catch (e) {
-            showError('Error parsing server response');
+            console.error('JSON parse error:', e);
+            showError('Error processing server response');
             resetUploadForm();
           }
         } else {
-          showError('Upload failed: Server error ' + currentXHR.status);
+          showError('Server error: ' + currentXHR.status);
           resetUploadForm();
         }
       };
 
-      // Error handler
       currentXHR.onerror = function() {
-        showError('Network error. Please check your connection and try again.');
+        console.error('Network error during upload');
+        showError('Network error. Please check your connection.');
         resetUploadForm();
       };
 
-      // Start upload
+      currentXHR.ontimeout = function() {
+        console.error('Upload timeout');
+        showError('Upload timed out. Please try again.');
+        resetUploadForm();
+      };
+
+      // Start the upload
+      console.log('Sending upload request...');
       currentXHR.send(formData);
     });
   }
 
-  // Cancel upload button
+  // Cancel upload
   if (cancelUploadBtn) {
     cancelUploadBtn.addEventListener('click', cancelUpload);
   }
@@ -758,15 +780,14 @@ function setupEventListeners() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Initializing upload page...');
   
+  // Initialize skeleton loader
+  initSkeletonLoader();
+  
   // Setup event listeners
   setupEventListeners();
   
-  // Initialize other features
-  initSkeletonLoader();
+  // Initialize navigation
   initNavigation();
-  
-  // Clear any existing file inputs on page load
-  resetUploadForm();
   
   console.log('Upload page initialized successfully');
 });
