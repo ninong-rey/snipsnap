@@ -276,6 +276,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 .upload-icon { font-size:56px; color:#fe2c55; margin-bottom:18px; }
 .upload-text { font-size:20px; font-weight:600; margin-bottom:6px; }
 .upload-subtext { color:#8a8b8f; font-size:15px; margin-bottom:20px; }
+.upload-info { color:#666; font-size:12px; margin-top:10px; line-height:1.4; }
 
 .select-video-btn { background:#fe2c55; color:#fff; border:none; padding:12px 28px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:background 0.2s; }
 .select-video-btn:hover { background:#e0264c; }
@@ -300,6 +301,9 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 .upload-success { background:#e6ffe6; color:#0f5132; border:1px solid #b6f2b6; padding:14px; border-radius:6px; text-align:center; margin-top:20px; display:none; }
 .upload-success.show { display:block; }
 
+.upload-error { background:#ffe6e6; color:#721c24; border:1px solid #f5c6cb; padding:14px; border-radius:6px; text-align:center; margin-top:20px; display:none; }
+.upload-error.show { display:block; }
+
 /* ==== PROGRESS BAR ==== */
 #uploadProgressContainer { display:none; margin-top:20px; height:20px; border-radius:8px; overflow:hidden; background:#eee; position:relative; }
 #uploadProgressBar { width:0%; height:100%; background:linear-gradient(90deg,#ff0050,#ffb400,#00ffea,#ff0050); background-size:300% 100%; border-radius:8px; transition:width 0.2s ease-out; animation:gradientShift 2s linear infinite; position:relative; z-index:1; }
@@ -307,6 +311,10 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 @keyframes gradientShift { 0% { background-position:0% 0%; } 100% { background-position:100% 0%; } }
 
 .drag-over { border:2px dashed #00f; }
+
+.file-info { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:12px; margin-top:15px; display:none; }
+.file-info.show { display:block; }
+.file-info div { margin:5px 0; font-size:14px; }
 
 @media(max-width:768px){.container{flex-direction:column;}.sidebar{width:100%;flex-direction:row;justify-content:space-around;border-right:none;border-bottom:1px solid #eee;}.main-content{padding:20px;}}
 </style>
@@ -316,7 +324,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="logo">
-      <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar">
+      <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar" onerror="this.style.display='none'">
       SnipSnap Studio
     </div>
     <a href="{{ route('upload') }}" class="upload-btn active"><i class="fas fa-plus"></i> Upload</a>
@@ -334,6 +342,10 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
       <i class="fas fa-check-circle"></i> Video uploaded successfully!
     </div>
 
+    <div id="errorBox" class="upload-error">
+      <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+    </div>
+
     <!-- Upload Form -->
     <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ route('upload.store') }}">
       @csrf
@@ -349,8 +361,18 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
         <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <div class="upload-text">Select video to upload</div>
         <div class="upload-subtext">or drag and drop your video file</div>
+        <div class="upload-info">
+          <small>Recommended: MP4 format, under 50MB for faster upload</small>
+        </div>
         <button type="button" class="select-video-btn" id="selectVideoBtn">Select Video</button>
         <input type="file" id="videoFile" name="video" class="file-input" accept="video/*">
+      </div>
+
+      <!-- File Info -->
+      <div id="fileInfo" class="file-info">
+        <div><strong>File:</strong> <span id="fileName"></span></div>
+        <div><strong>Size:</strong> <span id="fileSize"></span></div>
+        <div><strong>Type:</strong> <span id="fileType"></span></div>
       </div>
 
       <!-- Preview -->
@@ -366,7 +388,12 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 
       <!-- Actions -->
       <div class="upload-actions">
-        <button type="button" class="cancel-btn" onclick="window.location.href='{{ route('my-web') }}'">Cancel</button>
+        <button type="button" class="cancel-btn" id="cancelUploadBtn" style="display:none;">
+          <i class="fas fa-times"></i> Cancel Upload
+        </button>
+        <button type="button" class="cancel-btn" id="backBtn" onclick="window.location.href='{{ route('my-web') }}'">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
         <button type="submit" id="uploadSubmitBtn" class="upload-submit-btn" disabled>
           <i class="fas fa-upload"></i> Upload Video
         </button>
@@ -376,155 +403,382 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 </div>
 
 <script>
-// ===== SKELETON LOADER FUNCTIONS =====
+// ===== UPLOAD CONFIGURATION =====
+const UPLOAD_CONFIG = {
+  MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
+  ALLOWED_TYPES: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/quicktime'],
+  TIMEOUT: 300000 // 5 minutes
+};
+
+// ===== GLOBAL VARIABLES =====
+let currentXHR = null;
 let loaderTimeout;
 
-// Show skeleton loading
+// ===== DOM ELEMENT SAFETY CHECK =====
+function getElement(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    console.warn(`Element with id '${id}' not found`);
+  }
+  return element;
+}
+
+// ===== SKELETON LOADER FUNCTIONS =====
 function showSkeleton() {
-  const mainContent = document.getElementById('mainContent');
-  const sidebar = document.getElementById('sidebar');
+  const mainContent = getElement('mainContent');
+  const sidebar = getElement('sidebar');
   
-  if (mainContent) {
-    mainContent.classList.add('skeleton-loading');
-  }
-  if (sidebar) {
-    sidebar.classList.add('skeleton-loading');
-  }
+  if (mainContent) mainContent.classList.add('skeleton-loading');
+  if (sidebar) sidebar.classList.add('skeleton-loading');
 }
 
-// Hide skeleton loading
 function hideSkeleton() {
-  const mainContent = document.getElementById('mainContent');
-  const sidebar = document.getElementById('sidebar');
+  const mainContent = getElement('mainContent');
+  const sidebar = getElement('sidebar');
   
-  if (mainContent) {
-    mainContent.classList.remove('skeleton-loading');
-  }
-  if (sidebar) {
-    sidebar.classList.remove('skeleton-loading');
-  }
+  if (mainContent) mainContent.classList.remove('skeleton-loading');
+  if (sidebar) sidebar.classList.remove('skeleton-loading');
 }
 
-// Initialize skeleton loader on page load
 function initSkeletonLoader() {
-  // Show skeleton immediately
   showSkeleton();
-  
-  // Hide loader after content is loaded (simulate loading time)
-  setTimeout(() => {
-    hideSkeleton();
-  }, 2000); // 2 seconds loading time
+  setTimeout(() => hideSkeleton(), 2000);
 }
 
-// Enhanced navigation with skeleton loaders
 function initNavigation() {
   const sidebarLinks = document.querySelectorAll('.menu-item');
   sidebarLinks.forEach(link => {
     link.addEventListener('click', function(e) {
-      if (this.classList.contains('active') || this.getAttribute('href') === '#') {
-        return;
-      }
-      
-      // Show skeleton for navigation
+      if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
       showSkeleton();
-      
-      // Set timeout to hide loader (in case navigation is slow)
-      loaderTimeout = setTimeout(() => {
-        hideSkeleton();
-      }, 3000);
+      loaderTimeout = setTimeout(() => hideSkeleton(), 3000);
     });
   });
 }
 
-// Initialize everything when DOM is ready
+// ===== FILE VALIDATION =====
+function validateFile(file) {
+  if (!file) return false;
+  
+  // Check file type
+  if (!UPLOAD_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+    showError('Please select a valid video file (MP4, AVI, MOV, WMV)');
+    return false;
+  }
+
+  // Check file size
+  if (file.size > UPLOAD_CONFIG.MAX_FILE_SIZE) {
+    const maxSizeMB = UPLOAD_CONFIG.MAX_FILE_SIZE / (1024 * 1024);
+    showError(`File too large. Please select a video under ${maxSizeMB}MB.`);
+    return false;
+  }
+
+  return true;
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showFileInfo(file) {
+  const fileName = getElement('fileName');
+  const fileSize = getElement('fileSize');
+  const fileType = getElement('fileType');
+  const fileInfo = getElement('fileInfo');
+  
+  if (fileName) fileName.textContent = file.name;
+  if (fileSize) fileSize.textContent = formatFileSize(file.size);
+  if (fileType) fileType.textContent = file.type;
+  if (fileInfo) fileInfo.classList.add('show');
+}
+
+// ===== UPLOAD MANAGEMENT =====
+function toggleUploadButtons(uploading) {
+  const cancelUploadBtn = getElement('cancelUploadBtn');
+  const backBtn = getElement('backBtn');
+  
+  if (cancelUploadBtn) {
+    cancelUploadBtn.style.display = uploading ? 'block' : 'none';
+  }
+  if (backBtn) {
+    backBtn.style.display = uploading ? 'none' : 'block';
+  }
+}
+
+function resetUploadForm() {
+  const uploadBtn = getElement('uploadSubmitBtn');
+  const progressContainer = getElement('uploadProgressContainer');
+  const progressBar = getElement('uploadProgressBar');
+  const progressText = getElement('uploadProgressBarText');
+  const fileInfo = getElement('fileInfo');
+  const previewBox = getElement('videoPreview');
+  const fileInput = getElement('videoFile');
+  
+  if (uploadBtn) {
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+  }
+  if (progressContainer) progressContainer.style.display = 'none';
+  if (progressBar) progressBar.style.width = '0%';
+  if (progressText) progressText.textContent = '0%';
+  if (fileInfo) fileInfo.classList.remove('show');
+  if (previewBox) previewBox.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+  
+  toggleUploadButtons(false);
+  hideError();
+}
+
+function showError(message) {
+  const errorMessage = getElement('errorMessage');
+  const errorBox = getElement('errorBox');
+  
+  if (errorMessage) errorMessage.textContent = message;
+  if (errorBox) {
+    errorBox.classList.add('show');
+    setTimeout(() => {
+      if (errorBox) errorBox.classList.remove('show');
+    }, 5000);
+  }
+}
+
+function hideError() {
+  const errorBox = getElement('errorBox');
+  if (errorBox) errorBox.classList.remove('show');
+}
+
+function showSuccess() {
+  const successBox = getElement('successBox');
+  if (successBox) {
+    successBox.classList.add('show');
+    setTimeout(() => {
+      if (successBox) successBox.classList.remove('show');
+    }, 3000);
+  }
+}
+
+function cancelUpload() {
+  if (currentXHR) {
+    currentXHR.abort();
+    resetUploadForm();
+    showError('Upload cancelled');
+  }
+}
+
+// ===== UPLOAD EVENT HANDLERS =====
+function setupEventListeners() {
+  const selectBtn = getElement('selectVideoBtn');
+  const fileInput = getElement('videoFile');
+  const uploadArea = getElement('uploadArea');
+  const uploadForm = getElement('uploadForm');
+  const cancelUploadBtn = getElement('cancelUploadBtn');
+  const previewBox = getElement('videoPreview');
+  const previewVideo = previewBox ? previewBox.querySelector('video') : null;
+  const uploadBtn = getElement('uploadSubmitBtn');
+
+  // Select video button
+  if (selectBtn && fileInput) {
+    selectBtn.addEventListener('click', () => fileInput.click());
+  }
+
+  // File input change
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        if (!validateFile(file)) {
+          fileInput.value = '';
+          return;
+        }
+        
+        if (previewVideo) {
+          previewVideo.src = URL.createObjectURL(file);
+        }
+        if (previewBox) {
+          previewBox.style.display = 'block';
+        }
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+        }
+        showFileInfo(file);
+        hideError();
+      }
+    });
+  }
+
+  // Drag and drop
+  if (uploadArea) {
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      
+      if (file) {
+        if (!validateFile(file)) return;
+        
+        if (fileInput) {
+          fileInput.files = e.dataTransfer.files;
+        }
+        if (previewVideo) {
+          previewVideo.src = URL.createObjectURL(file);
+        }
+        if (previewBox) {
+          previewBox.style.display = 'block';
+        }
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+        }
+        showFileInfo(file);
+        hideError();
+      }
+    });
+  }
+
+  // Form submission
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const fileInput = getElement('videoFile');
+      const file = fileInput ? fileInput.files[0] : null;
+      
+      if (!file) {
+        showError('Please select a video file.');
+        return;
+      }
+
+      if (!validateFile(file)) return;
+
+      const formData = new FormData(this);
+      
+      // Update UI for upload state
+      const uploadBtn = getElement('uploadSubmitBtn');
+      const successBox = getElement('successBox');
+      const progressContainer = getElement('uploadProgressContainer');
+      const progressBar = getElement('uploadProgressBar');
+      const progressText = getElement('uploadProgressBarText');
+      
+      if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+      }
+      if (successBox) successBox.classList.remove('show');
+      hideError();
+
+      if (progressContainer) progressContainer.style.display = 'block';
+      if (progressBar) progressBar.style.width = '0%';
+      if (progressText) progressText.textContent = '0%';
+      
+      toggleUploadButtons(true);
+
+      currentXHR = new XMLHttpRequest();
+      currentXHR.timeout = UPLOAD_CONFIG.TIMEOUT;
+
+      currentXHR.open('POST', this.action, true);
+      currentXHR.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+      // Progress tracking
+      currentXHR.upload.addEventListener('progress', e => {
+        if (e.lengthComputable) {
+          let percent = Math.round((e.loaded / e.total) * 100);
+          const progressBar = getElement('uploadProgressBar');
+          const progressText = getElement('uploadProgressBarText');
+          
+          if (progressBar) progressBar.style.width = percent + '%';
+          
+          // Show detailed progress info
+          const loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+          const totalMB = (e.total / (1024 * 1024)).toFixed(1);
+          if (progressText) {
+            progressText.textContent = `${percent}% (${loadedMB}MB / ${totalMB}MB)`;
+          }
+        }
+      });
+
+      // Timeout handler
+      currentXHR.ontimeout = function() {
+        showError('Upload timed out. Please try again with a smaller file or better connection.');
+        resetUploadForm();
+      };
+
+      // Load handler
+      currentXHR.onload = function() {
+        if (currentXHR.status === 200) {
+          try {
+            const data = JSON.parse(currentXHR.responseText);
+            if (data.success) {
+              showSuccess();
+              setTimeout(() => {
+                window.location.href = "{{ route('my-web') }}?uploaded_video=" + encodeURIComponent(data.url);
+              }, 1000);
+            } else {
+              showError('Upload failed: ' + (data.message || 'Unknown error'));
+              resetUploadForm();
+            }
+          } catch (e) {
+            showError('Error parsing server response');
+            resetUploadForm();
+          }
+        } else {
+          showError('Upload failed: Server error ' + currentXHR.status);
+          resetUploadForm();
+        }
+      };
+
+      // Error handler
+      currentXHR.onerror = function() {
+        showError('Network error. Please check your connection and try again.');
+        resetUploadForm();
+      };
+
+      // Start upload
+      currentXHR.send(formData);
+    });
+  }
+
+  // Cancel upload button
+  if (cancelUploadBtn) {
+    cancelUploadBtn.addEventListener('click', cancelUpload);
+  }
+}
+
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('Initializing upload page...');
+  
+  // Setup event listeners
+  setupEventListeners();
+  
+  // Initialize other features
   initSkeletonLoader();
   initNavigation();
-});
-
-// ===== UPLOAD FUNCTIONALITY =====
-const fileInput = document.getElementById('videoFile');
-const selectBtn = document.getElementById('selectVideoBtn');
-const previewBox = document.getElementById('videoPreview');
-const previewVideo = previewBox.querySelector('video');
-const uploadBtn = document.getElementById('uploadSubmitBtn');
-const successBox = document.getElementById('successBox');
-const uploadForm = document.getElementById('uploadForm');
-const uploadArea = document.getElementById('uploadArea');
-const progressContainer = document.getElementById('uploadProgressContainer');
-const progressBar = document.getElementById('uploadProgressBar');
-const progressText = document.getElementById('uploadProgressBarText');
-
-selectBtn.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  if(file){
-    previewVideo.src = URL.createObjectURL(file);
-    previewBox.style.display = 'block';
-    uploadBtn.disabled = false;
-  }
-});
-
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadArea.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if(file){
-    fileInput.files = e.dataTransfer.files;
-    previewVideo.src = URL.createObjectURL(file);
-    previewBox.style.display = 'block';
-    uploadBtn.disabled = false;
-  }
-});
-
-uploadForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const file = fileInput.files[0];
-  if(!file) return alert('Please select a video.');
-
-  const formData = new FormData(uploadForm);
-  uploadBtn.disabled = true;
-  uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-  successBox.classList.remove('show');
-
-  progressContainer.style.display = 'block';
-  progressBar.style.width = '0%';
-  progressText.textContent = '0%';
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', uploadForm.action, true);
-  xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
   
-  xhr.upload.addEventListener('progress', e => {
-    if(e.lengthComputable){
-      let percent = Math.round((e.loaded / e.total) * 100);
-      progressBar.style.width = percent + '%';
-      progressText.textContent = percent + '%';
-    }
-  });
+  // Clear any existing file inputs on page load
+  resetUploadForm();
+  
+  console.log('Upload page initialized successfully');
+});
 
-  xhr.onload = function(){
-    if(xhr.status === 200){
-      const data = JSON.parse(xhr.responseText);
-      if(data.success){
-        // Redirect to /my-web with query param for overlay
-        window.location.href = "{{ route('my-web') }}?uploaded_video=" + encodeURIComponent(data.url);
-      } else {
-        alert('Upload failed: ' + (data.message || 'Unknown error'));
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-      }
-    } else {
-      alert('Upload failed: Server error');
-      uploadBtn.disabled = false;
-      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-    }
-  };
-
-  xhr.send(formData);
+// Clean up object URLs when leaving the page
+window.addEventListener('beforeunload', function() {
+  const previewBox = getElement('videoPreview');
+  const previewVideo = previewBox ? previewBox.querySelector('video') : null;
+  
+  if (previewVideo && previewVideo.src) {
+    URL.revokeObjectURL(previewVideo.src);
+  }
 });
 </script>
 </body>
