@@ -125,10 +125,15 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 <body>
 <div class="container">
   <div class="sidebar" id="sidebar">
-    <div class="logo">
-      <img src="{{ secure_asset('default-avatar.png') }}" alt="Avatar" onerror="this.style.display='none'">
-      SnipSnap Studio
-    </div>
+   <div class="logo">
+  <img src="{{ asset('default-avatar.png') }}" alt="Avatar" 
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+       style="width:32px;height:32px;">
+  <div style="display:none; width:32px;height:32px;background:#fe2c55;border-radius:6px;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;">
+    SS
+  </div>
+  SnipSnap Studio
+</div>
     <a href="{{ route('upload') }}" class="upload-btn active"><i class="fas fa-plus"></i> Upload</a>
     <a href="{{ route('my-web') }}" class="menu-item"><i class="fas fa-home"></i> Home</a>
   </div>
@@ -230,7 +235,7 @@ function initSkeletonLoader() {
   setTimeout(() => hideSkeleton(), 1500);
 }
 
-// ===== UPLOAD CONFIG =====
+// ===== UPLOAD CONFIGURATION =====
 const UPLOAD_CONFIG = {
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   ALLOWED_TYPES: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv'],
@@ -248,14 +253,6 @@ function showError(message) {
   console.error('Error:', message);
 }
 
-function showSuccess(message = 'Video uploaded successfully!') {
-  const successBox = document.getElementById('successBox');
-  if (successBox) {
-    successBox.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-    successBox.classList.add('show');
-  }
-}
-
 function showDebugInfo(info) {
   const debugInfo = document.getElementById('debugInfo');
   const debugContent = document.getElementById('debugContent');
@@ -263,11 +260,7 @@ function showDebugInfo(info) {
     debugContent.textContent = info;
     debugInfo.classList.add('show');
   }
-}
-
-function hideDebugInfo() {
-  const debugInfo = document.getElementById('debugInfo');
-  if (debugInfo) debugInfo.classList.remove('show');
+  console.log('Debug:', info);
 }
 
 function formatFileSize(bytes) {
@@ -279,6 +272,7 @@ function formatFileSize(bytes) {
 }
 
 function validateFile(file) {
+  console.log('Validating file:', file);
   if (!file) {
     showError('Please select a file');
     return false;
@@ -291,40 +285,28 @@ function validateFile(file) {
     showError(`File too large. Maximum size is 10MB. Your file is ${formatFileSize(file.size)}`);
     return false;
   }
+  console.log('File validation passed');
   return true;
-}
-
-function resetUploadForm() {
-  const uploadBtn = document.getElementById('uploadSubmitBtn');
-  const progressContainer = document.getElementById('uploadProgressContainer');
-  const progressBar = document.getElementById('uploadProgressBar');
-  const progressText = document.getElementById('uploadProgressBarText');
-  const fileInfo = document.getElementById('fileInfo');
-  const previewBox = document.getElementById('videoPreview');
-  const fileInput = document.getElementById('videoFile');
-  const captionInput = document.getElementById('captionInput');
-  
-  if (uploadBtn) uploadBtn.disabled = false;
-  if (progressContainer) progressContainer.style.display = 'none';
-  if (progressBar) progressBar.style.width = '0%';
-  if (progressText) progressText.textContent = '0%';
-  if (fileInfo) fileInfo.style.display = 'none';
-  if (previewBox) previewBox.style.display = 'none';
-  if (fileInput) fileInput.value = '';
-  if (captionInput) captionInput.value = '';
 }
 
 // Upload function
 function uploadVideo() {
+  console.log('uploadVideo function called');
+  
   const fileInput = document.getElementById('videoFile');
   const file = fileInput.files[0];
   
-  if (!file || !validateFile(file)) return;
+  console.log('Selected file:', file);
   
+  if (!file || !validateFile(file)) {
+    console.log('File validation failed');
+    return;
+  }
+
   showDebugInfo('Starting upload process...');
-  
+
   // Update UI
-  const uploadBtn = document.getElementById('uploadSubmitBtn');
+  const uploadBtn = document.getElementById('testUploadBtn');
   const progressContainer = document.getElementById('uploadProgressContainer');
   const progressBar = document.getElementById('uploadProgressBar');
   const progressText = document.getElementById('uploadProgressBarText');
@@ -336,158 +318,110 @@ function uploadVideo() {
   if (progressContainer) progressContainer.style.display = 'block';
   if (progressBar) progressBar.style.width = '0%';
   if (progressText) progressText.textContent = '0%';
-  
+
   const formData = new FormData();
   formData.append('video', file);
   formData.append('caption', document.getElementById('captionInput').value);
   formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-  
+
+  console.log('FormData created, starting XHR...');
+
   currentXHR = new XMLHttpRequest();
   currentXHR.timeout = UPLOAD_CONFIG.TIMEOUT;
-  currentXHR.open('POST', '/upload', true); // Using direct path instead of route name
+  currentXHR.open('POST', '/upload', true);
   currentXHR.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  
+
+  // Progress tracking
   currentXHR.upload.addEventListener('progress', (e) => {
+    console.log('Upload progress:', e);
     if (e.lengthComputable) {
       const percent = Math.round((e.loaded / e.total) * 100);
       if (progressBar) progressBar.style.width = percent + '%';
       if (progressText) progressText.textContent = percent + '%';
+      showDebugInfo(`Upload progress: ${percent}%`);
     }
   });
-  
+
   currentXHR.onload = function() {
-    console.log('Upload response:', currentXHR.responseText);
+    console.log('XHR onload - Status:', currentXHR.status);
+    console.log('Response:', currentXHR.responseText);
     showDebugInfo(`Server response: ${currentXHR.status}`);
     
     if (currentXHR.status === 200) {
       try {
         const response = JSON.parse(currentXHR.responseText);
+        console.log('Parsed response:', response);
         
         if (response.success) {
-          showSuccess(response.message || 'Video uploaded successfully!');
-          showDebugInfo('✅ Upload successful! Preparing redirect...');
-          
-          // Wait 2 seconds then redirect
+          showDebugInfo('✅ Upload successful! Redirecting...');
           setTimeout(() => {
-            if (response.redirect_url) {
-              // Use the redirect URL from the response
-              window.location.href = response.redirect_url;
-            } else if (response.url) {
-              // Use the URL from the response with query parameter
-              window.location.href = `/web?uploaded_video=${encodeURIComponent(response.url)}`;
-            } else {
-              // Default redirect to web page
-              window.location.href = '/web';
-            }
-          }, 2000);
-          
+            window.location.href = response.redirect_url || '/web';
+          }, 1500);
         } else {
-          showError(response.message || 'Upload failed');
-          showDebugInfo(`❌ Upload failed: ${response.message}`);
-          resetUploadForm();
+          showError('Upload failed: ' + (response.message || 'Unknown error'));
+          showDebugInfo('❌ Upload failed: ' + (response.message || 'Unknown error'));
         }
       } catch (e) {
+        console.error('JSON parse error:', e);
         showError('Error processing server response');
-        showDebugInfo('❌ Error parsing JSON response');
-        resetUploadForm();
+        showDebugInfo('❌ Error parsing server response');
       }
     } else {
-      showError(`Server error: ${currentXHR.status}`);
-      showDebugInfo(`❌ Server error: ${currentXHR.status}`);
-      resetUploadForm();
+      showError('Server error: ' + currentXHR.status);
+      showDebugInfo('❌ Server error: ' + currentXHR.status);
     }
   };
-  
+
   currentXHR.onerror = function() {
+    console.error('XHR onerror');
     showError('Network error. Please check your connection.');
     showDebugInfo('❌ Network error');
-    resetUploadForm();
   };
-  
+
   currentXHR.ontimeout = function() {
+    console.error('XHR ontimeout');
     showError('Upload timed out. Please try again.');
     showDebugInfo('❌ Upload timeout');
-    resetUploadForm();
   };
-  
+
+  console.log('Sending XHR request...');
   currentXHR.send(formData);
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-  initSkeletonLoader();
+  console.log('DOM loaded - setting up event listeners');
   
   const fileInput = document.getElementById('videoFile');
-  const selectBtn = document.getElementById('selectVideoBtn');
-  const previewBox = document.getElementById('videoPreview');
-  const previewVideo = previewBox.querySelector('video');
   const uploadBtn = document.getElementById('uploadSubmitBtn');
-  const cancelBtn = document.getElementById('cancelUploadBtn');
   
-  // File selection
-  selectBtn.addEventListener('click', () => fileInput.click());
-  
-  fileInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file && validateFile(file)) {
-      // Show file info
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('fileSize').textContent = formatFileSize(file.size);
-      document.getElementById('fileType').textContent = file.type;
-      document.getElementById('fileInfo').style.display = 'block';
-      
-      // Show preview
-      previewVideo.src = URL.createObjectURL(file);
-      previewBox.style.display = 'block';
-      
-      // Enable upload button
-      if (uploadBtn) uploadBtn.disabled = false;
-      
-      hideDebugInfo();
-    } else {
-      if (uploadBtn) uploadBtn.disabled = true;
-    }
-  });
-  
-  // Upload button
+  console.log('File input:', fileInput);
+  console.log('Upload button:', uploadBtn);
+
+  // Upload button click
   if (uploadBtn) {
-    uploadBtn.addEventListener('click', uploadVideo);
+    uploadBtn.addEventListener('click', function(e) {
+      console.log('Upload button clicked');
+      e.preventDefault();
+      uploadVideo();
+    });
+  } else {
+    console.error('Upload button not found!');
   }
-  
-  // Cancel button
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', function() {
-      if (currentXHR) {
-        currentXHR.abort();
-        showDebugInfo('Upload cancelled by user');
+
+  // File input change
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      console.log('File input changed:', this.files[0]);
+      const file = this.files[0];
+      if (file) {
+        console.log('File selected:', file.name, file.size, file.type);
+        document.getElementById('uploadSubmitBtn').disabled = false;
       }
-      resetUploadForm();
-      showError('Upload cancelled');
     });
   }
-  
-  // Drag and drop
-  const uploadArea = document.getElementById('uploadArea');
-  uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('drag-over');
-  });
-  
-  uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('drag-over');
-  });
-  
-  uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file && validateFile(file)) {
-      fileInput.files = e.dataTransfer.files;
-      fileInput.dispatchEvent(new Event('change'));
-    }
-  });
-  
-  console.log('Upload page initialized successfully');
+
+  console.log('Event listeners setup complete');
 });
 </script>
 </body>
