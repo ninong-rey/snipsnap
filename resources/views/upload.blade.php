@@ -304,13 +304,14 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
 .upload-error { background:#ffe6e6; color:#721c24; border:1px solid #f5c6cb; padding:14px; border-radius:6px; text-align:center; margin-top:20px; display:none; }
 .upload-error.show { display:block; }
 
+.debug-info { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-top: 20px; font-family: monospace; font-size: 12px; display: none; }
+.debug-info.show { display: block; }
+
 /* ==== PROGRESS BAR ==== */
 #uploadProgressContainer { display:none; margin-top:20px; height:20px; border-radius:8px; overflow:hidden; background:#eee; position:relative; }
 #uploadProgressBar { width:0%; height:100%; background:linear-gradient(90deg,#ff0050,#ffb400,#00ffea,#ff0050); background-size:300% 100%; border-radius:8px; transition:width 0.2s ease-out; animation:gradientShift 2s linear infinite; position:relative; z-index:1; }
 #uploadProgressBarText { position:absolute; top:0; left:50%; transform:translateX(-50%); height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; color:#fff; z-index:2; text-shadow:0 0 3px rgba(0,0,0,0.5); }
 @keyframes gradientShift { 0% { background-position:0% 0%; } 100% { background-position:100% 0%; } }
-
-.drag-over { border:2px dashed #00f; }
 
 .file-info { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:12px; margin-top:15px; display:none; }
 .file-info.show { display:block; }
@@ -346,6 +347,12 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
       <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
     </div>
 
+    <!-- Debug Info -->
+    <div id="debugInfo" class="debug-info">
+      <strong>Debug Information:</strong>
+      <div id="debugContent"></div>
+    </div>
+
     <!-- Upload Form -->
     <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{{ route('upload.store') }}">
       @csrf
@@ -362,7 +369,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
         <div class="upload-text">Select video to upload</div>
         <div class="upload-subtext">or drag and drop your video file</div>
         <div class="upload-info">
-          <small>Recommended: MP4 format, under 50MB for faster upload</small>
+          <small>Recommended: MP4 format, under 10MB for faster upload (Free tier limit)</small>
         </div>
         <button type="button" class="select-video-btn" id="selectVideoBtn">Select Video</button>
         <input type="file" id="videoFile" name="video" class="file-input" accept="video/*">
@@ -397,23 +404,17 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
         <button type="submit" id="uploadSubmitBtn" class="upload-submit-btn" disabled>
           <i class="fas fa-upload"></i> Upload Video
         </button>
+        
+        <!-- Test Connection Button -->
+        <button type="button" class="cancel-btn" id="testConnectionBtn">
+          <i class="fas fa-wifi"></i> Test Connection
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
-// ===== UPLOAD CONFIGURATION =====
-const UPLOAD_CONFIG = {
-  MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
-  ALLOWED_TYPES: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/quicktime'],
-  TIMEOUT: 300000 // 5 minutes
-};
-
-// ===== GLOBAL VARIABLES =====
-let currentXHR = null;
-let loaderTimeout;
-
 // ===== SKELETON LOADER FUNCTIONS =====
 function showSkeleton() {
   const mainContent = document.getElementById('mainContent');
@@ -455,6 +456,16 @@ function initNavigation() {
   });
 }
 
+// ===== UPLOAD CONFIGURATION =====
+const UPLOAD_CONFIG = {
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB (reduced for free tier)
+  ALLOWED_TYPES: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv'],
+  TIMEOUT: 120000 // 2 minutes
+};
+
+// ===== GLOBAL VARIABLES =====
+let currentXHR = null;
+
 // ===== HELPER FUNCTIONS =====
 function getElement(id) {
   const element = document.getElementById(id);
@@ -486,13 +497,27 @@ function showError(message) {
   console.error('Upload Error:', message);
 }
 
+function showDebugInfo(info) {
+  const debugInfo = getElement('debugInfo');
+  const debugContent = getElement('debugContent');
+  
+  if (debugInfo && debugContent) {
+    debugContent.textContent = info;
+    debugInfo.classList.add('show');
+  }
+}
+
+function hideDebugInfo() {
+  const debugInfo = getElement('debugInfo');
+  if (debugInfo) {
+    debugInfo.classList.remove('show');
+  }
+}
+
 function showSuccess() {
   const successBox = getElement('successBox');
   if (successBox) {
     successBox.classList.add('show');
-    setTimeout(() => {
-      successBox.classList.remove('show');
-    }, 3000);
   }
 }
 
@@ -525,6 +550,7 @@ function resetUploadForm() {
   if (fileInput) fileInput.value = '';
   
   toggleUploadButtons(false);
+  hideDebugInfo();
 }
 
 function validateFile(file) {
@@ -563,9 +589,39 @@ function cancelUpload() {
   if (currentXHR) {
     currentXHR.abort();
     console.log('Upload cancelled by user');
+    showDebugInfo('Upload cancelled by user');
   }
   resetUploadForm();
   showError('Upload cancelled');
+}
+
+// Test connection function
+function testConnection() {
+  showDebugInfo('Testing connection to server...');
+  
+  const testXHR = new XMLHttpRequest();
+  testXHR.timeout = 10000;
+  
+  testXHR.open('GET', '{{ route("upload") }}', true);
+  testXHR.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+  
+  testXHR.onload = function() {
+    if (testXHR.status === 200) {
+      showDebugInfo('✅ Connection successful! Server is responding.');
+    } else {
+      showDebugInfo(`❌ Server responded with status: ${testXHR.status}`);
+    }
+  };
+  
+  testXHR.onerror = function() {
+    showDebugInfo('❌ Network error: Cannot reach the server. Check if server is running.');
+  };
+  
+  testXHR.ontimeout = function() {
+    showDebugInfo('❌ Connection timeout: Server is not responding.');
+  };
+  
+  testXHR.send();
 }
 
 // ===== UPLOAD EVENT HANDLERS =====
@@ -578,6 +634,7 @@ function setupEventListeners() {
   const previewBox = getElement('videoPreview');
   const previewVideo = previewBox ? previewBox.querySelector('video') : null;
   const uploadBtn = getElement('uploadSubmitBtn');
+  const testConnectionBtn = getElement('testConnectionBtn');
 
   // Select video button
   if (selectBtn && fileInput) {
@@ -610,6 +667,7 @@ function setupEventListeners() {
         }
 
         console.log('File validated and ready for upload');
+        hideDebugInfo();
       } else {
         this.value = '';
         if (uploadBtn) uploadBtn.disabled = true;
@@ -656,6 +714,7 @@ function setupEventListeners() {
         }
 
         console.log('Dropped file validated and ready for upload');
+        hideDebugInfo();
       }
     });
   }
@@ -679,6 +738,7 @@ function setupEventListeners() {
       }
 
       console.log('Starting upload process for file:', file.name);
+      showDebugInfo('Starting upload...');
 
       // Update UI
       const uploadBtn = getElement('uploadSubmitBtn');
@@ -720,34 +780,39 @@ function setupEventListeners() {
           if (progressBar) progressBar.style.width = percent + '%';
           if (progressText) progressText.textContent = percent + '%';
           
+          showDebugInfo(`Upload progress: ${percent}%`);
           console.log(`Upload progress: ${percent}%`);
         }
       });
 
       currentXHR.onload = function() {
         console.log('Upload response received. Status:', currentXHR.status);
-        console.log('Response:', currentXHR.responseText);
-
+        showDebugInfo(`Server response: ${currentXHR.status}`);
+        
         if (currentXHR.status === 200) {
           try {
             const response = JSON.parse(currentXHR.responseText);
             if (response.success) {
               showSuccess();
+              showDebugInfo('✅ Upload successful! Redirecting...');
               console.log('Upload successful, redirecting...');
               setTimeout(() => {
                 window.location.href = "{{ route('my-web') }}?uploaded_video=" + encodeURIComponent(response.url);
               }, 1500);
             } else {
               showError('Upload failed: ' + (response.message || 'Unknown error'));
+              showDebugInfo('❌ Upload failed: ' + (response.message || 'Unknown error'));
               resetUploadForm();
             }
           } catch (e) {
             console.error('JSON parse error:', e);
             showError('Error processing server response');
+            showDebugInfo('❌ Error parsing server response');
             resetUploadForm();
           }
         } else {
           showError('Server error: ' + currentXHR.status);
+          showDebugInfo('❌ Server error: ' + currentXHR.status);
           resetUploadForm();
         }
       };
@@ -755,17 +820,20 @@ function setupEventListeners() {
       currentXHR.onerror = function() {
         console.error('Network error during upload');
         showError('Network error. Please check your connection.');
+        showDebugInfo('❌ Network error - Cannot reach server');
         resetUploadForm();
       };
 
       currentXHR.ontimeout = function() {
         console.error('Upload timeout');
         showError('Upload timed out. Please try again.');
+        showDebugInfo('❌ Upload timeout - Server not responding');
         resetUploadForm();
       };
 
       // Start the upload
       console.log('Sending upload request...');
+      showDebugInfo('Sending upload request to server...');
       currentXHR.send(formData);
     });
   }
@@ -773,6 +841,11 @@ function setupEventListeners() {
   // Cancel upload
   if (cancelUploadBtn) {
     cancelUploadBtn.addEventListener('click', cancelUpload);
+  }
+
+  // Test connection button
+  if (testConnectionBtn) {
+    testConnectionBtn.addEventListener('click', testConnection);
   }
 }
 
