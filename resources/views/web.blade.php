@@ -21,25 +21,12 @@
       overflow: hidden;
     }
 
-    /* ==== CONTENT SKELETON LOADER STYLES ==== */
+    /* ==== SKELETON LOADER STYLES ==== */
     .skeleton {
       background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
       background-size: 400% 100%;
       animation: shimmer 2s infinite ease-in-out;
       border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .skeleton::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      animation: shimmerSlide 2s infinite ease-in-out;
     }
 
     @keyframes shimmer {
@@ -47,26 +34,28 @@
       100% { background-position: 200% 0; }
     }
 
-    @keyframes shimmerSlide {
-      0% { left: -100%; }
-      100% { left: 100%; }
+    .sidebar.skeleton-loading .logo::before,
+    .sidebar.skeleton-loading .search-box::before,
+    .sidebar.skeleton-loading .menu a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite ease-in-out;
+      border-radius: 8px;
+      z-index: 1;
     }
 
-    /* Feed container skeleton state */
-    .feed-container.skeleton-loading .video-post {
-      position: relative;
-    }
-
-    .feed-container.skeleton-loading .video-wrapper video,
-    .feed-container.skeleton-loading .actions,
-    .feed-container.skeleton-loading .caption,
-    .feed-container.skeleton-loading .video-controls,
-    .feed-container.skeleton-loading .play-pause-animation,
-    .feed-container.skeleton-loading .overlay {
+    .sidebar.skeleton-loading .logo > *,
+    .sidebar.skeleton-loading .search-box > *,
+    .sidebar.skeleton-loading .menu a > * {
       opacity: 0;
     }
 
-    /* Skeleton video placeholder - EXACT SAME POSITION */
     .feed-container.skeleton-loading .video-wrapper::before {
       content: '';
       position: absolute;
@@ -81,7 +70,6 @@
       z-index: 2;
     }
 
-    /* Skeleton actions placeholder - EXACT SAME POSITION */
     .feed-container.skeleton-loading .actions::before {
       content: '';
       position: absolute;
@@ -95,7 +83,6 @@
       border-radius: 24px;
     }
 
-    /* Skeleton user avatar - EXACT SAME POSITION */
     .feed-container.skeleton-loading .user-avatar-btn::before {
       content: '';
       position: absolute;
@@ -108,11 +95,6 @@
       animation: shimmer 2s infinite ease-in-out;
       border-radius: 50%;
       z-index: 2;
-    }
-
-    /* Skeleton action buttons - EXACT SAME POSITION */
-    .feed-container.skeleton-loading .action-btn {
-      position: relative;
     }
 
     .feed-container.skeleton-loading .action-btn::before {
@@ -141,7 +123,6 @@
       margin-top: 4px;
     }
 
-    /* Skeleton caption - EXACT SAME POSITION */
     .feed-container.skeleton-loading .caption::before {
       content: '';
       position: absolute;
@@ -156,40 +137,11 @@
       z-index: 2;
     }
 
-    /* ==== SIDEBAR SKELETON LOADER ==== */
-    .sidebar.skeleton-loading {
-      background: #fff;
-    }
-
-    .sidebar.skeleton-loading .logo,
-    .sidebar.skeleton-loading .search-box,
-    .sidebar.skeleton-loading .menu a,
-    .sidebar.skeleton-loading form button {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .sidebar.skeleton-loading .logo::before,
-    .sidebar.skeleton-loading .search-box::before,
-    .sidebar.skeleton-loading .menu a::before,
-    .sidebar.skeleton-loading form button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
-      background-size: 400% 100%;
-      animation: shimmer 2s infinite ease-in-out;
-      border-radius: 8px;
-      z-index: 1;
-    }
-
-    .sidebar.skeleton-loading .logo > *,
-    .sidebar.skeleton-loading .search-box > *,
-    .sidebar.skeleton-loading .menu a > *,
-    .sidebar.skeleton-loading form button > * {
+    .feed-container.skeleton-loading video,
+    .feed-container.skeleton-loading .actions,
+    .feed-container.skeleton-loading .caption,
+    .feed-container.skeleton-loading .video-controls,
+    .feed-container.skeleton-loading .play-pause-animation {
       opacity: 0;
     }
 
@@ -208,7 +160,6 @@
       flex-direction: column;
       justify-content: space-between;
       z-index: 100;
-      transition: all 0.3s ease;
     }
 
     .logo {
@@ -219,7 +170,6 @@
       font-size: 20px;
       margin-bottom: 20px;
       color: var(--text-color);
-      transition: all 0.3s ease;
     }
 
     .logo img { 
@@ -274,6 +224,7 @@
       overflow: hidden;
     }
 
+    /* PRESERVED SIDEBAR HOVER ANIMATIONS */
     .menu a::before {
       content: '';
       position: absolute;
@@ -322,11 +273,6 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       background: #fff;
-      transition: opacity 0.3s ease;
-    }
-
-    .feed-container.skeleton-loading {
-      opacity: 0.9;
     }
 
     .video-post {
@@ -338,7 +284,6 @@
       align-items: center;
       background: #fff;
       position: relative;
-      flex-direction: column;
     }
 
     .video-wrapper {
@@ -357,7 +302,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity 0.3s ease;
     }
 
     /* ==== VIDEO CONTROLS ==== */
@@ -504,7 +448,6 @@
       font-size: 12px;
       font-weight: 600;
       color: #fff;
-      transition: all 0.3s ease;
     }
 
     .user-avatar-btn {
@@ -587,16 +530,6 @@
     .comment {
       padding: 8px 0;
       border-bottom: 1px solid #f2f2f2;
-      animation: slideInComment 0.3s ease;
-    }
-
-    @keyframes slideInComment {
-      from { transform: translateX(-10px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    .comment strong { 
-      color: var(--accent); 
     }
 
     .comment-input {
@@ -612,12 +545,6 @@
       border-radius: 20px;
       padding: 8px 12px;
       outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .comment-input input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(254, 44, 85, 0.1);
     }
 
     .comment-input button {
@@ -629,12 +556,6 @@
       height: 38px;
       cursor: pointer;
       font-size: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .comment-input button:hover {
-      background: #e0264c;
-      transform: scale(1.1);
     }
 
     /* ==== UPLOAD OVERLAY ==== */
@@ -668,7 +589,7 @@
   <aside class="sidebar" id="sidebar">
     <div>
       <div class="logo">
-        <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap">
+        <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
         SnipSnap
       </div>
 
@@ -723,7 +644,7 @@
 
     <form method="POST" action="{{ route('logout.perform') }}">
       @csrf
-      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;transition:all 0.3s ease;">
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </button>
     </form>
@@ -743,7 +664,7 @@
         overlay.style.animation = 'slideInRight 0.5s ease reverse';
         setTimeout(() => overlay.remove(), 500);
       }
-    }, 5000);
+    }, 3000);
   </script>
   @endif
 
@@ -753,19 +674,24 @@
     <div class="video-post" data-video-id="{{ $video->id }}">
       <div class="video-wrapper">
         @php
-          $videoUrl = $video->url ?? null;
-          if (!$videoUrl && !empty($video->file_path)) {
-            $videoUrl = asset('storage/' . $video->file_path);
-          }
+          // FIXED: Simple video URL handling
+          $videoUrl = $video->url ?? asset('storage/' . ($video->file_path ?? 'videos/default.mp4'));
         @endphp
 
-        @if($videoUrl)
-          <video src="{{ asset('storage/' . ($video->file_path ?? $video->url)) }}" controls loop playsinline preload="metadata"></video>
-        @else
-          <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">
-            Video not available
-          </div>
-        @endif
+        <video 
+          src="{{ $videoUrl }}" 
+          loop 
+          playsinline 
+          preload="metadata"
+          poster="{{ asset('default-video-poster.jpg') }}"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        </video>
+        
+        <!-- Fallback if video fails to load -->
+        <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+          <span>Video unavailable</span>
+        </div>
 
         <!-- Play/Pause animation -->
         <div class="play-pause-animation">
@@ -787,13 +713,14 @@
           </div>
         </div>
 
-        <!-- Actions (like, comment, share) -->
+        <!-- Actions -->
         <div class="actions">
           @php $videoUser = $video->user; @endphp
           @if($videoUser)
           <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
             <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
-                 alt="{{ $videoUser->username ?? $videoUser->name }}">
+                 alt="{{ $videoUser->username ?? $videoUser->name }}"
+                 onerror="this.src='{{ asset('default-avatar.png') }}'">
           </div>
           @endif
 
@@ -843,109 +770,30 @@
   </main>
 
   <script>
-    // ===== CONTENT SKELETON LOADER FUNCTIONS =====
-    let loaderTimeout;
-
-    // Show content skeleton loading
-    function showContentSkeleton() {
-      const feedContainer = document.getElementById('feedContainer');
-      const sidebar = document.getElementById('sidebar');
-      if (feedContainer) {
-        feedContainer.classList.add('skeleton-loading');
-      }
-      if (sidebar) {
-        sidebar.classList.add('skeleton-loading');
-      }
+    // ===== SKELETON LOADER =====
+    function showSkeleton() {
+      document.getElementById('feedContainer').classList.add('skeleton-loading');
+      document.getElementById('sidebar').classList.add('skeleton-loading');
     }
 
-    // Hide content skeleton loading
-    function hideContentSkeleton() {
-      const feedContainer = document.getElementById('feedContainer');
-      const sidebar = document.getElementById('sidebar');
-      if (feedContainer) {
-        feedContainer.classList.remove('skeleton-loading');
-      }
-      if (sidebar) {
-        sidebar.classList.remove('skeleton-loading');
-      }
+    function hideSkeleton() {
+      document.getElementById('feedContainer').classList.remove('skeleton-loading');
+      document.getElementById('sidebar').classList.remove('skeleton-loading');
     }
-
-    // Show individual sidebar link skeleton
-    function showSidebarSkeleton(link) {
-      if (link) {
-        link.classList.add('loading');
-      }
-    }
-
-    // Hide sidebar skeleton
-    function hideSidebarSkeleton() {
-      document.querySelectorAll('.menu a.loading').forEach(link => {
-        link.classList.remove('loading');
-      });
-    }
-
-    // Show active page skeleton on reload
-    function showActivePageSkeleton() {
-      const activeLink = document.querySelector('.menu a.active');
-      if (activeLink) {
-        showSidebarSkeleton(activeLink);
-      }
-    }
-
-    // Initialize skeleton loader on page load
-    function initSkeletonLoader() {
-      // Show skeleton immediately
-      showContentSkeleton();
-      showActivePageSkeleton();
-      
-      // Hide loader after content is loaded
-      setTimeout(() => {
-        hideContentSkeleton();
-        hideSidebarSkeleton();
-      }, 2000); // 2 seconds loading time
-    }
-
-    // Enhanced navigation with skeleton loaders
-    function initSidebarNavigation() {
-      const sidebarLinks = document.querySelectorAll('.menu a');
-      sidebarLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          if (this.classList.contains('active') || this.getAttribute('href') === '#') {
-            return;
-          }
-          
-          // Show skeleton for clicked link and content
-          showSidebarSkeleton(this);
-          showContentSkeleton();
-          
-          // Set timeout to hide loader
-          loaderTimeout = setTimeout(() => {
-            hideContentSkeleton();
-            hideSidebarSkeleton();
-          }, 3000);
-        });
-      });
-    }
-
-    // Initialize everything when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-      initSkeletonLoader();
-      initSidebarNavigation();
-    });
 
     // ===== VIDEO FUNCTIONS =====
     const likedVideos = new Set();
     let lastTapTime = 0;
 
     function goToUserProfile(userIdentifier) {
-      const profileLink = document.querySelector('a[data-route="profile"]');
-      showSidebarSkeleton(profileLink);
-      showContentSkeleton();
-      if (userIdentifier && isNaN(userIdentifier)) {
-        window.location.href = `/user/${userIdentifier}`;
-      } else {
-        window.location.href = `/profile`;
-      }
+      showSkeleton();
+      setTimeout(() => {
+        if (userIdentifier && isNaN(userIdentifier)) {
+          window.location.href = `/user/${userIdentifier}`;
+        } else {
+          window.location.href = `/profile`;
+        }
+      }, 500);
     }
 
     function togglePlayPause(overlay, event) {
@@ -968,7 +816,10 @@
       animation.classList.add('active');
 
       if (video.paused) {
-        video.play().catch(() => { video.muted = true; video.play(); });
+        video.play().catch(() => { 
+          video.muted = true; 
+          video.play().catch(console.error);
+        });
         icon.classList.replace('fa-play', 'fa-pause');
       } else {
         video.pause();
@@ -996,7 +847,6 @@
       heart.className = 'fa-solid fa-heart heart active';
       heart.style.left = `${x}px`;
       heart.style.top = `${y}px`;
-      heart.style.transform = 'translate(-50%, -50%)';
       container.appendChild(heart);
       setTimeout(() => heart.remove(), 1400);
     }
@@ -1096,22 +946,48 @@
       list.scrollTop = list.scrollHeight;
     }
 
-    // Auto-play videos when in view
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        const video = entry.target.querySelector('video');
-        const icon = entry.target.querySelector('.play-pause-animation i');
-        if (entry.isIntersecting) {
-          video.play().catch(() => { video.muted = true; video.play(); });
-          if (icon) icon.classList.replace('fa-play', 'fa-pause');
-        } else {
-          video.pause();
-          if (icon) icon.classList.replace('fa-pause', 'fa-play');
-        }
-      });
-    }, { threshold: 0.8 });
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show skeleton loader
+      showSkeleton();
+      
+      // Auto-play videos when in view
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const video = entry.target.querySelector('video');
+          const icon = entry.target.querySelector('.play-pause-animation i');
+          if (entry.isIntersecting) {
+            video.play().catch(() => { 
+              video.muted = true; 
+              video.play().catch(console.error);
+            });
+            if (icon) icon.classList.replace('fa-play', 'fa-pause');
+          } else {
+            video.pause();
+            if (icon) icon.classList.replace('fa-pause', 'fa-play');
+          }
+        });
+      }, { threshold: 0.8 });
 
-    document.querySelectorAll('.video-post').forEach(post => observer.observe(post));
+      document.querySelectorAll('.video-post').forEach(post => observer.observe(post));
+      
+      // Hide skeleton after 2 seconds
+      setTimeout(() => {
+        hideSkeleton();
+      }, 2000);
+
+      // Navigation with skeleton
+      document.querySelectorAll('.menu a').forEach(link => {
+        link.addEventListener('click', function(e) {
+          if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
+          e.preventDefault();
+          showSkeleton();
+          setTimeout(() => {
+            window.location.href = this.getAttribute('href');
+          }, 500);
+        });
+      });
+    });
   </script>
 </body>
 </html>
