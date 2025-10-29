@@ -230,6 +230,41 @@ Route::get('/check-web-blade-syntax', function() {
     
     return "<h2>PHP Syntax Check:</h2><pre>" . $output . "</pre>";
 });
+Route::get('/minimal-web-test', function() {
+    try {
+        $videos = \App\Models\Video::all();
+        
+        // Return absolute minimum web.blade.php
+        return "
+            <!DOCTYPE html>
+            <html>
+            <head><title>Test</title></head>
+            <body>
+                <h1>Testing Videos - Minimal Version</h1>
+                <p>If this works, your main web.blade.php has complex layout issues</p>
+                " . count($videos) . " videos found<br><br>
+        ";
+        
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+Route::get('/test-assets', function() {
+    $videos = \App\Models\Video::all();
+    
+    echo "<h1>Testing Video URLs</h1>";
+    foreach ($videos as $video) {
+        echo "Video {$video->id}:<br>";
+        echo "File Path: {$video->file_path}<br>";
+        echo "Full URL: " . asset('storage/' . $video->file_path) . "<br>";
+        
+        // Test if file actually exists
+        $fullPath = storage_path('app/public/' . $video->file_path);
+        echo "File exists: " . (file_exists($fullPath) ? '✅ YES' : '❌ NO') . "<br><br>";
+    }
+    
+    return "Asset test complete";
+});
 
 /*
 |--------------------------------------------------------------------------
