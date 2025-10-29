@@ -672,15 +672,18 @@ use Illuminate\Support\Str;
   @endif
 
   <!-- Feed -->
-  <main class="feed-container" id="feedContainer">
-    @foreach($videos as $video)
-    <div class="video-post" data-video-id="{{ $video->id }}">
-      <div class="video-wrapper">
-        @php
-          // FIXED: Simple video URL handling
-          $videoUrl = $video->url ?? asset('storage/' . ($video->file_path ?? 'videos/default.mp4'));
-        @endphp
+<main class="feed-container" id="feedContainer">
+  @foreach($videos as $video)
+  <div class="video-post" data-video-id="{{ $video->id }}">
+    <div class="video-wrapper">
+      @php
+        // Check if video file actually exists on server
+        $fullPath = storage_path('app/public/' . $video->file_path);
+        $videoExists = file_exists($fullPath);
+        $videoUrl = $videoExists ? asset('storage/' . $video->file_path) : '';
+      @endphp
 
+      @if($videoExists)
         <video 
           src="{{ $videoUrl }}" 
           loop 
@@ -695,82 +698,90 @@ use Illuminate\Support\Str;
           <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
           <span>Video unavailable</span>
         </div>
-
-        <!-- Play/Pause animation -->
-        <div class="play-pause-animation">
-          <i class="fas fa-pause"></i>
+      @else
+        <!-- Show placeholder for missing videos -->
+        <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+          <span>Video unavailable</span>
+          <small>File was removed</small>
         </div>
+      @endif
 
-        <!-- Overlay for tap actions -->
-        <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
+      <!-- Play/Pause animation -->
+      <div class="play-pause-animation">
+        <i class="fas fa-pause"></i>
+      </div>
 
-        <!-- Video controls -->
-        <div class="video-controls">
-          <div class="volume-container">
-            <button class="control-btn volume-btn" onclick="toggleMute(this)">
-              <i class="fas fa-volume-up"></i>
-            </button>
-            <div class="volume-slider">
-              <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
-            </div>
-          </div>
-        </div>
+      <!-- Overlay for tap actions -->
+      <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
 
-        <!-- Actions -->
-        <div class="actions">
-          @php $videoUser = $video->user; @endphp
-          @if($videoUser)
-          <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
-                 alt="{{ $videoUser->username ?? $videoUser->name }}"
-                 onerror="this.src='{{ asset('default-avatar.png') }}'">
+      <!-- Video controls -->
+      <div class="video-controls">
+        <div class="volume-container">
+          <button class="control-btn volume-btn" onclick="toggleMute(this)">
+            <i class="fas fa-volume-up"></i>
+          </button>
+          <div class="volume-slider">
+            <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
           </div>
-          @endif
-
-          <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
-            <i class="fa-solid fa-heart"></i>
-            <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="toggleComments(this)">
-            <i class="fa-solid fa-comment"></i>
-            <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="shareVideo({{ $video->id }})">
-            <i class="fa-solid fa-share"></i>
-            <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-          </div>
-        </div>
-
-        <!-- Caption -->
-        <div class="caption">
-          <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-          {{ $video->caption ?? '' }}
         </div>
       </div>
 
-      <!-- Comments Panel -->
-      <div class="comments-panel">
-        <div class="comments-header">
-          Comments
-          <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
+      <!-- Actions -->
+      <div class="actions">
+        @php $videoUser = $video->user; @endphp
+        @if($videoUser)
+        <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+          <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
+               alt="{{ $videoUser->username ?? $videoUser->name }}"
+               onerror="this.src='{{ asset('default-avatar.png') }}'">
         </div>
-        <div class="comments-list" id="comments-list-{{ $video->id }}">
-          @foreach($video->comments->where('parent_id', null) as $comment)
-            @php $commentUser = $comment->user; @endphp
-            <div class="comment">
-              <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
-              {{ $comment->content ?? '' }}
-            </div>
-          @endforeach
+        @endif
+
+        <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+          <i class="fa-solid fa-heart"></i>
+          <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
         </div>
-        <div class="comment-input">
-          <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
-          <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="action-btn" onclick="toggleComments(this)">
+          <i class="fa-solid fa-comment"></i>
+          <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
         </div>
+        <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+          <i class="fa-solid fa-share"></i>
+          <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
+        </div>
+      </div>
+
+      <!-- Caption -->
+      <div class="caption">
+        <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
+        {{ $video->caption ?? '' }}
       </div>
     </div>
-    @endforeach
-  </main>
+
+    <!-- Comments Panel -->
+    <div class="comments-panel">
+      <div class="comments-header">
+        Comments
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
+      </div>
+      <div class="comments-list" id="comments-list-{{ $video->id }}">
+        @foreach($video->comments->where('parent_id', null) as $comment)
+          @php $commentUser = $comment->user; @endphp
+          <div class="comment">
+            <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
+            {{ $comment->content ?? '' }}
+          </div>
+        @endforeach
+      </div>
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
+        <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+  @endforeach
+</main>
 
   <script>
     // ===== SKELETON LOADER =====
