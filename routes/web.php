@@ -180,15 +180,7 @@ Route::get('/debug-login', function() {
     echo "Session Domain: " . config('session.domain') . "<br>";
     
     return "Basic debug info above";
-});
-Route::get('/', function () {
-    return 'Hello World - Basic test works!';
-});
-
-Route::get('/test', function () {
-    return 'Test route works!';
-});
-// Test routes - these work
+// Working routes
 Route::get('/', function () {
     return 'Hello World - Basic test works!';
 });
@@ -197,10 +189,22 @@ Route::get('/test', function () {
     return 'Test route works!';
 });
 
-// Step 2: Add your main web route
-Route::get('/web', [VideoController::class, 'index']);
-
-// Step 3: Test if this works
+// Debug routes
 Route::get('/test-upload-page', function () {
-    return view('upload');
+    return 'Simple upload test - no view';
+});
+
+Route::get('/web-simple', function () {
+    try {
+        $videos = \App\Models\Video::count();
+        return "Database works! Videos count: " . $videos;
+    } catch (\Exception $e) {
+        return "Database error: " . $e->getMessage();
+    }
+});
+
+/// In routes/web.php - REPLACE the broken test
+Route::get('/test-upload-page', function () {
+    return 'Simple upload test - no view';
+    // If this works, the issue is in upload.blade.php
 });
