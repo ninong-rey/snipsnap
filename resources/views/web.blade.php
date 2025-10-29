@@ -585,6 +585,25 @@
 </head>
 
 <body>
+
+  <!-- DEBUG: Check video URLs -->
+<div style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;">
+  <h4>Video Debug Info:</h4>
+  @foreach($videos as $video)
+    <div>
+      <strong>Video {{ $video->id }}:</strong><br>
+      File Path: {{ $video->file_path }}<br>
+      Generated URL: {{ asset('storage/' . $video->file_path) }}<br>
+      File Exists: 
+      @php
+        $fullPath = storage_path('app/public/' . $video->file_path);
+        echo file_exists($fullPath) ? '✅ Yes' : '❌ No';
+      @endphp
+      <hr>
+    </div>
+  @endforeach
+</div>
+
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div>
