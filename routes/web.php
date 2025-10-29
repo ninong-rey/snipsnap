@@ -375,6 +375,25 @@ Route::get('/debug-video-playback', function() {
     
     return "Video debug complete";
 });
+Route::get('/check-newest-video', function() {
+    $newestVideo = \App\Models\Video::latest()->first();
+    
+    if (!$newestVideo) {
+        return "No videos found in database";
+    }
+    
+    echo "<h1>Newest Video in Database:</h1>";
+    echo "ID: {$newestVideo->id}<br>";
+    echo "File Path: {$newestVideo->file_path}<br>";
+    echo "Created: {$newestVideo->created_at}<br>";
+    
+    // Check if file exists
+    $fullPath = storage_path('app/public/' . $newestVideo->file_path);
+    $fileExists = file_exists($fullPath);
+    echo "File exists: " . ($fileExists ? '✅ YES' : '❌ NO') . "<br>";
+    
+    return "Newest video check complete";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
