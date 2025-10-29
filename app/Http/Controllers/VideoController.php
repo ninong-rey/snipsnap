@@ -23,7 +23,6 @@ class VideoController extends Controller
      */
     public function create()
     {
-        // Simple create method - just return the view
         return view('upload');
     }
 
@@ -31,37 +30,57 @@ class VideoController extends Controller
      * Handle video upload (AJAX)
      */
     public function store(Request $request)
-{
-    // Ensure user is logged in
-    $user = auth()->user();
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'You must be logged in to upload.'], 401);
+    {
+        // ADDED: Detailed logging
+        \Log::info('=== UPLOAD STARTED ===');
+        \Log::info('Request data: ', $request->all());
+        
+        try {
+            // Ensure user is logged in
+            $user = auth()->user();
+            \Log::info('User: ' . ($user ? $user->id : 'Not authenticated'));
+            
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'You must be logged in to upload.'], 401);
+            }
+
+            // Validate file
+            $request->validate([
+                'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
+            ]);
+            \Log::info('Validation passed');
+
+            // Store file
+            $path = $request->file('video')->store('videos', 'public');
+            \Log::info('File stored: ' . $path);
+
+            // Save to DB
+            $video = new Video();
+            $video->user_id = $user->id;
+            $video->url = $path;
+            $video->file_path = $path;
+            $video->caption = $request->input('caption') ?? '';
+            $video->save();
+            \Log::info('Video saved to DB, ID: ' . $video->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Video uploaded successfully!',
+                'redirect_url' => route('my-web'),
+            ]);
+
+        } catch (\Exception $e) {
+            // THIS WILL SHOW THE EXACT ERROR
+            \Log::error('UPLOAD ERROR: ' . $e->getMessage());
+            \Log::error('Error location: ' . $e->getFile() . ':' . $e->getLine());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
-
-    // Validate file
-    $request->validate([
-        'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
-    ]);
-
-    // Store file
-    $path = $request->file('video')->store('videos', 'public');
-
-    // Save to DB - SIMPLE VERSION THAT WORKS
-    $video = new Video();
-    $video->user_id = $user->id;
-    $video->url = $path;  // Just store the path, not full URL
-    $video->file_path = $path;  // Add file_path too
-    $video->caption = $request->input('caption') ?? '';
-    $video->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Video uploaded successfully!',
-        'redirect_url' => route('my-web'),
-    ]);
-}
-
-
 
     /**
      * Show a single video page
