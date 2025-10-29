@@ -586,19 +586,24 @@
 
 <body>
 
-  <!-- DEBUG: Check video URLs -->
+  <!-- DEBUG: Check video URLs - FIXED VERSION -->
 <div style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;">
   <h4>Video Debug Info:</h4>
   @foreach($videos as $video)
     <div>
       <strong>Video {{ $video->id }}:</strong><br>
-      File Path: {{ $video->file_path }}<br>
-      Generated URL: {{ asset('storage/' . $video->file_path) }}<br>
-      File Exists: 
-      @php
-        $fullPath = storage_path('app/public/' . $video->file_path);
-        echo file_exists($fullPath) ? '✅ Yes' : '❌ No';
-      @endphp
+      File Path: "{{ $video->file_path }}"<br>
+      @if(!empty($video->file_path))
+        Generated URL: {{ asset('storage/' . $video->file_path) }}<br>
+        File Exists: 
+        @php
+          $fullPath = storage_path('app/public/' . $video->file_path);
+          echo file_exists($fullPath) ? '✅ Yes' : '❌ No';
+        @endphp
+      @else
+        ⚠️ <strong style="color: red;">FILE PATH IS EMPTY!</strong><br>
+        Video cannot play without file path!
+      @endif
       <hr>
     </div>
   @endforeach
