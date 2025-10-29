@@ -350,6 +350,31 @@ Route::get('/test-upload-response', function() {
     ]);
 });
 
+Route::get('/debug-video-playback', function() {
+    $videos = \App\Models\Video::all();
+    
+    echo "<h1>Video Playback Debug</h1>";
+    
+    foreach ($videos as $video) {
+        echo "<div style='border:1px solid #ccc; padding:10px; margin:10px;'>";
+        echo "<strong>Video {$video->id}:</strong><br>";
+        echo "File Path: {$video->file_path}<br>";
+        echo "Generated URL: " . asset('storage/' . $video->file_path) . "<br>";
+        
+        // Check if file exists on Render
+        $fullPath = storage_path('app/public/' . $video->file_path);
+        $fileExists = file_exists($fullPath);
+        echo "File exists on Render: " . ($fileExists ? '✅ YES' : '❌ NO') . "<br>";
+        
+        if (!$fileExists) {
+            echo "⚠️ <strong>Video file only exists in database, not on server!</strong><br>";
+        }
+        
+        echo "</div>";
+    }
+    
+    return "Video debug complete";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
