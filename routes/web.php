@@ -16,6 +16,7 @@ use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\UserController;
 use App\Notifications\TestNotification;
 use App\Models\User;
+use App\Models\Video;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,7 @@ use App\Models\User;
 
 // Home
 Route::get('/', [WebController::class, 'index'])->name('home');
+
 
 
 
@@ -155,4 +157,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 
     
+});
+// In routes/web.php - Add this temporary route
+Route::get('/fix-existing-videos', function() {
+    $videos = Video::all();
+    
+    foreach ($videos as $video) {
+        if (empty($video->file_path) && !empty($video->url)) {
+            // Extract path from URL or generate new path
+            $video->file_path = 'videos/' . basename($video->url);
+            $video->save();
+            echo "Fixed video {$video->id}: {$video->file_path}<br>";
+        }
+    }
+    return "All existing videos fixed!";
 });
