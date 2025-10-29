@@ -188,3 +188,19 @@ Route::get('/', function () {
 Route::get('/test', function () {
     return 'Test route works!';
 });
+// Test routes - these work
+Route::get('/', function () {
+    return 'Hello World - Basic test works!';
+});
+
+Route::get('/test', function () {
+    return 'Test route works!';
+});
+
+// Step 2: Add your main web route
+Route::get('/web', [VideoController::class, 'index']);
+
+// Step 3: Test if this works
+Route::get('/test-upload-page', function () {
+    return view('upload');
+});
