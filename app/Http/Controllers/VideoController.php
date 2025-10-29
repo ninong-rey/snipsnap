@@ -46,11 +46,10 @@ class VideoController extends Controller
     // Store file
     $path = $request->file('video')->store('videos', 'public');
 
-    // Save to DB - ⭐⭐ FIXED THE BUG HERE ⭐⭐
+    // ⭐⭐ TEMPORARY FIX - Use the working version ⭐⭐
     $video = new Video();
     $video->user_id = $user->id;
-    $video->url = asset('storage/' . $path);  // Full URL for frontend
-    $video->file_path = $path;  // ⭐⭐ THIS WAS MISSING! ⭐⭐
+    $video->url = $path;  // Keep it simple for now
     $video->caption = $request->input('caption') ?? '';
     $video->save();
 
@@ -59,6 +58,7 @@ class VideoController extends Controller
         'message' => 'Video uploaded successfully!',
         'redirect_url' => route('my-web'),
     ]);
+
 }
 
 
