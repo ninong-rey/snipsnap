@@ -176,6 +176,40 @@ Route::get('/fix-session-domain', function() {
     config(['session.domain' => '.render.com']);
     return "Session domain updated to .render.com";
 });
+Route::get('/test-web-view', function() {
+    try {
+        // Get the same data as WebController
+        $videos = \App\Models\Video::with(['user', 'comments.user'])
+            ->withCount(['likes', 'comments', 'shares'])
+            ->latest()
+            ->get();
+            
+        // Try to render the view with minimal data
+        return view('web', ['videos' => $videos]);
+        
+    } catch (\Exception $e) {
+        return "View error: " . $e->getMessage() . "<br><br>Stack trace: " . $e->getTraceAsString();
+    }
+});
+Route::get('/test-simple-view', function() {
+    try {
+        $videos = \App\Models\Video::all();
+        
+        // Return a simple HTML to test if basic view works
+        return "
+            <html>
+            <body>
+                <h1>Simple Test</h1>
+                <p>Videos count: " . count($videos) . "</p>
+                <p>First video URL: " . ($videos->first()->url ?? 'None') . "</p>
+            </body>
+            </html>
+        ";
+        
+    } catch (\Exception $e) {
+        return "Simple view error: " . $e->getMessage();
+    }
+});
 
 /*
 |--------------------------------------------------------------------------
