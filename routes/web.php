@@ -290,6 +290,58 @@ Route::get('/test-after-upload', function() {
                "<br>File: " . $e->getFile();
     }
 });
+Route::get('/force-web-error', function() {
+    // Turn on all error reporting
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    
+    try {
+        $videos = \App\Models\Video::with(['user', 'comments.user'])
+            ->withCount(['likes', 'comments', 'shares'])
+            ->latest()
+            ->get();
+
+        // Force render and catch ANY error
+        ob_start();
+        $view = view('web', ['videos' => $videos]);
+        $content = $view->render();
+        ob_end_clean();
+        
+        return $content;
+        
+    } catch (\Throwable $e) {
+        return "
+        <h1>🚨 WEB.BLADE.PHP ERROR FOUND! 🚨</h1>
+        <h3>Error Message:</h3>
+        <pre>{$e->getMessage()}</pre>
+        <h3>Error Location:</h3>
+        <pre>File: {$e->getFile()}</pre>
+        <pre>Line: {$e->getLine()}</pre>
+        <h3>Stack Trace:</h3>
+        <pre>{$e->getTraceAsString()}</pre>
+        ";
+    }
+});
+Route::get('/test-single-video', function() {
+    $video = \App\Models\Video::first();
+    
+    if (!$video) {
+        return "No videos found";
+    }
+    
+    return "
+    <!DOCTYPE html>
+    <html>
+    <head><title>Single Video Test</title></head>
+    <body>
+        <h1>Testing Single Video Display</h1>
+        <video src='" . asset('storage/' . $video->file_path) . "' controls width='300'></video>
+        <p>Video URL: " . asset('storage/' . $video->file_path) . "</p>
+        <p>If this works, the issue is in your web.blade.php layout/loops</p>
+    </body>
+    </html>
+    ";
+});
 
 /*
 |--------------------------------------------------------------------------
