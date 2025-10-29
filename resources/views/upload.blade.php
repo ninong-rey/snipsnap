@@ -137,24 +137,18 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
   </div>
 
   <div class="main-content" id="mainContent">
-    <div class="header">
-      <h1>Upload Your Video</h1>
-      <p>Share your moments with the SnipSnap community</p>
-    </div>
+  <div class="header">
+    <h1>Upload Your Video</h1>
+    <p>Share your moments with the SnipSnap community</p>
+  </div>
 
-    <div id="successBox" class="upload-success">
-      <i class="fas fa-check-circle"></i> Video uploaded successfully!
-    </div>
+  <div id="successBox" class="upload-success" style="display: none;">
+    <i class="fas fa-check-circle"></i> Video uploaded successfully!
+  </div>
 
-    <div id="errorBox" class="upload-error">
-      <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
-    </div>
-
-    <!-- Debug Info -->
-    <div id="debugInfo" class="debug-info">
-      <strong>Debug Information:</strong>
-      <div id="debugContent"></div>
-    </div>
+  <div id="errorBox" class="upload-error" style="display: none;">
+    <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+  </div>
 
     <!-- Upload Form - TESTING MULTIPLE ENDPOINTS -->
     <form id="uploadForm" method="POST" enctype="multipart/form-data">
@@ -251,14 +245,17 @@ function showError(message) {
   console.error('Error:', message);
 }
 
-function showDebugInfo(info) {
-  const debugInfo = document.getElementById('debugInfo');
-  const debugContent = document.getElementById('debugContent');
-  if (debugInfo && debugContent) {
-    debugContent.textContent = info;
-    debugInfo.classList.add('show');
+function hideError() {
+  const errorBox = document.getElementById('errorBox');
+  if (errorBox) errorBox.classList.remove('show');
+}
+
+function showSuccess(message) {
+  const successBox = document.getElementById('successBox');
+  if (successBox) {
+    successBox.textContent = message;
+    successBox.classList.add('show');
   }
-  console.log('Debug:', info);
 }
 
 function formatFileSize(bytes) {
@@ -301,7 +298,7 @@ function uploadVideo() {
     return;
   }
 
-  showDebugInfo('Starting upload process...');
+  hideError(); // Clear any previous errors
 
   // Update UI
   const uploadBtn = document.getElementById('testUploadBtn');
@@ -336,14 +333,18 @@ function uploadVideo() {
       const percent = Math.round((e.loaded / e.total) * 100);
       if (progressBar) progressBar.style.width = percent + '%';
       if (progressText) progressText.textContent = percent + '%';
-      showDebugInfo(`Upload progress: ${percent}%`);
     }
   });
 
   currentXHR.onload = function() {
     console.log('XHR onload - Status:', currentXHR.status);
     console.log('Response:', currentXHR.responseText);
-    showDebugInfo(`Server response: ${currentXHR.status}`);
+    
+    // Reset upload button
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+    }
     
     if (currentXHR.status === 200) {
       try {
@@ -351,35 +352,40 @@ function uploadVideo() {
         console.log('Parsed response:', response);
         
         if (response.success) {
-          showDebugInfo('✅ Upload successful! Redirecting...');
+          showSuccess('✅ Video uploaded successfully! Redirecting...');
           setTimeout(() => {
             window.location.href = response.redirect_url || '/web';
           }, 1500);
         } else {
           showError('Upload failed: ' + (response.message || 'Unknown error'));
-          showDebugInfo('❌ Upload failed: ' + (response.message || 'Unknown error'));
         }
       } catch (e) {
         console.error('JSON parse error:', e);
         showError('Error processing server response');
-        showDebugInfo('❌ Error parsing server response');
       }
     } else {
-      showError('Server error: ' + currentXHR.status);
-      showDebugInfo('❌ Server error: ' + currentXHR.status);
+      showError('Upload failed. Please try again.');
     }
   };
 
   currentXHR.onerror = function() {
     console.error('XHR onerror');
     showError('Network error. Please check your connection.');
-    showDebugInfo('❌ Network error');
+    // Reset upload button
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+    }
   };
 
   currentXHR.ontimeout = function() {
     console.error('XHR ontimeout');
     showError('Upload timed out. Please try again.');
-    showDebugInfo('❌ Upload timeout');
+    // Reset upload button
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+    }
   };
 
   console.log('Sending XHR request...');
@@ -391,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM loaded - setting up event listeners');
   
   const fileInput = document.getElementById('videoFile');
-  const uploadBtn = document.getElementById('testUploadBtn'); // FIXED ID
+  const uploadBtn = document.getElementById('testUploadBtn');
   const selectBtn = document.getElementById('selectVideoBtn');
   
   console.log('File input:', fileInput);
@@ -425,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (file) {
         console.log('File selected:', file.name, file.size, file.type);
         if (uploadBtn) uploadBtn.disabled = false;
+        hideError(); // Hide error when new file is selected
       }
     });
   }
