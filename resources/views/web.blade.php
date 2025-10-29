@@ -684,28 +684,34 @@ use Illuminate\Support\Str;
       @endphp
 
       @if($videoExists)
-        <video 
-          src="{{ $videoUrl }}" 
-          loop 
-          playsinline 
-          preload="metadata"
-          poster="{{ asset('default-video-poster.jpg') }}"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        </video>
-        
-        <!-- Fallback if video fails to load -->
-        <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
-        </div>
-      @else
-        <!-- Show placeholder for missing videos -->
-        <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
-          <small>File was removed</small>
-        </div>
-      @endif
+  @php
+    // Check if video URL is accessible
+    $headers = @get_headers($videoUrl);
+    $isAccessible = $headers && strpos($headers[0], '200');
+  @endphp
+  
+  @if($isAccessible)
+    <video 
+      src="{{ $videoUrl }}" 
+      loop 
+      playsinline 
+      preload="metadata"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    </video>
+  @else
+    <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+      <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+      <span>Video not accessible</span>
+    </div>
+  @endif
+@else
+  <!-- Show placeholder for missing videos -->
+  <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+    <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+    <span>Video unavailable</span>
+    <small>File was removed</small>
+  </div>
+@endif
 
       <!-- Play/Pause animation -->
       <div class="play-pause-animation">
@@ -732,10 +738,9 @@ use Illuminate\Support\Str;
         @php $videoUser = $video->user; @endphp
         @if($videoUser)
         <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-          <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : asset('default-avatar.png') }}" 
-               alt="{{ $videoUser->username ?? $videoUser->name }}"
-               onerror="this.src='{{ asset('default-avatar.png') }}'">
-        </div>
+          <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
+     alt="{{ $videoUser->username ?? $videoUser->name }}"
+     onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
         @endif
 
         <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
@@ -965,23 +970,27 @@ use Illuminate\Support\Str;
       // Show skeleton loader
       showSkeleton();
       
-      // Auto-play videos when in view
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          const video = entry.target.querySelector('video');
-          const icon = entry.target.querySelector('.play-pause-animation i');
-          if (entry.isIntersecting) {
-            video.play().catch(() => { 
-              video.muted = true; 
-              video.play().catch(console.error);
-            });
-            if (icon) icon.classList.replace('fa-play', 'fa-pause');
-          } else {
-            video.pause();
-            if (icon) icon.classList.replace('fa-pause', 'fa-play');
-          }
-        });
-      }, { threshold: 0.8 });
+      /// Auto-play videos when in view - UPDATED VERSION
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        const video = entry.target.querySelector('video');
+        const icon = entry.target.querySelector('.play-pause-animation i');
+        
+        // Only proceed if video element exists and has src
+        if (video && video.src) {
+            if (entry.isIntersecting) {
+                video.play().catch(() => { 
+                    video.muted = true; 
+                    video.play().catch(console.error);
+                });
+                if (icon) icon.classList.replace('fa-play', 'fa-pause');
+            } else {
+                video.pause();
+                if (icon) icon.classList.replace('fa-pause', 'fa-play');
+            }
+        }
+    });
+}, { threshold: 0.8 });
 
       document.querySelectorAll('.video-post').forEach(post => observer.observe(post));
       
