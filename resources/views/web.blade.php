@@ -588,37 +588,6 @@ use Illuminate\Support\Str;
 </head>
 
 <body>
-
-  <!-- DEBUG: Check video URLs - FIXED VERSION -->
-<div style="background: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;">
-  <h4>Video Debug Info:</h4>
-  @foreach($videos as $video)
-    <div>
-      <strong>Video {{ $video->id }}:</strong><br>
-      File Path: "{{ $video->file_path }}"<br>
-      @php
-// FIXED: Generate full URL in the view, not controller
-if (!empty($video->file_path)) {
-    $videoUrl = asset('storage/' . $video->file_path);
-} elseif (!empty($video->url)) {
-    // If only url exists, use it directly
-    $videoUrl = $video->url;
-    // If it's just a path, make it full URL
-    if (!Str::startsWith($videoUrl, ['http://', 'https://'])) {
-        $videoUrl = asset('storage/' . $videoUrl);
-    }
-} else {
-    $videoUrl = ''; // No video available
-}
-@endphp
-        ⚠️ <strong style="color: red;">FILE PATH IS EMPTY!</strong><br>
-        Video cannot play without file path!
-      @endif
-      <hr>
-    </div>
-  @endforeach
-</div>
-
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div>
