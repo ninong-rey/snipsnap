@@ -93,6 +93,21 @@ Route::get('/debug-login-process', function() {
         return "Login debug error: " . $e->getMessage();
     }
 });
+// Add file_path column to videos table
+Route::get('/add-file-path-column', function() {
+    try {
+        \DB::statement("ALTER TABLE videos ADD COLUMN file_path VARCHAR(255) NULL");
+        return "file_path column added to videos table!";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// Update session domain in config (temporary fix)
+Route::get('/fix-session-domain', function() {
+    config(['session.domain' => '.render.com']);
+    return "Session domain updated to .render.com";
+});
 
 /*
 |--------------------------------------------------------------------------
