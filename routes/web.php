@@ -43,27 +43,55 @@ Route::get('/test-upload-page', function () {
 });
 
 // Temporary fix route for videos
-Route::get('/fix-existing-videos', function() {
-    $videos = Video::all();
-    
-    foreach ($videos as $video) {
-        if (empty($video->file_path) && !empty($video->url)) {
-            $video->file_path = 'videos/' . basename($video->url);
-            $video->save();
-            echo "Fixed video {$video->id}: {$video->file_path}<br>";
+// Replace the broken fix route with this:
+Route::get('/fix-videos-simple', function() {
+    try {
+        // Check if file_path column exists
+        $video = Video::first();
+        if ($video && !isset($video->file_path)) {
+            return "file_path column missing from videos table";
         }
+        
+        $videos = Video::all();
+        $fixed = 0;
+        
+        foreach ($videos as $video) {
+            if (empty($video->file_path) && !empty($video->url)) {
+                // Simple fix - just use the url as file_path
+                $video->file_path = $video->url;
+                $video->save();
+                $fixed++;
+            }
+        }
+        
+        return "Fixed $fixed videos!";
+        
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
     }
-    return "All existing videos fixed!";
 });
 
-// Debug login route
-Route::get('/debug-login', function() {
-    echo "<h3>Login Debug Info:</h3>";
-    echo "APP_URL: " . config('app.url') . "<br>";
-    echo "Session Driver: " . config('session.driver') . "<br>";
-    echo "Session Domain: " . config('session.domain') . "<br>";
-    
-    return "Basic debug info above";
+Route::get('/debug-login-process', function() {
+    try {
+        echo "<h3>Login Debug Info:</h3>";
+        echo "Session ID: " . session()->getId() . "<br>";
+        echo "CSRF Token: " . csrf_token() . "<br>";
+        echo "Session Driver: " . config('session.driver') . "<br>";
+        echo "Session Domain: " . config('session.domain') . "<br>";
+        
+        // Test database connection
+        try {
+            $userCount = \App\Models\User::count();
+            echo "Users in database: " . $userCount . "<br>";
+        } catch (\Exception $e) {
+            echo "User database error: " . $e->getMessage() . "<br>";
+        }
+        
+        return "Basic login debug complete";
+        
+    } catch (\Exception $e) {
+        return "Login debug error: " . $e->getMessage();
+    }
 });
 
 /*
