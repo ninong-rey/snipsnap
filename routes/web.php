@@ -177,6 +177,10 @@ Route::get('/fix-session-domain', function() {
     return "Session domain updated to .render.com";
 });
 Route::get('/test-web-view', function() {
+    // Turn on all error reporting
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    
     try {
         // Get the same data as WebController
         $videos = \App\Models\Video::with(['user', 'comments.user'])
@@ -184,11 +188,15 @@ Route::get('/test-web-view', function() {
             ->latest()
             ->get();
             
-        // Try to render the view with minimal data
+        echo "<h2>Data loaded successfully:</h2>";
+        echo "Videos count: " . count($videos) . "<br>";
+        
+        // Try to render the view
         return view('web', ['videos' => $videos]);
         
-    } catch (\Exception $e) {
-        return "View error: " . $e->getMessage() . "<br><br>Stack trace: " . $e->getTraceAsString();
+    } catch (\Throwable $e) {
+        return "<h2>View Error:</h2>" . $e->getMessage() . 
+               "<br><br><h3>Stack Trace:</h3>" . $e->getTraceAsString();
     }
 });
 Route::get('/test-simple-view', function() {
@@ -209,6 +217,18 @@ Route::get('/test-simple-view', function() {
     } catch (\Exception $e) {
         return "Simple view error: " . $e->getMessage();
     }
+});
+Route::get('/check-web-blade-syntax', function() {
+    $filePath = resource_path('views/web.blade.php');
+    
+    if (!file_exists($filePath)) {
+        return "web.blade.php not found!";
+    }
+    
+    // Check if file has basic PHP syntax errors
+    $output = shell_exec('php -l ' . escapeshellarg($filePath) . ' 2>&1');
+    
+    return "<h2>PHP Syntax Check:</h2><pre>" . $output . "</pre>";
 });
 
 /*
