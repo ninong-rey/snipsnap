@@ -20,15 +20,60 @@ use App\Models\Video;
 
 /*
 |--------------------------------------------------------------------------
+| DEBUG ROUTES - Add these at the top for testing
+|--------------------------------------------------------------------------
+*/
+
+// Basic test routes
+Route::get('/test-basic', function () {
+    return 'Hello World - Basic test works!';
+});
+
+Route::get('/test-db', function () {
+    try {
+        $videos = Video::count();
+        return "Database works! Videos count: " . $videos;
+    } catch (\Exception $e) {
+        return "Database error: " . $e->getMessage();
+    }
+});
+
+Route::get('/test-upload-page', function () {
+    return 'Simple upload test - no view';
+});
+
+// Temporary fix route for videos
+Route::get('/fix-existing-videos', function() {
+    $videos = Video::all();
+    
+    foreach ($videos as $video) {
+        if (empty($video->file_path) && !empty($video->url)) {
+            $video->file_path = 'videos/' . basename($video->url);
+            $video->save();
+            echo "Fixed video {$video->id}: {$video->file_path}<br>";
+        }
+    }
+    return "All existing videos fixed!";
+});
+
+// Debug login route
+Route::get('/debug-login', function() {
+    echo "<h3>Login Debug Info:</h3>";
+    echo "APP_URL: " . config('app.url') . "<br>";
+    echo "Session Driver: " . config('session.driver') . "<br>";
+    echo "Session Domain: " . config('session.domain') . "<br>";
+    
+    return "Basic debug info above";
+});
+
+/*
+|--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 
-// Home
+// Home - Keep your original home route
 Route::get('/', [WebController::class, 'index'])->name('home');
-
-
-
 
 Route::get('/test-notification', function () {
     $user = User::first(); // or Auth::user()
@@ -39,7 +84,6 @@ Route::get('/test-notification', function () {
 Route::get('/fake-notification', function () {
     return view('fake-notification');
 });
-
 
 // Serve uploaded videos safely
 Route::get('/media/{path}', function ($path) {
@@ -143,7 +187,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/unread-counts', [NotificationController::class, 'getUnreadCounts']);
     Route::get('/notifications/fetch-latest', [NotificationController::class, 'fetchLatest']);
 
-
     // Messages
     Route::get('/messages', [MessagesController::class, 'index'])->name('messages.index');
     Route::get('/messages/{userId}', [MessagesController::class, 'show'])->name('messages.show');
@@ -155,56 +198,4 @@ Route::middleware('auth')->group(function () {
         return view('call-join', ['roomId' => $roomId]);
     })->name('call.join');
     Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
-
-    
-});
-// In routes/web.php - Add this temporary route
-Route::get('/fix-existing-videos', function() {
-    $videos = Video::all();
-    
-    foreach ($videos as $video) {
-        if (empty($video->file_path) && !empty($video->url)) {
-            // Extract path from URL or generate new path
-            $video->file_path = 'videos/' . basename($video->url);
-            $video->save();
-            echo "Fixed video {$video->id}: {$video->file_path}<br>";
-        }
-    }
-    return "All existing videos fixed!";
-});
-/// Simple debug route
-Route::get('/debug-login', function() {
-    echo "<h3>Login Debug Info:</h3>";
-    echo "APP_URL: " . config('app.url') . "<br>";
-    echo "Session Driver: " . config('session.driver') . "<br>";
-    echo "Session Domain: " . config('session.domain') . "<br>";
-    
-    return "Basic debug info above";
-// Working routes
-Route::get('/', function () {
-    return 'Hello World - Basic test works!';
-});
-
-Route::get('/test', function () {
-    return 'Test route works!';
-});
-
-// Debug routes
-Route::get('/test-upload-page', function () {
-    return 'Simple upload test - no view';
-});
-
-Route::get('/web-simple', function () {
-    try {
-        $videos = \App\Models\Video::count();
-        return "Database works! Videos count: " . $videos;
-    } catch (\Exception $e) {
-        return "Database error: " . $e->getMessage();
-    }
-});
-
-/// In routes/web.php - REPLACE the broken test
-Route::get('/test-upload-page', function () {
-    return 'Simple upload test - no view';
-    // If this works, the issue is in upload.blade.php
 });
