@@ -30,41 +30,39 @@ class VideoController extends Controller
      * Handle video upload (AJAX)
      */
     public function store(Request $request)
-    {
-        try {
-            $user = auth()->user();
-            
-            $request->validate([
-                'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
-            ]);
+{
+    try {
+        $user = auth()->user();
+        
+        $request->validate([
+            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
+        ]);
 
-            // Store file on Render
-            $path = $request->file('video')->store('videos', 'public');
+        // Store file on Render
+        $path = $request->file('video')->store('videos', 'public');
 
-            // Save to database
-            $video = new Video();
-            $video->user_id = $user->id;
-            $video->url = $path;  // Store path
-            $video->file_path = $path;  // Also store file_path
-            $video->caption = $request->input('caption') ?? '';
-            $video->save();
+        // Save to database
+        $video = new Video();
+        $video->user_id = $user->id;
+        $video->url = $path;
+        $video->file_path = $path;
+        $video->caption = $request->input('caption') ?? '';
+        $video->save();
 
-            // ✅ Replaced return block
-            return response()->json([
-                'success' => true,
-                'message' => 'Video uploaded successfully!',
-                'redirect_url' => route('test-after-upload'), // ⭐ FIXED HERE ⭐
-            ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Video uploaded successfully!',
+            'redirect_url' => url('/web'), // ⭐⭐ USE url() INSTEAD OF route() ⭐⭐
+        ]);
 
-        } catch (\Exception $e) {
-            Log::error('Video upload failed: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Video upload failed. Please try again.',
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        \Log::error('Upload error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Upload failed: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Show a single video page

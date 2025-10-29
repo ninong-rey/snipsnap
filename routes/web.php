@@ -342,6 +342,13 @@ Route::get('/test-single-video', function() {
     </html>
     ";
 });
+Route::get('/test-upload-response', function() {
+    return response()->json([
+        'success' => true,
+        'message' => 'Test message',
+        'redirect_url' => url('/web'),
+    ]);
+});
 
 /*
 |--------------------------------------------------------------------------
