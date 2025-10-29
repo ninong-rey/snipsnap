@@ -181,3 +181,10 @@ Route::get('/debug-login', function() {
     
     return "Basic debug info above";
 });
+Route::get('/', function () {
+    return 'Hello World - Basic test works!';
+});
+
+Route::get('/test', function () {
+    return 'Test route works!';
+});
