@@ -265,6 +265,31 @@ Route::get('/test-assets', function() {
     
     return "Asset test complete";
 });
+Route::get('/test-after-upload', function() {
+    try {
+        // Simulate what happens after upload
+        $videos = \App\Models\Video::with(['user', 'comments.user'])
+            ->withCount(['likes', 'comments', 'shares'])
+            ->latest()
+            ->get();
+            
+        echo "<h2>After Upload Simulation:</h2>";
+        echo "Videos count: " . count($videos) . "<br>";
+        
+        foreach ($videos as $video) {
+            echo "Video {$video->id}: {$video->file_path}<br>";
+        }
+        
+        // Try the actual view
+        return view('web', ['videos' => $videos]);
+        
+    } catch (\Throwable $e) {
+        return "<h2>Error in web.blade.php:</h2>" . 
+               $e->getMessage() . 
+               "<br><br>Line: " . $e->getLine() . 
+               "<br>File: " . $e->getFile();
+    }
+});
 
 /*
 |--------------------------------------------------------------------------

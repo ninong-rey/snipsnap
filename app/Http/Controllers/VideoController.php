@@ -31,53 +31,37 @@ class VideoController extends Controller
      */
     public function store(Request $request)
     {
-        // ADDED: Detailed logging
-        \Log::info('=== UPLOAD STARTED ===');
-        \Log::info('Request data: ', $request->all());
-        
         try {
-            // Ensure user is logged in
             $user = auth()->user();
-            \Log::info('User: ' . ($user ? $user->id : 'Not authenticated'));
             
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'You must be logged in to upload.'], 401);
-            }
-
-            // Validate file
             $request->validate([
                 'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
             ]);
-            \Log::info('Validation passed');
 
-            // Store file
+            // Store file on Render
             $path = $request->file('video')->store('videos', 'public');
-            \Log::info('File stored: ' . $path);
 
-            // Save to DB
+            // Save to database
             $video = new Video();
             $video->user_id = $user->id;
-            $video->url = $path;
-            $video->file_path = $path;
+            $video->url = $path;  // Store path
+            $video->file_path = $path;  // Also store file_path
             $video->caption = $request->input('caption') ?? '';
             $video->save();
-            \Log::info('Video saved to DB, ID: ' . $video->id);
 
+            // ✅ Replaced return block
             return response()->json([
                 'success' => true,
                 'message' => 'Video uploaded successfully!',
-                'redirect_url' => route('my-web'),
+                'redirect_url' => route('test-after-upload'), // ⭐ FIXED HERE ⭐
             ]);
 
         } catch (\Exception $e) {
-            // THIS WILL SHOW THE EXACT ERROR
-            \Log::error('UPLOAD ERROR: ' . $e->getMessage());
-            \Log::error('Error location: ' . $e->getFile() . ':' . $e->getLine());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+            Log::error('Video upload failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage()
+                'message' => 'Video upload failed. Please try again.',
             ], 500);
         }
     }
