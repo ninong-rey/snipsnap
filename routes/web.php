@@ -172,3 +172,12 @@ Route::get('/fix-existing-videos', function() {
     }
     return "All existing videos fixed!";
 });
+/// Simple debug route
+Route::get('/debug-login', function() {
+    echo "<h3>Login Debug Info:</h3>";
+    echo "APP_URL: " . config('app.url') . "<br>";
+    echo "Session Driver: " . config('session.driver') . "<br>";
+    echo "Session Domain: " . config('session.domain') . "<br>";
+    
+    return "Basic debug info above";
+});
