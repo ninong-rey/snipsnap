@@ -46,11 +46,11 @@ class VideoController extends Controller
     // Store file
     $path = $request->file('video')->store('videos', 'public');
 
-    // Save to DB - ⭐⭐ ADD file_path ⭐⭐
+    // Save to DB - SIMPLE VERSION THAT WORKS
     $video = new Video();
     $video->user_id = $user->id;
-    $video->url = asset('storage/' . $path);  // Full URL
-    $video->file_path = $path;  // ⭐⭐ ADD THIS LINE ⭐⭐
+    $video->url = $path;  // Just store the path, not full URL
+    $video->file_path = $path;  // Add file_path too
     $video->caption = $request->input('caption') ?? '';
     $video->save();
 
@@ -60,8 +60,6 @@ class VideoController extends Controller
         'redirect_url' => route('my-web'),
     ]);
 }
-
-
 
 
 
