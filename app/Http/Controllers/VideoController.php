@@ -46,10 +46,11 @@ class VideoController extends Controller
     // Store file
     $path = $request->file('video')->store('videos', 'public');
 
-    // Save to DB
+    // Save to DB - ⭐⭐ FIXED THE BUG HERE ⭐⭐
     $video = new Video();
-    $video->user_id = $user->id; // ✅ use $user->id safely
-    $video->url = $path;
+    $video->user_id = $user->id;
+    $video->url = asset('storage/' . $path);  // Full URL for frontend
+    $video->file_path = $path;  // ⭐⭐ THIS WAS MISSING! ⭐⭐
     $video->caption = $request->input('caption') ?? '';
     $video->save();
 
@@ -59,6 +60,7 @@ class VideoController extends Controller
         'redirect_url' => route('my-web'),
     ]);
 }
+
 
 
 
