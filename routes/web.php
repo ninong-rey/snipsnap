@@ -42,8 +42,71 @@ Route::get('/test-upload-page', function () {
     return 'Simple upload test - no view';
 });
 
-// Temporary fix route for videos
-// Replace the broken fix route with this:
+// Add file_path column to videos table
+Route::get('/add-file-path-column', function() {
+    try {
+        \DB::statement("ALTER TABLE videos ADD COLUMN file_path VARCHAR(255) NULL");
+        return "file_path column added to videos table!";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// Debug videos table structure
+Route::get('/debug-videos-table', function() {
+    try {
+        // Check if file_path column exists
+        $columns = \DB::select('SHOW COLUMNS FROM videos');
+        $columnNames = array_column($columns, 'Field');
+        
+        echo "Columns in videos table:<br>";
+        foreach ($columnNames as $column) {
+            echo "- $column<br>";
+        }
+        
+        echo "<br>Checking first video:<br>";
+        $video = \App\Models\Video::first();
+        if ($video) {
+            echo "Video ID: " . $video->id . "<br>";
+            echo "Has file_path: " . (isset($video->file_path) ? 'Yes' : 'No') . "<br>";
+            echo "file_path value: " . ($video->file_path ?? 'NULL') . "<br>";
+            echo "url value: " . $video->url . "<br>";
+        }
+        
+        return "Table debug complete";
+        
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// Better video fix route
+Route::get('/fix-videos-proper', function() {
+    try {
+        $videos = \App\Models\Video::all();
+        $fixed = 0;
+        
+        foreach ($videos as $video) {
+            if (empty($video->file_path) && !empty($video->url)) {
+                // If url is already a full path, use it directly
+                if (strpos($video->url, 'videos/') !== false) {
+                    $video->file_path = $video->url;
+                } else {
+                    $video->file_path = 'videos/' . basename($video->url);
+                }
+                $video->save();
+                $fixed++;
+            }
+        }
+        
+        return "Properly fixed $fixed videos!";
+        
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// Old video fix route (keep for now)
 Route::get('/fix-videos-simple', function() {
     try {
         // Check if file_path column exists
@@ -91,15 +154,6 @@ Route::get('/debug-login-process', function() {
         
     } catch (\Exception $e) {
         return "Login debug error: " . $e->getMessage();
-    }
-});
-// Add file_path column to videos table
-Route::get('/add-file-path-column', function() {
-    try {
-        \DB::statement("ALTER TABLE videos ADD COLUMN file_path VARCHAR(255) NULL");
-        return "file_path column added to videos table!";
-    } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
     }
 });
 
