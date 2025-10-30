@@ -91,6 +91,16 @@ Route::get('/test-upload-debug', function() {
         return "❌ Manual video creation ERROR: " . $e->getMessage();
     }
 });
+Route::get('/check-upload-form', function() {
+    return "
+    <form action='/upload' method='POST' enctype='multipart/form-data'>
+        <input type='file' name='video' accept='video/*' required>
+        <input type='text' name='caption' placeholder='Caption'>
+        <button type='submit'>Upload Test</button>
+        " . csrf_field() . "
+    </form>
+    ";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES

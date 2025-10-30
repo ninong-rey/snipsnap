@@ -31,18 +31,21 @@ class VideoController extends Controller
      */
     public function store(Request $request)
 {
+    \Log::info('=== UPLOAD STARTED ===');
+    
     try {
         $user = auth()->user();
-        
+        \Log::info('User authenticated', ['user_id' => $user->id]);
+
         $request->validate([
             'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
         ]);
+        \Log::info('Validation passed');
 
         // Store file on Render
         $path = $request->file('video')->store('videos', 'public');
+        \Log::info('File stored', ['path' => $path]);
         
-        \Log::info('File stored successfully', ['path' => $path, 'user_id' => $user->id]);
-
         // Try creating video record with different approach
         $videoData = [
             'user_id' => $user->id,
@@ -57,6 +60,7 @@ class VideoController extends Controller
         
         \Log::info('Attempting to create video record', $videoData);
         
+        // Try different creation methods
         $video = Video::create($videoData);
         
         \Log::info('Video created successfully', ['video_id' => $video->id]);
@@ -64,7 +68,7 @@ class VideoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
-            'video_id' => $video->id, // Include the ID for debugging
+            'video_id' => $video->id,
             'redirect_url' => url('/web'),
         ]);
 
