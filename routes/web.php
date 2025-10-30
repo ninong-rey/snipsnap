@@ -87,6 +87,60 @@ Route::get('/debug-all-videos-raw', function() {
     
     return "Total: " . $videos->count() . " videos";
 });
+Route::get('/test-real-upload', function() {
+    try {
+        // Simulate a real file upload
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_video');
+        file_put_contents($tempFile, 'fake video content');
+        
+        $uploadedFile = new \Illuminate\Http\UploadedFile(
+            $tempFile,
+            'test-video.mp4',
+            'video/mp4',
+            null,
+            true
+        );
+        
+        // Test the store method
+        $path = $uploadedFile->store('videos', 'public');
+        echo "Store returned: " . $path . "<br>";
+        
+        // Test creating record
+        $video = \App\Models\Video::create([
+            'user_id' => 1,
+            'url' => $path,
+            'file_path' => $path,
+            'caption' => 'Test real upload',
+        ]);
+        
+        return "✅ Real upload test SUCCESS! Video ID: " . $video->id . " with path: " . $video->file_path;
+        
+    } catch (\Exception $e) {
+        return "❌ Real upload test FAILED: " . $e->getMessage();
+    }
+});
+Route::get('/check-video-model', function() {
+    $video = new \App\Models\Video();
+    echo "Fillable fields: ";
+    print_r($video->getFillable());
+    echo "<br><br>";
+    
+    // Test creating a video with file_path
+    try {
+        $testVideo = \App\Models\Video::create([
+            'user_id' => 1,
+            'url' => 'videos/test-url.mp4',
+            'file_path' => 'videos/test-file-path.mp4',
+            'caption' => 'Test model update',
+        ]);
+        
+        echo "✅ Video created with file_path: '" . $testVideo->file_path . "'";
+        return "<br>Model test complete";
+        
+    } catch (\Exception $e) {
+        return "❌ Model test failed: " . $e->getMessage();
+    }
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
