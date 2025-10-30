@@ -42,11 +42,18 @@ class VideoController extends Controller
         ]);
         \Log::info('Validation passed');
 
-        // Store file on Render
+        // Store file and LOG THE RESULT
         $path = $request->file('video')->store('videos', 'public');
-        \Log::info('File stored', ['path' => $path]);
+        \Log::info('File stored - PATH RETURNED:', ['path' => $path]);
         
-        // Try creating video record with different approach
+        // DEBUG: Check what we're about to save
+        \Log::info('About to save video with data:', [
+            'user_id' => $user->id,
+            'url' => $path,
+            'file_path' => $path,
+            'caption' => $request->input('caption', '')
+        ]);
+        
         $videoData = [
             'user_id' => $user->id,
             'url' => $path,
@@ -58,17 +65,14 @@ class VideoController extends Controller
             'shares_count' => 0,
         ];
         
-        \Log::info('Attempting to create video record', $videoData);
-        
-        // Try different creation methods
         $video = Video::create($videoData);
-        
-        \Log::info('Video created successfully', ['video_id' => $video->id]);
+        \Log::info('Video created successfully', ['video_id' => $video->id, 'saved_path' => $video->file_path]);
 
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
             'video_id' => $video->id,
+            'file_path' => $video->file_path, // Include in response
             'redirect_url' => url('/web'),
         ]);
 
