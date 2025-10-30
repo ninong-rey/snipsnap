@@ -11,6 +11,11 @@ use App\Models\Video;
 use App\Models\User;
 use App\Models\VideoLike;
 
+// Add to the top of your VideoController
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 class VideoController extends Controller
 {
     public function __construct()

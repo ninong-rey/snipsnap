@@ -101,6 +101,22 @@ Route::get('/check-upload-form', function() {
     </form>
     ";
 });
+Route::get('/check-upload-error', function() {
+    try {
+        // Test the exact upload process
+        $testFile = request()->file('test');
+        
+        if (!$testFile) {
+            return "No file provided - this is just testing the upload logic";
+        }
+        
+        $path = $testFile->store('videos', 'public');
+        return "Store method works: " . $path;
+        
+    } catch (\Exception $e) {
+        return "ERROR: " . $e->getMessage() . "<br><br>Stack trace:<br>" . $e->getTraceAsString();
+    }
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
