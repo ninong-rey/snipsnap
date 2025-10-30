@@ -45,6 +45,31 @@ Route::get('/test-web-fix', function() {
     
     return "Test complete - " . count($videos) . " videos";
 });
+// Add this temporary route to web.php
+Route::get('/debug-video-18', function() {
+    $video18 = \App\Models\Video::find(18);
+    
+    if (!$video18) {
+        return "❌ Video 18 NOT FOUND in database!";
+    }
+    
+    return "✅ Video 18 FOUND:<br>" . 
+           "ID: {$video18->id}<br>" .
+           "File Path: {$video18->file_path}<br>" .
+           "URL: {$video18->url}<br>" .
+           "Created: {$video18->created_at}<br>" .
+           "User ID: {$video18->user_id}";
+});
+Route::get('/debug-all-videos-raw', function() {
+    $videos = \DB::table('videos')->orderBy('created_at', 'desc')->get();
+    
+    echo "<h1>Raw Database Videos (No Eloquent):</h1>";
+    foreach ($videos as $video) {
+        echo "Video {$video->id}: {$video->file_path} - Created: {$video->created_at}<br>";
+    }
+    
+    return "Total: " . $videos->count() . " videos";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
