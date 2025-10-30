@@ -17,7 +17,8 @@ class Video extends Model
         'user_id',
         'caption',
         'url',
-        'thumbnail_url', 
+        'thumbnail_url',
+        'file_path', 
         'views',
         'likes_count',
         'comments_count',
@@ -47,6 +48,7 @@ class Video extends Model
         'is_liked',
         'likes_count_formatted',
         'comments_count_formatted',
+        'file_path',
     ];
     // Add this method to your Video model
 public function shareByUser($userId): void
