@@ -24,98 +24,36 @@ use App\Models\Video;
 |--------------------------------------------------------------------------
 */
 
-// Add to your web.php routes
-Route::get('/test-web-fix', function() {
-    $videos = \App\Models\Video::with(['user', 'comments.user'])
-        ->withCount(['likes', 'comments', 'shares'])
-        ->latest()
-        ->get()
-        ->map(function ($video) {
-            if (empty($video->file_path) && !empty($video->url)) {
-                $video->file_path = $video->url;
-            }
-            return $video;
-        });
-
-    echo "<h1>Fixed WebController Output</h1>";
-    foreach ($videos as $video) {
-        echo "Video {$video->id}: {$video->file_path} - Created: {$video->created_at}<br>";
-        echo "Video URL: " . asset('storage/' . $video->file_path) . "<br><br>";
-    }
+// Add this with your other debug routes in web.php
+Route::get('/upload-debug', function() {
+    echo "<h2>Upload Debug Info:</h2>";
+    echo "POST Max Size: " . ini_get('post_max_size') . "<br>";
+    echo "Upload Max Filesize: " . ini_get('upload_max_filesize') . "<br>";
+    echo "Max File Uploads: " . ini_get('max_file_uploads') . "<br>";
+    echo "Memory Limit: " . ini_get('memory_limit') . "<br>";
     
-    return "Test complete - " . count($videos) . " videos";
-});
-// Add this temporary route to web.php
-Route::get('/debug-video-18', function() {
-    $video18 = \App\Models\Video::find(18);
+    // Test if storage is writable
+    echo "Storage writable: " . (is_writable(storage_path()) ? 'Yes' : 'No') . "<br>";
+    echo "Public storage writable: " . (is_writable(storage_path('app/public')) ? 'Yes' : 'No') . "<br>";
     
-    if (!$video18) {
-        return "❌ Video 18 NOT FOUND in database!";
-    }
-    
-    return "✅ Video 18 FOUND:<br>" . 
-           "ID: {$video18->id}<br>" .
-           "File Path: {$video18->file_path}<br>" .
-           "URL: {$video18->url}<br>" .
-           "Created: {$video18->created_at}<br>" .
-           "User ID: {$video18->user_id}";
-});
-Route::get('/debug-all-videos-raw', function() {
-    $videos = \DB::table('videos')->orderBy('created_at', 'desc')->get();
-    
-    echo "<h1>Raw Database Videos (No Eloquent):</h1>";
-    foreach ($videos as $video) {
-        echo "Video {$video->id}: {$video->file_path} - Created: {$video->created_at}<br>";
-    }
-    
-    return "Total: " . $videos->count() . " videos";
-});
-Route::get('/test-upload-debug', function() {
+    // Test file storage
     try {
-        // Test if we can create a video record manually
-        $testVideo = new \App\Models\Video();
-        $testVideo->user_id = 1; // Use an existing user ID
-        $testVideo->url = 'videos/test-debug.mp4';
-        $testVideo->file_path = 'videos/test-debug.mp4';
-        $testVideo->caption = 'Test debug video';
+        $testPath = 'videos/test.txt';
+        Storage::disk('public')->put($testPath, 'test content');
+        $exists = Storage::disk('public')->exists($testPath);
+        echo "File storage test: " . ($exists ? '✅ WORKS' : '❌ FAILED') . "<br>";
         
-        $saved = $testVideo->save();
-        
-        if ($saved) {
-            return "✅ Manual video creation SUCCESS! New ID: " . $testVideo->id;
-        } else {
-            return "❌ Manual video creation FAILED - no error thrown";
+        if ($exists) {
+            Storage::disk('public')->delete($testPath);
         }
-        
     } catch (\Exception $e) {
-        return "❌ Manual video creation ERROR: " . $e->getMessage();
+        echo "File storage error: " . $e->getMessage() . "<br>";
     }
+    
+    return "Debug complete";
 });
-Route::get('/check-upload-form', function() {
-    return "
-    <form action='/upload' method='POST' enctype='multipart/form-data'>
-        <input type='file' name='video' accept='video/*' required>
-        <input type='text' name='caption' placeholder='Caption'>
-        <button type='submit'>Upload Test</button>
-        " . csrf_field() . "
-    </form>
-    ";
-});
-Route::get('/check-upload-error', function() {
-    try {
-        // Test the exact upload process
-        $testFile = request()->file('test');
-        
-        if (!$testFile) {
-            return "No file provided - this is just testing the upload logic";
-        }
-        
-        $path = $testFile->store('videos', 'public');
-        return "Store method works: " . $path;
-        
-    } catch (\Exception $e) {
-        return "ERROR: " . $e->getMessage() . "<br><br>Stack trace:<br>" . $e->getTraceAsString();
-    }
+Route::get('/test-simple', function() {
+    return "Simple test route works!";
 });
 /*
 |--------------------------------------------------------------------------
