@@ -141,6 +141,59 @@ Route::get('/check-video-model', function() {
         return "❌ Model test failed: " . $e->getMessage();
     }
 });
+// Add these cache routes
+Route::get('/clear-cache', function() {
+    \Artisan::call('cache:clear');
+    \Artisan::call('config:clear');
+    \Artisan::call('view:clear');
+    return "Cache cleared!";
+});
+
+Route::get('/clear-all', function() {
+    \Artisan::call('cache:clear');
+    \Artisan::call('config:clear');
+    \Artisan::call('view:clear');
+    \Artisan::call('route:clear');
+    return "All caches cleared!";
+});
+Route::get('/test-upload-form', function() {
+    return '
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Upload Form</title></head>
+    <body>
+        <h1>Simple Upload Test</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+            <input type="file" name="video" accept="video/*" required>
+            <input type="text" name="caption" placeholder="Caption">
+            <button type="submit">Upload Test</button>
+            ' . csrf_field() . '
+        </form>
+        
+        <script>
+            document.getElementById("uploadForm").addEventListener("submit", function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Upload response:", data);
+                    alert("Response: " + JSON.stringify(data));
+                })
+                .catch(error => {
+                    console.error("Upload error:", error);
+                    alert("Error: " + error);
+                });
+            });
+        </script>
+    </body>
+    </html>
+    ';
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
