@@ -57,19 +57,26 @@ class VideoController extends Controller
         $path = $request->file('video')->store('videos', 'public');
         \Log::info('File stored - PATH RETURNED:', ['path' => $path]);
         
-        // FIX: Provide default caption if empty
+        // EMERGENCY FIX: ALWAYS provide a caption, ignore the request input
         $caption = $request->input('caption', 'My awesome video');
+        if (empty($caption)) {
+            $caption = 'My awesome video'; // Force a value
+        }
+        
+        \Log::info('Caption being used:', ['caption' => $caption]);
         
         $videoData = [
             'user_id' => $user->id,
             'url' => $path,
             'file_path' => $path,
-            'caption' => $caption, // This was NULL causing the error!
+            'caption' => $caption, // This MUST NOT be null
             'views' => 0,
             'likes_count' => 0,
             'comments_count' => 0,
             'shares_count' => 0,
         ];
+        
+        \Log::info('Video data to save:', $videoData);
         
         $video = Video::create($videoData);
         \Log::info('Video created successfully', ['video_id' => $video->id, 'saved_path' => $video->file_path]);
