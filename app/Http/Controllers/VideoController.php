@@ -36,7 +36,6 @@ class VideoController extends Controller
      */
     public function store(Request $request)
 {
-    // ADD ERROR DISPLAY AT TOP
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
@@ -47,29 +46,35 @@ class VideoController extends Controller
         $user = auth()->user();
         \Log::info('User authenticated', ['user_id' => $user->id]);
 
-        // FIX: Reduce max size to match server limits (2MB)
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:2048', // 2MB max
+            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:2048',
         ]);
         \Log::info('Validation passed');
 
         // Store file on Render
         $path = $request->file('video')->store('videos', 'public');
-        \Log::info('File stored - PATH RETURNED:', ['path' => $path]);
+        \Log::info('File stored:', ['path' => $path]);
         
-        // EMERGENCY FIX: ALWAYS provide a caption, ignore the request input
-        $caption = $request->input('caption', 'My awesome video');
-        if (empty($caption)) {
-            $caption = 'My awesome video'; // Force a value
+        // FIX: Properly get caption from request
+        $caption = $request->input('caption'); // This gets the textarea value
+        
+        \Log::info('Caption received:', ['caption' => $caption]);
+        
+        // Always provide a default if empty
+        if (empty($caption) || trim($caption) === '') {
+            $caption = 'Check out my video!';
+            \Log::info('Using default caption');
         }
         
-        \Log::info('Caption being used:', ['caption' => $caption]);
+        // Generate public URL for the video
+        $publicUrl = secure_asset('storage/' . $path);
+        \Log::info('Public URL:', ['url' => $publicUrl]);
         
         $videoData = [
             'user_id' => $user->id,
-            'url' => $path,
+            'url' => $publicUrl,
             'file_path' => $path,
-            'caption' => $caption, // This MUST NOT be null
+            'caption' => $caption, // This should now have proper caption
             'views' => 0,
             'likes_count' => 0,
             'comments_count' => 0,
@@ -79,19 +84,20 @@ class VideoController extends Controller
         \Log::info('Video data to save:', $videoData);
         
         $video = Video::create($videoData);
-        \Log::info('Video created successfully', ['video_id' => $video->id, 'saved_path' => $video->file_path]);
+        \Log::info('Video created successfully', ['video_id' => $video->id]);
 
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
             'video_id' => $video->id,
             'file_path' => $video->file_path,
+            'video_url' => $video->url,
+            'caption' => $video->caption, // Include caption in response for debugging
             'redirect_url' => url('/web'),
         ]);
 
     } catch (\Exception $e) {
         \Log::error('Upload error: ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
         
         return response()->json([
             'success' => false,
