@@ -221,6 +221,27 @@ Route::get('/videos/{filename}', function($filename) {
         'Content-Type' => 'video/mp4',
     ]);
 })->where('filename', '.*');
+// Basic test route
+Route::get('/test-routes', function() {
+    return "✅ Routes are working!";
+});
+
+// Test if videos route exists
+Route::get('/test-videos-route', function() {
+    return "✅ Videos route is registered!";
+});
+
+// Simple video test
+Route::get('/test-video', function() {
+    $filename = 'mjMnskzybXmYOmAAaEtNUinJGEi2skeNJAWfhfgv.mp4';
+    $path = storage_path('app/public/videos/' . $filename);
+    
+    if (!file_exists($path)) {
+        return "❌ Video file not found at: " . $path;
+    }
+    
+    return "✅ Video file exists: " . $path;
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
