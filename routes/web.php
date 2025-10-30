@@ -77,6 +77,16 @@ Route::get('/test-tiny-upload', function() {
         return "❌ Tiny upload test FAILED: " . $e->getMessage();
     }
 });
+Route::get('/debug-all-videos-raw', function() {
+    $videos = \DB::table('videos')->orderBy('created_at', 'desc')->get();
+    
+    echo "<h1>Raw Database Videos (No Eloquent):</h1>";
+    foreach ($videos as $video) {
+        echo "Video {$video->id}: {$video->file_path} - Created: {$video->created_at}<br>";
+    }
+    
+    return "Total: " . $videos->count() . " videos";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
