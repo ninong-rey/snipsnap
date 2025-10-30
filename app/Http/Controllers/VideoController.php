@@ -36,28 +36,26 @@ class VideoController extends Controller
      */
     public function store(Request $request)
 {
+    // ADD ERROR DISPLAY AT TOP
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+
     \Log::info('=== UPLOAD STARTED ===');
     
     try {
         $user = auth()->user();
         \Log::info('User authenticated', ['user_id' => $user->id]);
 
+        // FIX: Reduce max size to match server limits (2MB)
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:20480',
+            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:2048', // 2MB max
         ]);
         \Log::info('Validation passed');
 
-        // Store file and LOG THE RESULT
+        // Store file on Render
         $path = $request->file('video')->store('videos', 'public');
         \Log::info('File stored - PATH RETURNED:', ['path' => $path]);
-        
-        // DEBUG: Check what we're about to save
-        \Log::info('About to save video with data:', [
-            'user_id' => $user->id,
-            'url' => $path,
-            'file_path' => $path,
-            'caption' => $request->input('caption', '')
-        ]);
         
         $videoData = [
             'user_id' => $user->id,
@@ -77,7 +75,7 @@ class VideoController extends Controller
             'success' => true,
             'message' => 'Video uploaded successfully!',
             'video_id' => $video->id,
-            'file_path' => $video->file_path, // Include in response
+            'file_path' => $video->file_path,
             'redirect_url' => url('/web'),
         ]);
 

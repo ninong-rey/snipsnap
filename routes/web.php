@@ -55,6 +55,28 @@ Route::get('/upload-debug', function() {
 Route::get('/test-simple', function() {
     return "Simple test route works!";
 });
+Route::get('/test-tiny-upload', function() {
+    try {
+        // Test with a tiny text file (not video)
+        $testContent = "test file content";
+        $path = 'videos/test-' . time() . '.txt';
+        
+        Storage::disk('public')->put($path, $testContent);
+        
+        // Try to create database record
+        $video = \App\Models\Video::create([
+            'user_id' => 1, // Use existing user
+            'url' => $path,
+            'file_path' => $path,
+            'caption' => 'Test tiny upload',
+        ]);
+        
+        return "✅ Tiny upload test SUCCESS! Video ID: " . $video->id;
+        
+    } catch (\Exception $e) {
+        return "❌ Tiny upload test FAILED: " . $e->getMessage();
+    }
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
