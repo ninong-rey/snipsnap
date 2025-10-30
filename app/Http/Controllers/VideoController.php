@@ -52,14 +52,14 @@ class VideoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
-            'redirect_url' => url('/web'), // ⭐⭐ USE url() INSTEAD OF route() ⭐⭐
+            'redirect_url' => url('/web'),
         ]);
 
     } catch (\Exception $e) {
         \Log::error('Upload error: ' . $e->getMessage());
         return response()->json([
             'success' => false,
-            'message' => 'Upload failed: ' . $e->getMessage()
+            'message' => 'Upload failed'
         ], 500);
     }
 }
