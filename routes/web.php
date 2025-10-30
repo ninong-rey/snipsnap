@@ -194,6 +194,33 @@ Route::get('/test-upload-form', function() {
     </html>
     ';
 });
+Route::get('/fix-storage-link', function() {
+    try {
+        // Remove existing link if it exists
+        if (file_exists(public_path('storage'))) {
+            unlink(public_path('storage'));
+        }
+        
+        // Create new symlink
+        symlink(storage_path('app/public'), public_path('storage'));
+        
+        return "✅ Storage symlink created! Videos should now be accessible.";
+    } catch (\Exception $e) {
+        return "❌ Error creating symlink: " . $e->getMessage();
+    }
+});
+// Add this to your web.php - serves videos directly
+Route::get('/videos/{filename}', function($filename) {
+    $path = storage_path('app/public/videos/' . $filename);
+    
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path, [
+        'Content-Type' => 'video/mp4',
+    ]);
+})->where('filename', '.*');
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES

@@ -16,14 +16,22 @@ class WebController extends Controller
      * Show all videos on the homepage
      */
     public function index()
-    {
-        $videos = Video::with(['user', 'comments.user'])
-            ->withCount(['likes', 'comments', 'shares'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+{
+    $videos = Video::with(['user', 'comments.user'])
+        ->withCount(['likes', 'comments', 'shares'])
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($video) {
+            // Use custom video route instead of storage URL
+            if (!empty($video->file_path)) {
+                $filename = basename($video->file_path);
+                $video->video_url = url('/videos/' . $filename);
+            }
+            return $video;
+        });
 
-        return view('web', compact('videos'));
-    }
+    return view('web', compact('videos'));
+}
 
     /**
      * Handle AJAX video upload from upload.blade.php
