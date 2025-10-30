@@ -40,26 +40,41 @@ class VideoController extends Controller
 
         // Store file on Render
         $path = $request->file('video')->store('videos', 'public');
+        
+        \Log::info('File stored successfully', ['path' => $path, 'user_id' => $user->id]);
 
-        // Save to database
-        $video = new Video();
-        $video->user_id = $user->id;
-        $video->url = $path;
-        $video->file_path = $path;
-        $video->caption = $request->input('caption') ?? '';
-        $video->save();
+        // Try creating video record with different approach
+        $videoData = [
+            'user_id' => $user->id,
+            'url' => $path,
+            'file_path' => $path,
+            'caption' => $request->input('caption', ''),
+            'views' => 0,
+            'likes_count' => 0,
+            'comments_count' => 0,
+            'shares_count' => 0,
+        ];
+        
+        \Log::info('Attempting to create video record', $videoData);
+        
+        $video = Video::create($videoData);
+        
+        \Log::info('Video created successfully', ['video_id' => $video->id]);
 
         return response()->json([
             'success' => true,
             'message' => 'Video uploaded successfully!',
+            'video_id' => $video->id, // Include the ID for debugging
             'redirect_url' => url('/web'),
         ]);
 
     } catch (\Exception $e) {
         \Log::error('Upload error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
         return response()->json([
             'success' => false,
-            'message' => 'Upload failed'
+            'message' => 'Upload failed: ' . $e->getMessage()
         ], 500);
     }
 }

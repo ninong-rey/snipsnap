@@ -70,6 +70,27 @@ Route::get('/debug-all-videos-raw', function() {
     
     return "Total: " . $videos->count() . " videos";
 });
+Route::get('/test-upload-debug', function() {
+    try {
+        // Test if we can create a video record manually
+        $testVideo = new \App\Models\Video();
+        $testVideo->user_id = 1; // Use an existing user ID
+        $testVideo->url = 'videos/test-debug.mp4';
+        $testVideo->file_path = 'videos/test-debug.mp4';
+        $testVideo->caption = 'Test debug video';
+        
+        $saved = $testVideo->save();
+        
+        if ($saved) {
+            return "✅ Manual video creation SUCCESS! New ID: " . $testVideo->id;
+        } else {
+            return "❌ Manual video creation FAILED - no error thrown";
+        }
+        
+    } catch (\Exception $e) {
+        return "❌ Manual video creation ERROR: " . $e->getMessage();
+    }
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
