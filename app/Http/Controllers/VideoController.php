@@ -57,11 +57,14 @@ class VideoController extends Controller
         $path = $request->file('video')->store('videos', 'public');
         \Log::info('File stored - PATH RETURNED:', ['path' => $path]);
         
+        // FIX: Provide default caption if empty
+        $caption = $request->input('caption', 'My awesome video');
+        
         $videoData = [
             'user_id' => $user->id,
             'url' => $path,
             'file_path' => $path,
-            'caption' => $request->input('caption', ''),
+            'caption' => $caption, // This was NULL causing the error!
             'views' => 0,
             'likes_count' => 0,
             'comments_count' => 0,
