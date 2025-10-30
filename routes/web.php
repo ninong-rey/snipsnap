@@ -242,6 +242,144 @@ Route::get('/test-video', function() {
     
     return "✅ Video file exists: " . $path;
 });
+// Fix Render storage setup
+Route::get('/fix-render-storage', function() {
+    try {
+        // Create storage directories
+        if (!file_exists(storage_path('app/public/videos'))) {
+            mkdir(storage_path('app/public/videos'), 0755, true);
+            echo "✅ Created videos directory<br>";
+        }
+        
+        // Remove existing symlink if it exists
+        if (file_exists(public_path('storage')) && is_link(public_path('storage'))) {
+            unlink(public_path('storage'));
+            echo "✅ Removed old symlink<br>";
+        }
+        
+        // Create new symlink
+        symlink(storage_path('app/public'), public_path('storage'));
+        echo "✅ Created new symlink<br>";
+        
+        // Test file access
+        Storage::disk('public')->put('videos/test.txt', 'test content ' . time());
+        $exists = Storage::disk('public')->exists('videos/test.txt');
+        
+        if ($exists) {
+            $testUrl = asset('storage/videos/test.txt');
+            echo "✅ Test file created successfully!<br>";
+            echo "Test URL: <a href='{$testUrl}' target='_blank'>{$testUrl}</a><br>";
+        } else {
+            echo "❌ Test file creation failed<br>";
+        }
+        
+        return "Storage fix complete!";
+        
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage() . "<br>" . $e->getTraceAsString();
+    }
+});
+
+// Check current storage status
+Route::get('/check-storage-status', function() {
+    echo "<h2>Storage Status Check</h2>";
+    
+    // Check directories
+    echo "Storage path exists: " . (file_exists(storage_path('app/public')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Videos directory exists: " . (file_exists(storage_path('app/public/videos')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Public storage symlink exists: " . (file_exists(public_path('storage')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Public storage is symlink: " . (is_link(public_path('storage')) ? '✅ YES' : '❌ NO') . "<br>";
+    
+    if (is_link(public_path('storage'))) {
+        echo "Symlink target: " . readlink(public_path('storage')) . "<br>";
+    }
+    
+    // List files in videos directory
+    echo "<h3>Files in storage:</h3>";
+    try {
+        $files = Storage::disk('public')->files('videos');
+        if (empty($files)) {
+            echo "No files found<br>";
+        } else {
+            foreach ($files as $file) {
+                echo "📁 " . $file . "<br>";
+            }
+        }
+    } catch (\Exception $e) {
+        echo "Error listing files: " . $e->getMessage() . "<br>";
+    }
+    
+    return "Status check complete";
+});
+// Fix Render storage setup
+Route::get('/fix-render-storage', function() {
+    try {
+        // Create storage directories
+        if (!file_exists(storage_path('app/public/videos'))) {
+            mkdir(storage_path('app/public/videos'), 0755, true);
+            echo "✅ Created videos directory<br>";
+        }
+        
+        // Remove existing symlink if it exists
+        if (file_exists(public_path('storage')) && is_link(public_path('storage'))) {
+            unlink(public_path('storage'));
+            echo "✅ Removed old symlink<br>";
+        }
+        
+        // Create new symlink
+        symlink(storage_path('app/public'), public_path('storage'));
+        echo "✅ Created new symlink<br>";
+        
+        // Test file access
+        Storage::disk('public')->put('videos/test.txt', 'test content ' . time());
+        $exists = Storage::disk('public')->exists('videos/test.txt');
+        
+        if ($exists) {
+            $testUrl = asset('storage/videos/test.txt');
+            echo "✅ Test file created successfully!<br>";
+            echo "Test URL: <a href='{$testUrl}' target='_blank'>{$testUrl}</a><br>";
+        } else {
+            echo "❌ Test file creation failed<br>";
+        }
+        
+        return "Storage fix complete!";
+        
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage() . "<br>" . $e->getTraceAsString();
+    }
+});
+
+// Check current storage status
+Route::get('/check-storage-status', function() {
+    echo "<h2>Storage Status Check</h2>";
+    
+    // Check directories
+    echo "Storage path exists: " . (file_exists(storage_path('app/public')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Videos directory exists: " . (file_exists(storage_path('app/public/videos')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Public storage symlink exists: " . (file_exists(public_path('storage')) ? '✅ YES' : '❌ NO') . "<br>";
+    echo "Public storage is symlink: " . (is_link(public_path('storage')) ? '✅ YES' : '❌ NO') . "<br>";
+    
+    if (is_link(public_path('storage'))) {
+        echo "Symlink target: " . readlink(public_path('storage')) . "<br>";
+    }
+    
+    // List files in videos directory
+    echo "<h3>Files in storage:</h3>";
+    try {
+        $files = Storage::disk('public')->files('videos');
+        if (empty($files)) {
+            echo "No files found<br>";
+        } else {
+            foreach ($files as $file) {
+                echo "📁 " . $file . "<br>";
+            }
+        }
+    } catch (\Exception $e) {
+        echo "Error listing files: " . $e->getMessage() . "<br>";
+    }
+    
+    return "Status check complete";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
