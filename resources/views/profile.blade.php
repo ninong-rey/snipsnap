@@ -468,9 +468,18 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.3s;
+            background: #000;
         }
         .video-preview:hover video {
             transform: scale(1.05);
+        }
+        .video-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .video-stats {
             position: absolute;
@@ -694,7 +703,7 @@
 <aside class="sidebar" id="sidebar">
     <div>
         <div class="logo">
-            <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap">
+            <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.src='https://via.placeholder.com/28x28/fe2c55/ffffff?text=S'">
             SnipSnap
         </div>
 
@@ -717,7 +726,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('logout.perform') }}">
+    <form method="POST" action="{{ secure_url(route('logout.perform')) }}">
         @csrf
         <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
     </form>
@@ -734,8 +743,9 @@
 
     <!-- Profile Header -->
     <div class="profile-header">
-        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('image/default-avatar.png') }}" 
-             alt="{{ $user->name ?? 'User' }} Avatar" class="profile-avatar">
+        <img src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'https://via.placeholder.com/120x120/cccccc/969696?text=Avatar' }}" 
+             alt="{{ $user->name ?? 'User' }} Avatar" class="profile-avatar" 
+             onerror="this.src='https://via.placeholder.com/120x120/cccccc/969696?text=Avatar'">
         
         <div class="profile-info">
             <h2 class="username">@ {{ $user->username ?? $user->name }}</h2>
@@ -798,12 +808,23 @@
             @forelse($videos as $video)
                 <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
                     @if($video->url)
-                        <video muted loop preload="metadata">
-                            <source src="{{ asset('storage/' . $video->url) }}" type="video/mp4">
+                        @php
+                            // Clean the video URL - remove any duplicate domain parts
+                            $cleanVideoUrl = $video->url;
+                            if (strpos($cleanVideoUrl, 'http') === 0) {
+                                // If it's already a full URL, use it directly
+                                $videoSrc = $cleanVideoUrl;
+                            } else {
+                                // If it's a relative path, use secure_asset
+                                $videoSrc = secure_asset('storage/' . ltrim($cleanVideoUrl, '/'));
+                            }
+                        @endphp
+                        <video muted loop preload="metadata" playsinline poster="{{ $video->thumbnail_url ?? '' }}">
+                            <source src="{{ $videoSrc }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     @else
-                        <img src="{{ $video->thumbnail_url ?? 'https://placehold.co/300x533/000000/fff?text=Video+Thumbnail' }}" 
+                        <img src="https://via.placeholder.com/300x533/000000/ffffff?text=No+Video" 
                              alt="Video Thumbnail">
                     @endif
                     <div class="video-overlay">
@@ -829,12 +850,20 @@
             @forelse($likedVideos as $video)
                 <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
                     @if($video->url)
-                        <video muted loop preload="metadata">
-                            <source src="{{ asset('storage/' . $video->url) }}" type="video/mp4">
+                        @php
+                            $cleanVideoUrl = $video->url;
+                            if (strpos($cleanVideoUrl, 'http') === 0) {
+                                $videoSrc = $cleanVideoUrl;
+                            } else {
+                                $videoSrc = secure_asset('storage/' . ltrim($cleanVideoUrl, '/'));
+                            }
+                        @endphp
+                        <video muted loop preload="metadata" playsinline poster="{{ $video->thumbnail_url ?? '' }}">
+                            <source src="{{ $videoSrc }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     @else
-                        <img src="{{ $video->thumbnail_url ?? 'https://placehold.co/300x533/000000/fff?text=Video+Thumbnail' }}" 
+                        <img src="https://via.placeholder.com/300x533/000000/ffffff?text=No+Video" 
                              alt="Video Thumbnail">
                     @endif
                     <div class="video-overlay">
@@ -862,14 +891,15 @@
         <span class="modal-close" id="closeModal">&times;</span>
         <div class="modal-header">Edit Profile</div>
         
-        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm">
+        <form action="{{ secure_url(route('profile.update')) }}" method="POST" enctype="multipart/form-data" id="profileForm">
             @csrf
             
             <div class="avatar-upload-container">
                 <img id="modalAvatarPreview" 
-                     src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('image/default-avatar.png') }}" 
+                     src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'https://via.placeholder.com/120x120/cccccc/969696?text=Avatar' }}" 
                      class="avatar-preview"
-                     alt="Avatar Preview">
+                     alt="Avatar Preview"
+                     onerror="this.src='https://via.placeholder.com/120x120/cccccc/969696?text=Avatar'">
                 <div class="avatar-edit-btn" id="changeAvatarBtn">
                     <i class="fas fa-pen"></i>
                 </div>
@@ -953,10 +983,93 @@
         });
     }
 
+    // ===== VIDEO PLAYBACK FUNCTIONALITY =====
+    function initVideoGrid() {
+        const previews = document.querySelectorAll('.video-preview');
+        
+        previews.forEach(preview => {
+            const video = preview.querySelector('video');
+            if (!video) return;
+            
+            // Set video attributes
+            video.muted = true;
+            video.playsInline = true;
+            video.preload = 'metadata';
+            
+            let isPlaying = false;
+            let playPromise;
+            
+            // Handle video loading errors
+            video.addEventListener('error', function() {
+                console.error('Video loading error:', video.src);
+                // Fallback to thumbnail image
+                const thumbnail = preview.querySelector('img');
+                if (!thumbnail) {
+                    // Create fallback thumbnail if none exists
+                    const fallbackImg = document.createElement('img');
+                    fallbackImg.src = 'https://via.placeholder.com/300x533/000000/ffffff?text=Video+Error';
+                    fallbackImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;';
+                    preview.appendChild(fallbackImg);
+                }
+                video.style.display = 'none';
+            });
+            
+            // Handle video load success
+            video.addEventListener('loadeddata', function() {
+                console.log('Video loaded successfully');
+            });
+            
+            // Hover play functionality
+            preview.addEventListener('mouseenter', async function() {
+                if (isPlaying || !video.src || video.readyState < 3) return;
+                
+                try {
+                    playPromise = video.play();
+                    await playPromise;
+                    isPlaying = true;
+                } catch (error) {
+                    console.log('Autoplay failed:', error);
+                    // Don't show error to user, just don't play
+                }
+            });
+            
+            preview.addEventListener('mouseleave', async function() {
+                if (!isPlaying) return;
+                
+                try {
+                    // Wait for any pending play request to complete
+                    if (playPromise) {
+                        await playPromise;
+                    }
+                    video.pause();
+                    video.currentTime = 0;
+                    isPlaying = false;
+                } catch (error) {
+                    console.log('Pause error:', error);
+                }
+            });
+            
+            // Click handling
+            preview.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (video && isPlaying) {
+                    video.pause();
+                }
+                window.location.href = this.dataset.url;
+            });
+        });
+    }
+
     // Initialize everything when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         initSkeletonLoader();
         initNavigation();
+        initVideoGrid();
+        
+        // Load videos after skeleton is hidden
+        setTimeout(() => {
+            initVideoGrid();
+        }, 2100);
     });
 
     // =============================
@@ -1011,24 +1124,6 @@
             }
         });
     }
-
-    // =============================
-    // Video preview hover
-    // =============================
-    document.addEventListener('DOMContentLoaded', function() {
-        const previews = document.querySelectorAll('.video-preview');
-        previews.forEach(preview => {
-            const video = preview.querySelector('video');
-            preview.addEventListener('mouseenter', () => video?.play());
-            preview.addEventListener('mouseleave', () => {
-                if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                }
-            });
-            preview.addEventListener('click', () => window.location.href = preview.dataset.url);
-        });
-    });
 
     // =============================
     // Tabs
