@@ -14,10 +14,10 @@ use App\Models\Comment;
 class VideoController extends Controller
 {
     public function __construct()
-    {
-        $this->middleware('auth')->except(['show']);
-    }
-
+{
+    // Only require auth for these actions, NOT for viewing videos
+    $this->middleware('auth')->only(['create', 'store', 'like', 'unlike', 'share']);
+}
     /**
      * Show the upload page
      */
