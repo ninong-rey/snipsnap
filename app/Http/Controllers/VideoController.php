@@ -29,68 +29,73 @@ class VideoController extends Controller
      * Handle video upload (AJAX)
      */
     public function store(Request $request)
-    {
-        ini_set('display_errors', 1);
-        ini_set('display_startup_errors', 1);
-        error_reporting(E_ALL);
+{
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
 
-        Log::info('=== UPLOAD STARTED ===');
+    \Log::info('=== UPLOAD STARTED ===');
+    
+    try {
+        $user = auth()->user();
+        \Log::info('User authenticated', ['user_id' => $user->id]);
+
+        $request->validate([
+            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:51200', // Increased to 50MB
+        ]);
+        \Log::info('Validation passed');
+
+        // Store file
+        $path = $request->file('video')->store('videos', 'public');
+        \Log::info('File stored:', ['path' => $path]);
         
-        try {
-            $user = auth()->user();
-            Log::info('User authenticated', ['user_id' => $user->id]);
-
-            $request->validate([
-                'video' => 'required|file|mimes:mp4,mov,avi,webm|max:2048',
-            ]);
-            Log::info('Validation passed');
-
-            // Store file - returns path like "videos/filename.mp4"
-            $path = $request->file('video')->store('videos', 'public');
-            Log::info('File stored:', ['path' => $path]);
-            
-            // Get caption or use default
-            $caption = $request->input('caption', 'Check out my video!');
-            Log::info('Caption set', ['caption' => $caption]);
-
-            // Store only the relative path, not full URL
-            $videoData = [
-                'user_id' => $user->id,
-                'url' => $path,
-                'file_path' => $path,
-                'caption' => $caption,
-                'views' => 0,
-                'likes_count' => 0,
-                'comments_count' => 0,
-                'shares_count' => 0,
-            ];
-            
-            Log::info('Video data to save:', $videoData);
-            
-            $video = Video::create($videoData);
-            Log::info('Video created successfully', ['video_id' => $video->id]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Video uploaded successfully!',
-                'video_id' => $video->id,
-                'file_path' => $video->file_path,
-                'video_url' => secure_asset('storage/' . $video->url),
-                'caption' => $video->caption,
-                'redirect_url' => url('/web'),
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Upload error: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage()
-            ], 500);
+        // FIX: Properly handle caption with fallback
+        $caption = $request->input('caption');
+        \Log::info('Caption received:', ['caption' => $caption]);
+        
+        // Ensure caption is never null
+        if (empty($caption) || trim($caption) === '') {
+            $caption = 'Check out my video!';
+            \Log::info('Using default caption');
         }
-    }
+        
+        // FIXED: Store only the path, NOT the full URL
+        $videoData = [
+            'user_id' => $user->id,
+            'url' => $path,
+            'file_path' => $path,
+            'caption' => $caption, // This will never be null now
+            'views' => 0,
+            'likes_count' => 0,
+            'comments_count' => 0,
+            'shares_count' => 0,
+        ];
+        
+        \Log::info('Video data to save:', $videoData);
+        
+        $video = Video::create($videoData);
+        \Log::info('Video created successfully', ['video_id' => $video->id]);
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Video uploaded successfully!',
+            'video_id' => $video->id,
+            'file_path' => $video->file_path,
+            'video_url' => secure_asset('storage/' . $video->url),
+            'caption' => $video->caption,
+            'redirect_url' => url('/web'),
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Upload error: ' . $e->getMessage());
+        \Log::error($e->getTraceAsString());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Upload failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
     /**
      * Show a single video page - IMPROVED VERSION
      */
