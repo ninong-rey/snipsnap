@@ -380,6 +380,19 @@ Route::get('/check-storage-status', function() {
     
     return "Status check complete";
 });
+// Temporary fix - clear broken storage references
+Route::get('/fix-storage-403', function() {
+    // This will regenerate proper storage links
+    \Artisan::call('storage:link');
+    
+    // Clear all caches
+    \Artisan::call('config:clear');
+    \Artisan::call('cache:clear');
+    \Artisan::call('view:clear');
+    \Artisan::call('route:clear');
+    
+    return "Storage fixed and caches cleared! 403 errors should be gone.";
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -471,11 +484,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{id}/videos', [UserController::class, 'videos'])->name('users.videos');
     Route::get('/users/{id}/liked-videos', [UserController::class, 'likedVideos'])->name('users.liked-videos');
 
-    // Video Interactions
-    Route::get('/video/{id}', [WebController::class, 'showVideo'])->name('video.show');
-    Route::post('/video/{video}/like', [VideoController::class, 'like'])->name('video.like');
-    Route::post('/video/{video}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
-    Route::post('/video/{video}/share', [VideoController::class, 'share'])->name('video.share');
+    // Video Routes
+Route::get('/video/{id}', [VideoController::class, 'show'])->name('video.show');
+Route::post('/video/upload', [VideoController::class, 'store'])->name('video.upload');
+Route::post('/video/{id}/like', [VideoController::class, 'like'])->name('video.like');
+Route::post('/video/{id}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
+Route::post('/video/{id}/share', [VideoController::class, 'share'])->name('video.share');
 
     // Comments
     Route::post('/comment', [CommentController::class, 'store'])->name('comment.store');
