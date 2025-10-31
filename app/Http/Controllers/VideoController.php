@@ -34,7 +34,10 @@ class VideoController extends Controller
     /**
      * Handle video upload (AJAX)
      */
-    public function store(Request $request)
+    /**
+ * Handle video upload (AJAX)
+ */
+public function store(Request $request)
 {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
@@ -51,30 +54,26 @@ class VideoController extends Controller
         ]);
         \Log::info('Validation passed');
 
-        // Store file on Render
+        // Store file on Render - THIS RETURNS JUST THE PATH
         $path = $request->file('video')->store('videos', 'public');
         \Log::info('File stored:', ['path' => $path]);
         
-        // FIX: Properly get caption from request
-        $caption = $request->input('caption'); // This gets the textarea value
+        // FIX: Store just the path, not the full URL
+        $caption = $request->input('caption'); 
         
         \Log::info('Caption received:', ['caption' => $caption]);
         
-        // Always provide a default if empty
         if (empty($caption) || trim($caption) === '') {
             $caption = 'Check out my video!';
             \Log::info('Using default caption');
         }
         
-        // Generate public URL for the video
-        $publicUrl = secure_asset('storage/' . $path);
-        \Log::info('Public URL:', ['url' => $publicUrl]);
-        
+        // FIXED: Store just the path, NOT the full URL
         $videoData = [
             'user_id' => $user->id,
-            'url' => $publicUrl,
+            'url' => $path, // ← FIX: Store "videos/filename.mp4" not full URL
             'file_path' => $path,
-            'caption' => $caption, // This should now have proper caption
+            'caption' => $caption,
             'views' => 0,
             'likes_count' => 0,
             'comments_count' => 0,
@@ -91,8 +90,8 @@ class VideoController extends Controller
             'message' => 'Video uploaded successfully!',
             'video_id' => $video->id,
             'file_path' => $video->file_path,
-            'video_url' => $video->url,
-            'caption' => $video->caption, // Include caption in response for debugging
+            'video_url' => secure_asset('storage/' . $video->url), // Use asset() here for response only
+            'caption' => $video->caption,
             'redirect_url' => url('/web'),
         ]);
 
@@ -109,17 +108,38 @@ class VideoController extends Controller
     /**
      * Show a single video page
      */
-    public function show($id)
-    {
-        $video = Video::with(['user', 'comments.user'])
-            ->withCount(['likes', 'comments', 'shares'])
-            ->findOrFail($id);
+    /**
+ * Show a single video page
+ */
+public function show($id)
+{
+    try {
+        \Log::info("Loading video ID: {$id}");
+        
+        $video = Video::with(['user'])
+            ->find($id);
 
+        if (!$video) {
+            \Log::warning("Video not found: {$id}");
+            abort(404, 'Video not found');
+        }
+
+        \Log::info("Video found: {$video->id}");
+
+        // Increment views
         $video->increment('views');
 
-        return view('video', compact('video'));
+        return view('video.show', compact('video'));
+        
+    } catch (\Exception $e) {
+        \Log::error("VideoController Error for ID {$id}: " . $e->getMessage());
+        \Log::error($e->getTraceAsString());
+        
+        return response()->view('errors.500', [
+            'message' => 'Unable to load video'
+        ], 500);
     }
-
+}
     /**
      * Like a video
      */
