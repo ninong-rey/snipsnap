@@ -72,11 +72,7 @@ public function shareByUser($userId): void
         return $this->hasMany(VideoLike::class);
     }
 
-    // Video has many comments
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class);
-    }
+    
 
     public function getIsLikedAttribute(): bool 
 {
@@ -190,4 +186,22 @@ public function shares(): HasMany
 {
     return $this->hasMany(Share::class);
 }
+public function videos()
+    {
+        return $this->hasMany(Video::class);
+    }
+
+    // Videos liked by user
+    public function likedVideos()
+    {
+        return $this->belongsToMany(Video::class, 'video_likes')
+                    ->withTimestamps();
+    }
+
+    // Comments by user
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
+
