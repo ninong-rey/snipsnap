@@ -703,7 +703,7 @@
 <aside class="sidebar" id="sidebar">
     <div>
         <div class="logo">
-            <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.src='https://via.placeholder.com/28x28/fe2c55/ffffff?text=S'">
+            <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
             SnipSnap
         </div>
 
@@ -726,7 +726,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ secure_url(route('logout.perform')) }}">
+    <form method="POST" action="{{ route('logout.perform') }}">
         @csrf
         <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;">Logout</button>
     </form>
@@ -743,9 +743,8 @@
 
     <!-- Profile Header -->
     <div class="profile-header">
-        <img src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'https://via.placeholder.com/120x120/cccccc/969696?text=Avatar' }}" 
-             alt="{{ $user->name ?? 'User' }} Avatar" class="profile-avatar" 
-             onerror="this.src='https://via.placeholder.com/120x120/cccccc/969696?text=Avatar'">
+        <img src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiNGM0YzRjMiLz4KPHN2ZyB4PSIzMCIgeT0iMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOTk5IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4=' }}" 
+             alt="{{ $user->name ?? 'User' }} Avatar" class="profile-avatar">
         
         <div class="profile-info">
             <h2 class="username">@ {{ $user->username ?? $user->name }}</h2>
@@ -809,22 +808,20 @@
                 <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
                     @if($video->url)
                         @php
-                            // Clean the video URL - remove any duplicate domain parts
-                            $cleanVideoUrl = $video->url;
-                            if (strpos($cleanVideoUrl, 'http') === 0) {
-                                // If it's already a full URL, use it directly
-                                $videoSrc = $cleanVideoUrl;
-                            } else {
-                                // If it's a relative path, use secure_asset
-                                $videoSrc = secure_asset('storage/' . ltrim($cleanVideoUrl, '/'));
+                            // Fix video URL - check if it's already a full URL or just a filename
+                            $videoUrl = $video->url;
+                            if (!str_contains($videoUrl, '://')) {
+                                // It's just a filename, prepend storage path
+                                $videoUrl = 'storage/' . $videoUrl;
                             }
                         @endphp
-                        <video muted loop preload="metadata" playsinline poster="{{ $video->thumbnail_url ?? '' }}">
-                            <source src="{{ $videoSrc }}" type="video/mp4">
+                        <video muted loop preload="metadata" playsinline 
+                               data-src="{{ secure_asset($videoUrl) }}"
+                               poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
                             Your browser does not support the video tag.
                         </video>
                     @else
-                        <img src="https://via.placeholder.com/300x533/000000/ffffff?text=No+Video" 
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Tm8gVmlkZW88L3RleHQ+Cjwvc3ZnPg==" 
                              alt="Video Thumbnail">
                     @endif
                     <div class="video-overlay">
@@ -851,19 +848,18 @@
                 <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
                     @if($video->url)
                         @php
-                            $cleanVideoUrl = $video->url;
-                            if (strpos($cleanVideoUrl, 'http') === 0) {
-                                $videoSrc = $cleanVideoUrl;
-                            } else {
-                                $videoSrc = secure_asset('storage/' . ltrim($cleanVideoUrl, '/'));
+                            $videoUrl = $video->url;
+                            if (!str_contains($videoUrl, '://')) {
+                                $videoUrl = 'storage/' . $videoUrl;
                             }
                         @endphp
-                        <video muted loop preload="metadata" playsinline poster="{{ $video->thumbnail_url ?? '' }}">
-                            <source src="{{ $videoSrc }}" type="video/mp4">
+                        <video muted loop preload="metadata" playsinline 
+                               data-src="{{ secure_asset($videoUrl) }}"
+                               poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
                             Your browser does not support the video tag.
                         </video>
                     @else
-                        <img src="https://via.placeholder.com/300x533/000000/ffffff?text=No+Video" 
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Tm8gVmlkZW88L3RleHQ+Cjwvc3ZnPg==" 
                              alt="Video Thumbnail">
                     @endif
                     <div class="video-overlay">
@@ -891,15 +887,14 @@
         <span class="modal-close" id="closeModal">&times;</span>
         <div class="modal-header">Edit Profile</div>
         
-        <form action="{{ secure_url(route('profile.update')) }}" method="POST" enctype="multipart/form-data" id="profileForm">
+        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm">
             @csrf
             
             <div class="avatar-upload-container">
                 <img id="modalAvatarPreview" 
-                     src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'https://via.placeholder.com/120x120/cccccc/969696?text=Avatar' }}" 
+                     src="{{ $user->avatar ? secure_asset('storage/' . $user->avatar) : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iNjAiIGZpbGw9IiNGM0YzRjMiLz4KPHN2ZyB4PSIzMCIgeT0iMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOTk5IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4=' }}" 
                      class="avatar-preview"
-                     alt="Avatar Preview"
-                     onerror="this.src='https://via.placeholder.com/120x120/cccccc/969696?text=Avatar'">
+                     alt="Avatar Preview">
                 <div class="avatar-edit-btn" id="changeAvatarBtn">
                     <i class="fas fa-pen"></i>
                 </div>
@@ -996,27 +991,25 @@
             video.playsInline = true;
             video.preload = 'metadata';
             
+            // Lazy load video source
+            const videoSrc = video.getAttribute('data-src');
+            if (videoSrc && !video.src) {
+                video.src = videoSrc;
+            }
+            
             let isPlaying = false;
             let playPromise;
             
             // Handle video loading errors
             video.addEventListener('error', function() {
                 console.error('Video loading error:', video.src);
-                // Fallback to thumbnail image
-                const thumbnail = preview.querySelector('img');
-                if (!thumbnail) {
-                    // Create fallback thumbnail if none exists
-                    const fallbackImg = document.createElement('img');
-                    fallbackImg.src = 'https://via.placeholder.com/300x533/000000/ffffff?text=Video+Error';
-                    fallbackImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;';
-                    preview.appendChild(fallbackImg);
-                }
+                // Show fallback image
                 video.style.display = 'none';
             });
             
             // Handle video load success
             video.addEventListener('loadeddata', function() {
-                console.log('Video loaded successfully');
+                console.log('Video loaded successfully:', video.src);
             });
             
             // Hover play functionality
@@ -1029,7 +1022,6 @@
                     isPlaying = true;
                 } catch (error) {
                     console.log('Autoplay failed:', error);
-                    // Don't show error to user, just don't play
                 }
             });
             
@@ -1037,7 +1029,6 @@
                 if (!isPlaying) return;
                 
                 try {
-                    // Wait for any pending play request to complete
                     if (playPromise) {
                         await playPromise;
                     }
@@ -1064,9 +1055,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         initSkeletonLoader();
         initNavigation();
-        initVideoGrid();
         
-        // Load videos after skeleton is hidden
+        // Initialize video grid after skeleton loader
         setTimeout(() => {
             initVideoGrid();
         }, 2100);
