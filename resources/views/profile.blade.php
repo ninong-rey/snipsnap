@@ -512,6 +512,34 @@
             opacity: 1;
         }
 
+        /* Video Error State */
+        .video-error {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .video-error i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #888;
+        }
+
+        .video-error span {
+            font-size: 12px;
+            color: #aaa;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -760,7 +788,7 @@
                     <span class="stat-label">Followers</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">{{ $user->videos_count ?? $user->videos()->count() }}</span>
+                    <span class="stat-value">{{ $videos->count() }}</span>
                     <span class="stat-label">Videos</span>
                 </div>
             </div>
@@ -794,7 +822,7 @@
     <!-- Tabs -->
     <div class="tabs">
         <div class="tab-item active" data-tab="videos">
-            <i class="fas fa-grip-lines"></i> Videos ({{ $videos->count() ?? 0 }})
+            <i class="fas fa-grip-lines"></i> Videos ({{ $videos->count() }})
         </div>
         <div class="tab-item" data-tab="liked">
             <i class="fas fa-heart"></i> Liked ({{ $likedVideosCount ?? 0 }})
@@ -805,25 +833,35 @@
     <div class="video-grid" id="videoGrid">
         @if(request()->get('tab', 'videos') === 'videos' || !request()->has('tab'))
             @forelse($videos as $video)
-                <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
+                <div class="video-preview" data-url="{{ route('video.show', $video->id) }}" data-video-id="{{ $video->id }}">
                     @if($video->url)
                         @php
-                            // Fix video URL - check if it's already a full URL or just a filename
-                            $videoUrl = $video->url;
-                            if (!str_contains($videoUrl, '://')) {
-                                // It's just a filename, prepend storage path
-                                $videoUrl = 'storage/' . $videoUrl;
-                            }
+                            // Check if video file exists
+                            $videoPath = 'storage/' . $video->url;
+                            $videoExists = file_exists(public_path($videoPath)) || file_exists(storage_path('app/public/' . $video->url));
                         @endphp
-                        <video muted loop preload="metadata" playsinline 
-                               data-src="{{ secure_asset($videoUrl) }}"
-                               poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
-                            Your browser does not support the video tag.
-                        </video>
+                        
+                        @if($videoExists)
+                            <video muted loop preload="metadata" playsinline 
+                                   data-src="{{ secure_asset('storage/' . $video->url) }}"
+                                   poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
+                                Your browser does not support the video tag.
+                            </video>
+                        @else
+                            <!-- Show error state for missing video -->
+                            <div class="video-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Video Unavailable</span>
+                            </div>
+                        @endif
                     @else
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Tm8gVmlkZW88L3RleHQ+Cjwvc3ZnPg==" 
-                             alt="Video Thumbnail">
+                        <!-- No video URL -->
+                        <div class="video-error">
+                            <i class="fas fa-video-slash"></i>
+                            <span>No Video</span>
+                        </div>
                     @endif
+                    
                     <div class="video-overlay">
                         <i class="fas fa-play" style="color: white; font-size: 40px;"></i>
                     </div>
@@ -845,23 +883,32 @@
             @endforelse
         @elseif(request()->get('tab') === 'liked')
             @forelse($likedVideos as $video)
-                <div class="video-preview" data-url="{{ route('video.show', $video->id) }}">
+                <div class="video-preview" data-url="{{ route('video.show', $video->id) }}" data-video-id="{{ $video->id }}">
                     @if($video->url)
                         @php
-                            $videoUrl = $video->url;
-                            if (!str_contains($videoUrl, '://')) {
-                                $videoUrl = 'storage/' . $videoUrl;
-                            }
+                            $videoPath = 'storage/' . $video->url;
+                            $videoExists = file_exists(public_path($videoPath)) || file_exists(storage_path('app/public/' . $video->url));
                         @endphp
-                        <video muted loop preload="metadata" playsinline 
-                               data-src="{{ secure_asset($videoUrl) }}"
-                               poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
-                            Your browser does not support the video tag.
-                        </video>
+                        
+                        @if($videoExists)
+                            <video muted loop preload="metadata" playsinline 
+                                   data-src="{{ secure_asset('storage/' . $video->url) }}"
+                                   poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
+                                Your browser does not support the video tag.
+                            </video>
+                        @else
+                            <div class="video-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Video Unavailable</span>
+                            </div>
+                        @endif
                     @else
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Tm8gVmlkZW88L3RleHQ+Cjwvc3ZnPg==" 
-                             alt="Video Thumbnail">
+                        <div class="video-error">
+                            <i class="fas fa-video-slash"></i>
+                            <span>No Video</span>
+                        </div>
                     @endif
+                    
                     <div class="video-overlay">
                         <i class="fas fa-play" style="color: white; font-size: 40px;"></i>
                     </div>
@@ -1003,7 +1050,11 @@
             // Handle video loading errors
             video.addEventListener('error', function() {
                 console.error('Video loading error:', video.src);
-                // Show fallback image
+                // Show error state
+                const videoError = document.createElement('div');
+                videoError.className = 'video-error';
+                videoError.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Video Error</span>';
+                preview.appendChild(videoError);
                 video.style.display = 'none';
             });
             
@@ -1040,13 +1091,18 @@
                 }
             });
             
-            // Click handling
+            // Click handling - only navigate if video exists
             preview.addEventListener('click', function(e) {
                 e.preventDefault();
+                const videoId = this.getAttribute('data-video-id');
+                const videoUrl = this.getAttribute('data-url');
+                
                 if (video && isPlaying) {
                     video.pause();
                 }
-                window.location.href = this.dataset.url;
+                
+                // Navigate to video page
+                window.location.href = videoUrl;
             });
         });
     }
