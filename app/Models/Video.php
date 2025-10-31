@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Auth; // Add this import
 
 class Video extends Model
 {
@@ -48,43 +47,62 @@ class Video extends Model
         'is_liked',
         'likes_count_formatted',
         'comments_count_formatted',
-        'file_path',
     ];
-    // Add this method to your Video model
-public function shareByUser($userId): void
-{
-    // Check if already shared
-    if (!$this->shares()->where('user_id', $userId)->exists()) {
-        $this->shares()->create(['user_id' => $userId]);
-        $this->incrementShares();
-    }
-}
 
+    // ===== RELATIONSHIPS =====
+    
     // Video belongs to a user
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // Video has many video likes (using VideoLike model)
+    // Video has many video likes
     public function videoLikes(): HasMany
     {
         return $this->hasMany(VideoLike::class);
     }
 
-    
+    // Alias for videoLikes
+    public function likes(): HasMany
+    {
+        return $this->videoLikes();
+    }
 
+    // Video has many comments
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    // Video has many shares
+    public function shares(): HasMany
+    {
+        return $this->hasMany(Share::class);
+    }
+
+    // ===== ATTRIBUTES =====
+    
     public function getIsLikedAttribute(): bool 
 {
-    if (!\Illuminate\Support\Facades\Auth::check()) { // Fully qualified
+    try {
+        $userId = app('auth')->id();
+        
+        if (!$userId) {
+            return false;
+        }
+        
+        return $this->videoLikes()
+                   ->where('user_id', $userId)
+                   ->exists();
+                   
+    } catch (\Exception $e) {
+        \Log::warning("IsLiked attribute error: " . $e->getMessage());
         return false;
     }
-    
-    return \App\Models\VideoLike::where('video_id', $this->id)
-                               ->where('user_id', \Illuminate\Support\Facades\Auth::id()) // Fully qualified
-                               ->exists();
 }
-    // Get formatted likes count (e.g., 1.2K, 5.3M)
+
+    // Get formatted likes count
     public function getLikesCountFormattedAttribute(): string
     {
         return $this->formatCount($this->likes_count ?? 0);
@@ -100,6 +118,16 @@ public function shareByUser($userId): void
     public function getViewsCountFormattedAttribute(): string
     {
         return $this->formatCount($this->views ?? 0);
+    }
+
+    // ===== METHODS =====
+    
+    public function shareByUser($userId): void
+    {
+        if (!$this->shares()->where('user_id', $userId)->exists()) {
+            $this->shares()->create(['user_id' => $userId]);
+            $this->incrementShares();
+        }
     }
 
     // Helper method to format large numbers
@@ -152,6 +180,8 @@ public function shareByUser($userId): void
         $this->increment('shares_count');
     }
 
+    // ===== SCOPES =====
+    
     // Scope for popular videos
     public function scopePopular($query)
     {
@@ -176,32 +206,4 @@ public function shareByUser($userId): void
     {
         return $this->user_id === $userId;
     }
-    // Alias for videoLikes - if you want to use both names
-public function likes(): HasMany
-{
-    return $this->videoLikes();
 }
-// Add this after the comments() method and before the likes() method
-public function shares(): HasMany
-{
-    return $this->hasMany(Share::class);
-}
-public function videos()
-    {
-        return $this->hasMany(Video::class);
-    }
-
-    // Videos liked by user
-    public function likedVideos()
-    {
-        return $this->belongsToMany(Video::class, 'video_likes')
-                    ->withTimestamps();
-    }
-
-    // Comments by user
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
-}
-

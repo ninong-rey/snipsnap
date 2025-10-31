@@ -95,70 +95,69 @@ class VideoController extends Controller
      * Show a single video page - IMPROVED VERSION
      */
     public function show($id)
-    {
-        try {
-            Log::info("=== VIDEO SHOW STARTED ===");
-            Log::info("Loading video ID: {$id}");
+{
+    try {
+        Log::info("=== VIDEO SHOW STARTED ===");
+        Log::info("Loading video ID: {$id}");
 
-            // Eager load user with safe fallback
-            $video = Video::with(['user'])->find($id);
+        // Eager load user with safe fallback
+        $video = Video::with(['user'])->find($id);
 
-            if (!$video) {
-                Log::warning("Video not found: {$id}");
-                abort(404, 'Video not found');
-            }
-
-            Log::info("Video found", [
-                'video_id' => $video->id,
-                'user_id' => $video->user_id,
-                'url' => $video->url,
-                'caption' => $video->caption
-            ]);
-
-            // Check if user exists
-            if (!$video->user) {
-                Log::warning("Video user not found for video: {$video->id}");
-                // You might want to handle this case differently
-            }
-
-            // Check if video file exists
-            $videoPath = 'public/' . $video->url;
-            if (!Storage::exists($videoPath)) {
-                Log::warning("Video file not found in storage: {$videoPath}");
-            } else {
-                Log::info("Video file exists in storage: {$videoPath}");
-            }
-
-            // Safely get liked videos count
-            $likedVideosCount = 0;
-            if (Auth::check()) {
-                try {
-                    $user = Auth::user();
-                    // Use the relationship safely
-                    $likedVideosCount = $user->videoLikes()->count();
-                } catch (\Exception $e) {
-                    Log::warning("Error getting liked videos count: " . $e->getMessage());
-                    $likedVideosCount = 0;
-                }
-            }
-
-            // Increment views
-            $video->increment('views');
-            Log::info("Views incremented for video: {$video->id}");
-
-            Log::info("Rendering video show view");
-
-            return view('video.show', compact('video', 'likedVideosCount'));
-
-        } catch (\Exception $e) {
-            Log::error("VideoController Error for ID {$id}: " . $e->getMessage());
-            Log::error($e->getTraceAsString());
-            
-            return response()->view('errors.500', [
-                'message' => 'Unable to load video: ' . $e->getMessage()
-            ], 500);
+        if (!$video) {
+            Log::warning("Video not found: {$id}");
+            abort(404, 'Video not found');
         }
+
+        Log::info("Video found", [
+            'video_id' => $video->id,
+            'user_id' => $video->user_id,
+            'url' => $video->url,
+            'caption' => $video->caption
+        ]);
+
+        // Check if user exists
+        if (!$video->user) {
+            Log::warning("Video user not found for video: {$video->id}");
+        }
+
+        // Check if video file exists
+        $videoPath = 'public/' . $video->url;
+        if (!Storage::exists($videoPath)) {
+            Log::warning("Video file not found in storage: {$videoPath}");
+        } else {
+            Log::info("Video file exists in storage: {$videoPath}");
+        }
+
+        // Safely get liked videos count - FIXED AUTH CALLS
+        $likedVideosCount = 0;
+        if (app('auth')->check()) {
+            try {
+                $user = app('auth')->user();
+                // Use the relationship safely
+                $likedVideosCount = $user->videoLikes()->count();
+            } catch (\Exception $e) {
+                Log::warning("Error getting liked videos count: " . $e->getMessage());
+                $likedVideosCount = 0;
+            }
+        }
+
+        // Increment views
+        $video->increment('views');
+        Log::info("Views incremented for video: {$video->id}");
+
+        Log::info("Rendering video show view");
+
+        return view('video.show', compact('video', 'likedVideosCount'));
+
+    } catch (\Exception $e) {
+        Log::error("VideoController Error for ID {$id}: " . $e->getMessage());
+        Log::error($e->getTraceAsString());
+        
+        return response()->view('errors.500', [
+            'message' => 'Unable to load video: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Like a video
