@@ -402,98 +402,118 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
     \Log::info('=== UPLOAD DEBUG START ===');
-    \Log::info('Has file: ' . ($request->hasFile('video') ? 'YES' : 'NO'));
     
-    if ($request->hasFile('video')) {
-        $file = $request->file('video');
-        \Log::info('File details:', [
-            'name' => $file->getClientOriginalName(),
-            'size' => $file->getSize(),
-            'mime' => $file->getMimeType(),
-        ]);
-        
-        try {
-            // Method 1: Try using Cloudinary Facade first
-            $upload = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload($file->getRealPath(), [
-                'folder' => 'videos',
-                'resource_type' => 'video'
-            ]);
-            
-            \Log::info('Cloudinary upload success (Facade):', [
-                'secure_url' => $upload->getSecurePath(),
-                'public_id' => $upload->getPublicId()
-            ]);
-            
-            // Save to database
-            $video = new \App\Models\Video();
-            $video->url = $upload->getSecurePath();
-            $video->public_id = $upload->getPublicId();
-            $video->user_id = 1;
-            $video->save();
-            
-            \Log::info('Video saved to database with ID: ' . $video->id);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Upload successful!',
-                'url' => $video->url,
-                'video_id' => $video->id
-            ]);
-            
-        } catch (\Exception $e) {
-            \Log::error('Facade method failed: ' . $e->getMessage());
-            
-            // Method 2: Fallback to direct API
-            try {
-                \Log::info('Trying direct Cloudinary API...');
-                $cloudinary = new \Cloudinary\Cloudinary([
-                    'cloud' => [
-                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                        'api_key' => env('CLOUDINARY_API_KEY'),
-                        'api_secret' => env('CLOUDINARY_API_SECRET'),
-                    ],
-                    'url' => [
-                        'secure' => true
-                    ]
-                ]);
-                
-                $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                    'folder' => 'videos',
-                    'resource_type' => 'video',
-                    'public_id' => 'video_' . time() . '_' . uniqid()
-                ]);
-                
-                \Log::info('Cloudinary upload success (Direct API):', $result);
-                
-                // Save to database
-                $video = new \App\Models\Video();
-                $video->url = $result['secure_url'];
-                $video->public_id = $result['public_id'];
-                $video->user_id = 1;
-                $video->save();
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Upload successful! (Direct API)',
-                    'url' => $video->url,
-                    'video_id' => $video->id
-                ]);
-                
-            } catch (\Exception $e2) {
-                \Log::error('Direct API also failed: ' . $e2->getMessage());
-                return response()->json([
-                    'success' => false, 
-                    'error' => 'Both methods failed: ' . $e2->getMessage(),
-                    'details' => 'Check Cloudinary configuration and credentials'
-                ], 500);
-            }
-        }
+    // Simple check first
+    if (!$request->hasFile('video')) {
+        \Log::info('No file received');
+        return response()->json(['success' => false, 'error' => 'No file received'], 400);
     }
     
-    return response()->json([
-        'success' => false,
-        'error' => 'No file received'
-    ], 400);
+    $file = $request->file('video');
+    \Log::info('File received', [
+        'name' => $file->getClientOriginalName(),
+        'size' => $file->getSize(),
+        'valid' => $file->isValid() ? 'YES' : 'NO'
+    ]);
+    
+    try {
+        // Test basic file operations first
+        $tempPath = $file->getRealPath();
+        \Log::info('Temp path: ' . $tempPath);
+        
+        // Test Cloudinary with very basic configuration
+        \Log::info('Testing Cloudinary configuration...');
+        
+        $cloudinary = new \Cloudinary\Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key' => env('CLOUDINARY_API_KEY'),
+                'api_secret' => env('CLOUDINARY_API_SECRET'),
+            ]
+        ]);
+        
+        \Log::info('Cloudinary object created, attempting upload...');
+        
+        // Simple upload without complex options
+        $result = $cloudinary->uploadApi()->upload($tempPath, [
+            'resource_type' => 'auto' // Let Cloudinary detect the type
+        ]);
+        
+        \Log::info('Cloudinary upload successful', ['url' => $result['secure_url']]);
+        
+        // Test database connection
+        \Log::info('Testing database save...');
+        $video = new \App\Models\Video();
+        $video->url = $result['secure_url'];
+        $video->public_id = $result['public_id'];
+        $video->user_id = 1;
+        $video->save();
+        
+        \Log::info('Database save successful, ID: ' . $video->id);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Upload successful!',
+            'url' => $video->url,
+            'video_id' => $video->id
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Upload failed: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        return response()->json([
+            'success' => false, 
+            'error' => $e->getMessage(),
+            'type' => get_class($e)
+        ], 500);
+    }
+});
+Route::get('/test-cloudinary-config', function() {
+    try {
+        \Log::info('Testing Cloudinary configuration...');
+        
+        // Test 1: Check if environment variables are set
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+        
+        \Log::info('Env vars:', [
+            'cloud_name' => $cloudName ? 'SET' : 'MISSING',
+            'api_key' => $apiKey ? 'SET' : 'MISSING', 
+            'api_secret' => $apiSecret ? 'SET' : 'MISSING'
+        ]);
+        
+        if (!$cloudName || !$apiKey || !$apiSecret) {
+            return response()->json(['error' => 'Missing Cloudinary environment variables'], 500);
+        }
+        
+        // Test 2: Test Cloudinary connection
+        $cloudinary = new \Cloudinary\Cloudinary([
+            'cloud' => [
+                'cloud_name' => $cloudName,
+                'api_key' => $apiKey,
+                'api_secret' => $apiSecret,
+            ]
+        ]);
+        
+        // Simple API call to test connection
+        $result = $cloudinary->adminApi()->ping();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cloudinary configuration is working!',
+            'ping_result' => $result
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Cloudinary config test failed: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
 });
 /*
 |--------------------------------------------------------------------------
