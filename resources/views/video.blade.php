@@ -492,10 +492,10 @@
             <i class="fas fa-play play-pause-icon" id="playPauseIcon"></i>
         </div>
         
-        <video id="mainVideo" controls autoplay loop onclick="togglePlayPause()">
-            <source src="{{ $video->url ? $video->url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+        <video id="mainVideo" controls autoplay muted playsinline loop onclick="togglePlayPause()">
+    <source src="{{ $video->url ?? 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
         
         <div class="caption">{{ $video->caption ?? 'Check out this amazing view! 🌄 #nature #travel #beautiful' }}</div>
         <div class="user-info-video">
@@ -691,8 +691,8 @@
                     @forelse($creatorVideos->take(6) as $creatorVideo)
                         <div class="video-thumbnail" onclick="playCreatorVideo({{ $creatorVideo->id }})">
                             <video muted preload="metadata">
-                                <source src="{{ $creatorVideo->url ? $creatorVideo->url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
-                            </video>
+                               <source src="{{ $creatorVideo->url ?? 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
+                                </video>
                             <div class="video-thumbnail-overlay">
                                 <i class="fas fa-play play-icon-small"></i>
                             </div>
@@ -790,7 +790,7 @@
         const videoSource = videoElement.querySelector('source');
         
         // Update video source
-        const videoUrl = videoData.url ? videoData.url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
+        const videoUrl = videoData.url || 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
         videoSource.src = videoUrl;
         
         // Update video element
