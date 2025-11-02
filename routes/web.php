@@ -398,6 +398,8 @@ Route::get('/test-upload-page', function() {
     return view('test-upload');
 });
 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
     \Log::info('=== UPLOAD DEBUG START ===');
     \Log::info('Has file: ' . ($request->hasFile('video') ? 'YES' : 'NO'));
@@ -411,19 +413,22 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
         ]);
         
         try {
-            // Test Cloudinary upload
-            $upload = $file->storeOnCloudinary('videos');
+            // Method 1: Try using Cloudinary Facade first
+            $upload = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'videos',
+                'resource_type' => 'video'
+            ]);
             
-            \Log::info('Cloudinary upload success:', [
+            \Log::info('Cloudinary upload success (Facade):', [
                 'secure_url' => $upload->getSecurePath(),
                 'public_id' => $upload->getPublicId()
             ]);
             
-            // Save to database - use a default user ID for testing
+            // Save to database
             $video = new \App\Models\Video();
             $video->url = $upload->getSecurePath();
             $video->public_id = $upload->getPublicId();
-            $video->user_id = 1; // Default user ID for testing
+            $video->user_id = 1;
             $video->save();
             
             \Log::info('Video saved to database with ID: ' . $video->id);
@@ -436,11 +441,52 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Upload failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false, 
-                'error' => $e->getMessage()
-            ], 500);
+            \Log::error('Facade method failed: ' . $e->getMessage());
+            
+            // Method 2: Fallback to direct API
+            try {
+                \Log::info('Trying direct Cloudinary API...');
+                $cloudinary = new \Cloudinary\Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                        'api_key' => env('CLOUDINARY_API_KEY'),
+                        'api_secret' => env('CLOUDINARY_API_SECRET'),
+                    ],
+                    'url' => [
+                        'secure' => true
+                    ]
+                ]);
+                
+                $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'videos',
+                    'resource_type' => 'video',
+                    'public_id' => 'video_' . time() . '_' . uniqid()
+                ]);
+                
+                \Log::info('Cloudinary upload success (Direct API):', $result);
+                
+                // Save to database
+                $video = new \App\Models\Video();
+                $video->url = $result['secure_url'];
+                $video->public_id = $result['public_id'];
+                $video->user_id = 1;
+                $video->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Upload successful! (Direct API)',
+                    'url' => $video->url,
+                    'video_id' => $video->id
+                ]);
+                
+            } catch (\Exception $e2) {
+                \Log::error('Direct API also failed: ' . $e2->getMessage());
+                return response()->json([
+                    'success' => false, 
+                    'error' => 'Both methods failed: ' . $e2->getMessage(),
+                    'details' => 'Check Cloudinary configuration and credentials'
+                ], 500);
+            }
         }
     }
     
@@ -448,14 +494,6 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
         'success' => false,
         'error' => 'No file received'
     ], 400);
-});
-
-Route::get('/check-videos', function() {
-    $videos = \App\Models\Video::all();
-    return response()->json($videos->toArray());
-});
-Route::get('/video-debug', function() {
-    return view('video-debug');
 });
 /*
 |--------------------------------------------------------------------------
