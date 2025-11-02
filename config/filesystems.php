@@ -60,6 +60,14 @@ return [
             'report' => false,
         ],
 
+        // ADD THIS CLOUDINARY DISK:
+        'cloudinary' => [
+    'driver' => 'cloudinary',
+    'cloud' => env('CLOUDINARY_CLOUD'),
+    'key' => env('CLOUDINARY_KEY'),
+    'secret' => env('CLOUDINARY_SECRET'),
+],
+
     ],
 
     /*
