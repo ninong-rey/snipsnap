@@ -454,6 +454,9 @@ Route::get('/check-videos', function() {
     $videos = \App\Models\Video::all();
     return response()->json($videos->toArray());
 });
+Route::get('/video-debug', function() {
+    return view('video-debug');
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
