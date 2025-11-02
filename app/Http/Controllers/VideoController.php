@@ -71,7 +71,12 @@ public function store(Request $request)
         \Log::info('File uploaded to Cloudinary:', ['url' => $videoUrl]);
 
         // Get caption or use default
-        $caption = $request->input('caption', 'Check out my video!');
+        $caption = $request->input('caption');
+    \Log::info('Caption received:', ['caption' => $caption]);
+    if (empty($caption) || trim($caption) === '') {
+        $caption = 'Check out my video!';
+        \Log::info('Using default caption');
+    }
         
         // Store video data
         $videoData = [
