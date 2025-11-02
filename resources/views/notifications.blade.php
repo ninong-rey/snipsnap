@@ -782,12 +782,12 @@
             </div>
             
             @if($notification->video && $notification->video->thumbnail_url)
-              <img src="{{ asset('storage/' . $notification->video->thumbnail_url) }}" 
+              <img src="{{ $notification->video->thumbnail_url }}" 
                    alt="Video thumbnail" 
                    class="notification-media"
                    onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
             @elseif($notification->video && $notification->video->url)
-              <img src="{{ asset('storage/' . $notification->video->url) }}" 
+              <img src="{{ $notification->video->thumbnail_url }}"
                    alt="Video thumbnail" 
                    class="notification-media"
                    onclick="event.stopPropagation(); viewVideo({{ $notification->video->id }});">
@@ -1025,73 +1025,73 @@
     });
 
     function renderNotifications(notifications) {
-      const container = document.querySelector('.notifications-list');
-      container.innerHTML = '';
+  const container = document.querySelector('.notifications-list');
+  container.innerHTML = '';
 
-      if (notifications.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="fa-regular fa-bell"></i>
-            <h3>No Notifications Yet</h3>
-            <p>When you get likes, comments, or new followers, they'll appear here.</p>
-          </div>`;
-        return;
-      }
+  if (notifications.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-regular fa-bell"></i>
+        <h3>No Notifications Yet</h3>
+        <p>When you get likes, comments, or new followers, they'll appear here.</p>
+      </div>`;
+    return;
+  }
 
-      notifications.forEach(notification => {
-        const isUnread = !notification.read ? 'unread' : '';
-        const videoThumbnail = notification.video?.thumbnail_url || notification.video?.url || '';
-        const videoCaption = notification.video?.caption || 'Check out this video';
+  notifications.forEach(notification => {
+    const isUnread = !notification.read ? 'unread' : '';
+    const videoThumbnail = notification.video?.thumbnail_url || notification.video?.url || '';
+    const videoCaption = notification.video?.caption || 'Check out this video';
 
-        const notificationHTML = `
-          <div class="notification-item ${isUnread}" 
-               data-notification-id="${notification.id}"
-               onclick="markAsRead(${notification.id}, this)">
-            <div class="notification-icon icon-${notification.type}">
-              ${
-                notification.type === 'like' ? '<i class="fa-solid fa-heart"></i>' :
-                notification.type === 'comment' ? '<i class="fa-solid fa-comment"></i>' :
-                notification.type === 'follow' ? '<i class="fa-solid fa-user-plus"></i>' :
-                notification.type === 'share' ? '<i class="fa-solid fa-share"></i>' :
-                '<i class="fa-solid fa-bell"></i>'
-              }
-            </div>
+    const notificationHTML = `
+      <div class="notification-item ${isUnread}" 
+           data-notification-id="${notification.id}"
+           onclick="markAsRead(${notification.id}, this)">
+        <div class="notification-icon icon-${notification.type}">
+          ${
+            notification.type === 'like' ? '<i class="fa-solid fa-heart"></i>' :
+            notification.type === 'comment' ? '<i class="fa-solid fa-comment"></i>' :
+            notification.type === 'follow' ? '<i class="fa-solid fa-user-plus"></i>' :
+            notification.type === 'share' ? '<i class="fa-solid fa-share"></i>' :
+            '<i class="fa-solid fa-bell"></i>'
+          }
+        </div>
 
-            <img src="${notification.from_user.avatar ? '/storage/' + notification.from_user.avatar : '/image/default-avatar.png'}"
-                 alt="${notification.from_user.name}" class="notification-avatar"
-                 onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+        <img src="${notification.from_user.avatar ? notification.from_user.avatar : '/image/default-avatar.png'}"
+             alt="${notification.from_user.name}" class="notification-avatar"
+             onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
 
-            <div class="notification-content">
-              <div class="notification-text">
-                <span class="notification-user" onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
-                  ${notification.from_user.username || notification.from_user.name}
-                </span> 
-                ${notification.message}
-              </div>
-              <div class="notification-time">${moment(notification.created_at).fromNow()}</div>
-              ${notification.video ? `<div class="notification-preview">${videoCaption}</div>` : ''}
-              <div class="notification-actions">
-                ${
-                  notification.type === 'follow' ? `<button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser(${notification.from_user.id}, this);">
-                    <i class="fa-solid fa-user-plus"></i> Follow back
-                  </button>` :
-                  (notification.type === 'comment' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
-                    <i class="fa-solid fa-eye"></i> View video
-                  </button>` :
-                  (notification.type === 'like' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
-                    <i class="fa-solid fa-eye"></i> View video
-                  </button>` : '')
-                )
-                }
-              </div>
-            </div>
+        <div class="notification-content">
+          <div class="notification-text">
+            <span class="notification-user" onclick="event.stopPropagation(); goToUserProfile('${notification.from_user.username || notification.from_user.id}');">
+              ${notification.from_user.username || notification.from_user.name}
+            </span> 
+            ${notification.message}
+          </div>
+          <div class="notification-time">${moment(notification.created_at).fromNow()}</div>
+          ${notification.video ? `<div class="notification-preview">${videoCaption}</div>` : ''}
+          <div class="notification-actions">
+            ${
+              notification.type === 'follow' ? `<button class="btn-small btn-follow" onclick="event.stopPropagation(); followUser(${notification.from_user.id}, this);">
+                <i class="fa-solid fa-user-plus"></i> Follow back
+              </button>` :
+              (notification.type === 'comment' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                <i class="fa-solid fa-eye"></i> View video
+              </button>` :
+              (notification.type === 'like' && notification.video ? `<button class="btn-small btn-reply" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">
+                <i class="fa-solid fa-eye"></i> View video
+              </button>` : '')
+            )
+            }
+          </div>
+        </div>
 
-            ${videoThumbnail ? `<img src="/storage/${videoThumbnail}" class="notification-media" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">` : ''}
-          </div>`;
-        
-        container.insertAdjacentHTML('beforeend', notificationHTML);
-      });
-    }
+        ${videoThumbnail ? `<img src="${videoThumbnail}" class="notification-media" onclick="event.stopPropagation(); viewVideo(${notification.video.id});">` : ''}
+      </div>`;
+    
+    container.insertAdjacentHTML('beforeend', notificationHTML);
+  });
+}
   </script>
 </body>
 </html>

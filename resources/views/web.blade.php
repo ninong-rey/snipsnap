@@ -680,7 +680,7 @@ use Illuminate\Support\Str;
         // Check if video file actually exists on server
         $fullPath = storage_path('app/public/' . $video->file_path);
         $videoExists = file_exists($fullPath);
-        $videoUrl = $videoExists ? asset('storage/' . $video->file_path) : '';
+        $videoUrl = $videoExists ? $video->url : '';
       @endphp
 
       @if($videoExists)

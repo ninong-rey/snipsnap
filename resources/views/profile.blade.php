@@ -837,13 +837,13 @@
                     @if($video->url)
                         @php
                             // Check if video file exists
-                            $videoPath = 'storage/' . $video->url;
+                            $videoPath = $video->url;
                             $videoExists = file_exists(public_path($videoPath)) || file_exists(storage_path('app/public/' . $video->url));
                         @endphp
                         
                         @if($videoExists)
                             <video muted loop preload="metadata" playsinline 
-                                   data-src="{{ secure_asset('storage/' . $video->url) }}"
+                                   data-src="{{ secure_$video->url }}"
                                    poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
                                 Your browser does not support the video tag.
                             </video>
@@ -886,13 +886,13 @@
                 <div class="video-preview" data-url="{{ route('video.show', $video->id) }}" data-video-id="{{ $video->id }}">
                     @if($video->url)
                         @php
-                            $videoPath = 'storage/' . $video->url;
+                            $videoPath = $video->url;
                             $videoExists = file_exists(public_path($videoPath)) || file_exists(storage_path('app/public/' . $video->url));
                         @endphp
                         
                         @if($videoExists)
                             <video muted loop preload="metadata" playsinline 
-                                   data-src="{{ secure_asset('storage/' . $video->url) }}"
+                                   data-src="{{ secure_$video->url }}"
                                    poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUzMyIgdmlld0JveD0iMCAwIDMwMCA1MzMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNTMzIiBmaWxsPSIjMDAwIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjY2LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+VmlkZW8gTG9hZGluZy4uLjwvdGV4dD4KPC9zdmc+">
                                 Your browser does not support the video tag.
                             </video>

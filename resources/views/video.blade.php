@@ -493,7 +493,7 @@
         </div>
         
         <video id="mainVideo" controls autoplay loop onclick="togglePlayPause()">
-            <source src="{{ $video->url ? asset('storage/' . $video->url) : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
+            <source src="{{ $video->url ? $video->url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         
@@ -691,7 +691,7 @@
                     @forelse($creatorVideos->take(6) as $creatorVideo)
                         <div class="video-thumbnail" onclick="playCreatorVideo({{ $creatorVideo->id }})">
                             <video muted preload="metadata">
-                                <source src="{{ $creatorVideo->url ? asset('storage/' . $creatorVideo->url) : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
+                                <source src="{{ $creatorVideo->url ? $creatorVideo->url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4' }}" type="video/mp4">
                             </video>
                             <div class="video-thumbnail-overlay">
                                 <i class="fas fa-play play-icon-small"></i>
@@ -790,7 +790,7 @@
         const videoSource = videoElement.querySelector('source');
         
         // Update video source
-        const videoUrl = videoData.url ? '/storage/' + videoData.url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
+        const videoUrl = videoData.url ? videoData.url : 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
         videoSource.src = videoUrl;
         
         // Update video element
@@ -804,7 +804,7 @@
         const userImg = userInfo.querySelector('img');
         const userName = userInfo.querySelector('strong');
         
-        userImg.src = videoData.user.avatar ? '/storage/' + videoData.user.avatar : 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60';
+        userImg.src = videoData.user.avatar ? 'videoData.user.avatar : 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60';
         userName.textContent = videoData.user.username || videoData.user.name;
         
         // Update sound info

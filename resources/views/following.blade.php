@@ -718,7 +718,7 @@
         <div class="video-wrapper">
           @php $videoUrl = $video->url ?? $video->file_path ?? null; @endphp
           @if($videoUrl)
-          <video src="{{ asset('storage/' . $videoUrl) }}" autoplay loop muted playsinline></video>
+          <video src="{{ $videoUrl }}" autoplay loop muted playsinline></video>
           @else
           <div style="width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;">
             Video not available
