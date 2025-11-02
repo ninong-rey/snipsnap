@@ -447,8 +447,16 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
 $video->url = $result['secure_url'];
 $video->public_id = $result['public_id'];
 $video->user_id = 1;
-$video->caption = 'Uploaded video'; // ADD THIS LINE - provide default caption
+$video->title = 'Video ' . date('Y-m-d H:i:s'); // ADD THIS - required field
+$video->caption = 'Uploaded video ' . date('Y-m-d H:i:s');
+$video->description = '';
+$video->views = 0;
+$video->likes_count = 0;
+$video->comments_count = 0;
+$video->shares_count = 0;
+$video->thumbnail_url = ''; // Set empty if required
 $video->save();
+
         
         \Log::info('Database save successful, ID: ' . $video->id);
         
