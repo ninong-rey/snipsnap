@@ -443,11 +443,12 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
         
         // Test database connection
         \Log::info('Testing database save...');
-        $video = new \App\Models\Video();
-        $video->url = $result['secure_url'];
-        $video->public_id = $result['public_id'];
-        $video->user_id = 1;
-        $video->save();
+       $video = new \App\Models\Video();
+$video->url = $result['secure_url'];
+$video->public_id = $result['public_id'];
+$video->user_id = 1;
+$video->caption = 'Uploaded video'; // ADD THIS LINE - provide default caption
+$video->save();
         
         \Log::info('Database save successful, ID: ' . $video->id);
         
