@@ -22,21 +22,16 @@ class WebController extends Controller
         ->orderBy('created_at', 'desc')
         ->get()
         ->map(function ($video) {
-            // Use custom video route instead of storage URL
-            if (!empty($video->file_path)) {
-                $filename = basename($video->file_path);
-                // DEBUG: Check what's happening with video URLs
-if (empty($video->url)) {
-    \Log::info('Video URL is empty for video ID: ' . $video->id);
-    \Log::info('Using MixKit fallback URL');
-} else {
-    \Log::info('Using Cloudinary URL: ' . $video->url);
-}
-
-// Use MixKit fallback instead of local videos
-$video->video_url = $video->url ?? 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
-                $video->video_url = $video->url ?? url('/videos/' . $filename);
+            // DEBUG: Check what's happening with video URLs
+            if (empty($video->url)) {
+                \Log::info('Video URL is empty for video ID: ' . $video->id);
+                \Log::info('Using MixKit fallback URL');
+                $video->video_url = 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
+            } else {
+                \Log::info('Using Cloudinary URL for video ID ' . $video->id . ': ' . $video->url);
+                $video->video_url = $video->url;
             }
+            
             return $video;
         });
 
