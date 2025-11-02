@@ -393,6 +393,67 @@ Route::get('/fix-storage-403', function() {
     
     return "Storage fixed and caches cleared! 403 errors should be gone.";
 });
+// Debug routes for testing uploads
+Route::get('/test-upload-page', function() {
+    return view('test-upload');
+});
+
+Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
+    \Log::info('=== UPLOAD DEBUG START ===');
+    \Log::info('Has file: ' . ($request->hasFile('video') ? 'YES' : 'NO'));
+    
+    if ($request->hasFile('video')) {
+        $file = $request->file('video');
+        \Log::info('File details:', [
+            'name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+            'mime' => $file->getMimeType(),
+        ]);
+        
+        try {
+            // Test Cloudinary upload
+            $upload = $file->storeOnCloudinary('videos');
+            
+            \Log::info('Cloudinary upload success:', [
+                'secure_url' => $upload->getSecurePath(),
+                'public_id' => $upload->getPublicId()
+            ]);
+            
+            // Save to database - use a default user ID for testing
+            $video = new \App\Models\Video();
+            $video->url = $upload->getSecurePath();
+            $video->public_id = $upload->getPublicId();
+            $video->user_id = 1; // Default user ID for testing
+            $video->save();
+            
+            \Log::info('Video saved to database with ID: ' . $video->id);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Upload successful!',
+                'url' => $video->url,
+                'video_id' => $video->id
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Upload failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    return response()->json([
+        'success' => false,
+        'error' => 'No file received'
+    ], 400);
+});
+
+Route::get('/check-videos', function() {
+    $videos = \App\Models\Video::all();
+    return response()->json($videos->toArray());
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
