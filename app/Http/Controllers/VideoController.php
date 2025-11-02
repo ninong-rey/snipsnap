@@ -10,6 +10,7 @@ use App\Models\Video;
 use App\Models\User;
 use App\Models\VideoLike;
 use App\Models\Comment;
+use Cloudinary\Cloudinary;
 
 class VideoController extends Controller
 {
@@ -28,7 +29,9 @@ class VideoController extends Controller
     /**
      * Handle video upload (AJAX)
      */
-    public function store(Request $request)
+    
+
+public function store(Request $request)
 {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
@@ -41,30 +44,41 @@ class VideoController extends Controller
         \Log::info('User authenticated', ['user_id' => $user->id]);
 
         $request->validate([
-            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:51200', // Increased to 50MB
+            'video' => 'required|file|mimes:mp4,mov,avi,webm|max:51200',
         ]);
         \Log::info('Validation passed');
 
-        // Store file
-        $path = $request->file('video')->store('videos', 'public');
-        \Log::info('File stored:', ['path' => $path]);
+        // UPLOAD TO CLOUDINARY DIRECTLY
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key' => env('CLOUDINARY_API_KEY'),
+                'api_secret' => env('CLOUDINARY_API_SECRET'),
+            ],
+        ]);
         
-        // FIX: Properly handle caption with fallback
-        $caption = $request->input('caption');
-        \Log::info('Caption received:', ['caption' => $caption]);
+        $upload = $cloudinary->uploadApi()->upload(
+            $request->file('video')->getRealPath(),
+            [
+                'folder' => 'videos',
+                'resource_type' => 'video'
+            ]
+        );
+
+        $videoUrl = $upload['secure_url'];
+        $publicId = $upload['public_id'];
         
-        // Ensure caption is never null
-        if (empty($caption) || trim($caption) === '') {
-            $caption = 'Check out my video!';
-            \Log::info('Using default caption');
-        }
+        \Log::info('File uploaded to Cloudinary:', ['url' => $videoUrl]);
+
+        // Get caption or use default
+        $caption = $request->input('caption', 'Check out my video!');
         
-        // FIXED: Store only the path, NOT the full URL
+        // Store video data
         $videoData = [
             'user_id' => $user->id,
-            'url' => $path,
-            'file_path' => $path,
-            'caption' => $caption, // This will never be null now
+            'url' => $videoUrl, // Cloudinary URL
+            'file_path' => $publicId,
+            'caption' => $caption,
             'views' => 0,
             'likes_count' => 0,
             'comments_count' => 0,
@@ -78,10 +92,9 @@ class VideoController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Video uploaded successfully!',
+            'message' => 'Video uploaded to Cloudinary successfully!',
             'video_id' => $video->id,
-            'file_path' => $video->file_path,
-            'video_url' => secure_asset('storage/' . $video->url),
+            'video_url' => $videoUrl,
             'caption' => $video->caption,
             'redirect_url' => url('/web'),
         ]);
