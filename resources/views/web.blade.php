@@ -671,64 +671,50 @@ use Illuminate\Support\Str;
   </script>
   @endif
 
-  <!-- Feed -->
-<main class="feed-container" id="feedContainer">
-  @foreach($videos as $video)
-  <div class="video-post" data-video-id="{{ $video->id }}">
-    <div class="video-wrapper">
-      @php
-        // Check if video file actually exists on server
-        $fullPath = storage_path('app/public/' . $video->file_path);
-        $videoExists = file_exists($fullPath);
-        $videoUrl = $videoExists ? $video->url : '';
-      @endphp
+  <!-- Cloudinary Video Player -->
+@if(!empty($video->url))
+    <video 
+      src="{{ $video->url }}" 
+      loop 
+      playsinline 
+      preload="metadata"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    </video>
+    
+    <!-- Fallback if video fails to load -->
+    <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+      <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+      <span>Video unavailable</span>
+    </div>
+@else
+    <!-- Show MixKit fallback video -->
+    <video 
+      src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+      loop 
+      playsinline 
+      preload="metadata">
+    </video>
+@endif
 
-      @if($videoExists)
-        <video 
-          src="{{ $videoUrl }}" 
-          loop 
-          playsinline 
-          preload="metadata"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        </video>
-        
-        <!-- Fallback if video fails to load -->
-        <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
-        </div>
-      @else
-        <!-- Show placeholder for missing videos -->
-        <div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
-          <small>File was removed</small>
-        </div>
-      @endif
+<!-- Play/Pause animation -->
+<div class="play-pause-animation">
+  <i class="fas fa-pause"></i>
+</div>
 
-      <!-- Play/Pause animation -->
-      <div class="play-pause-animation">
-        <i class="fas fa-pause"></i>
-      </div>
+<!-- Overlay for tap actions -->
+<div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
 
-      <!-- Overlay for tap actions -->
-      @if($videoExists)
-      <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
-      @endif
-
-      <!-- Video controls -->
-      @if($videoExists)
-      <div class="video-controls">
-        <div class="volume-container">
-          <button class="control-btn volume-btn" onclick="toggleMute(this)">
-            <i class="fas fa-volume-up"></i>
-          </button>
-          <div class="volume-slider">
-            <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
-          </div>
-        </div>
-      </div>
-      @endif
+<!-- Video controls -->
+<div class="video-controls">
+  <div class="volume-container">
+    <button class="control-btn volume-btn" onclick="toggleMute(this)">
+      <i class="fas fa-volume-up"></i>
+    </button>
+    <div class="volume-slider">
+      <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+    </div>
+  </div>
+</div>
 
       <!-- Actions -->
       <div class="actions">
