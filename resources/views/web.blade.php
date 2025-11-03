@@ -954,31 +954,5 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-<script>
-
-// Also monitor initial page load
-setTimeout(() => {
-    console.log('=== INITIAL PAGE SCAN ===');
-    const problematicElements = [];
-    
-    // Check all elements that could have src attributes
-    const elements = document.querySelectorAll('[src], [data-src], [href]');
-    elements.forEach(el => {
-        const src = el.src || el.href || el.dataset.src;
-        if (src && (src.includes('ywx6bin1n8uf73gcx0il.mp4') || src.includes('test-1761803077.txt'))) {
-            problematicElements.push({
-                element: el,
-                src: src,
-                outerHTML: el.outerHTML
-            });
-        }
-    });
-    
-    console.log('Problematic elements found on initial load:', problematicElements.length);
-    problematicElements.forEach(item => {
-        console.log('❌ PROBLEMATIC ELEMENT:', item);
-    });
-}, 2000);
-</script>
 </body>
 </html>
