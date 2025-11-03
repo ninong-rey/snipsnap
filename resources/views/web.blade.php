@@ -676,21 +676,32 @@ use Illuminate\Support\Str;
     @foreach($videos as $video)
     @php $videoUser = $video->user; @endphp
     <div class="video-post" data-video-id="{{ $video->id }}">
-      <!-- Your existing video post code here -->
-    </div>
-    @endforeach
-  @else
-    <!-- EMPTY STATE -->
-    <div style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center;">
-      <i class="fas fa-video-slash" style="font-size:72px; color:#ccc; margin-bottom:20px;"></i>
-      <h3 style="color:#666; margin-bottom:10px;">No videos yet</h3>
-      <p style="color:#999; max-width:300px;">Upload your first video to get started!</p>
-      <a href="{{ route('upload') }}" style="background:var(--accent); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; margin-top:20px;">
-        <i class="fas fa-plus"></i> Upload Video
-      </a>
-    </div>
-  @endif
-</main>
+      <div class="video-wrapper">
+        <!-- Cloudinary Video Player -->
+        @if(!empty($video->url))
+          <video 
+            src="{{ $video->url }}" 
+            loop 
+            playsinline 
+            preload="metadata"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          </video>
+          
+          <!-- Fallback if video fails to load -->
+          <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+            <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+            <span>Video unavailable</span>
+          </div>
+        @else
+          <!-- Show MixKit fallback video -->
+          <video 
+            src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+            loop 
+            playsinline 
+            preload="metadata">
+          </video>
+        @endif
+
         <!-- Play/Pause animation -->
         <div class="play-pause-animation">
           <i class="fas fa-pause"></i>
@@ -762,7 +773,18 @@ use Illuminate\Support\Str;
       </div>
     </div>
     @endforeach
-  </main>
+  @else
+    <!-- EMPTY STATE -->
+    <div style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center;">
+      <i class="fas fa-video-slash" style="font-size:72px; color:#ccc; margin-bottom:20px;"></i>
+      <h3 style="color:#666; margin-bottom:10px;">No videos yet</h3>
+      <p style="color:#999; max-width:300px;">Upload your first video to get started!</p>
+      <a href="{{ route('upload') }}" style="background:var(--accent); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; margin-top:20px;">
+        <i class="fas fa-plus"></i> Upload Video
+      </a>
+    </div>
+  @endif
+</main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
