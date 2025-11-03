@@ -954,5 +954,54 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<script>
+console.log('=== FINDING GHOST VIDEO SOURCES ===');
+
+// This will catch exactly where these 404s are coming from
+window.addEventListener('error', function(e) {
+    const target = e.target;
+    if (target && target.src) {
+        const src = target.src;
+        
+        // Only log the problematic patterns we're seeing
+        if (src.includes('ywx6bin1n8uf73gcx0il.mp4') || 
+            src.includes('test-1761803077.txt') ||
+            src.includes('GFUAUpveAKDkxMfafqNjq81bHwvpVorv8ytb7xYc.mp4') ||
+            src.match(/[a-z0-9]{20,}\.mp4/) || // Random 20+ char filenames
+            src.includes('test-1761803096.txt')) {
+            
+            console.log('❌ GHOST VIDEO 404:', src);
+            console.log('Element:', target.outerHTML);
+            console.log('Tag Name:', target.tagName);
+            console.log('Parent:', target.parentElement?.outerHTML?.substring(0, 300));
+            console.trace();
+        }
+    }
+}, true);
+
+// Also monitor initial page load
+setTimeout(() => {
+    console.log('=== INITIAL PAGE SCAN ===');
+    const problematicElements = [];
+    
+    // Check all elements that could have src attributes
+    const elements = document.querySelectorAll('[src], [data-src], [href]');
+    elements.forEach(el => {
+        const src = el.src || el.href || el.dataset.src;
+        if (src && (src.includes('ywx6bin1n8uf73gcx0il.mp4') || src.includes('test-1761803077.txt'))) {
+            problematicElements.push({
+                element: el,
+                src: src,
+                outerHTML: el.outerHTML
+            });
+        }
+    });
+    
+    console.log('Problematic elements found on initial load:', problematicElements.length);
+    problematicElements.forEach(item => {
+        console.log('❌ PROBLEMATIC ELEMENT:', item);
+    });
+}, 2000);
+</script>
 </body>
 </html>
