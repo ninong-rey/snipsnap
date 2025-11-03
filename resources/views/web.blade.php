@@ -291,13 +291,13 @@ use Illuminate\Support\Str;
     .video-wrapper {
       position: relative;
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
       aspect-ratio: 9 / 16;
       background: #000;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-      margin-right: 40%;
+      margin-right: 25%;
     }
 
     video {
@@ -341,6 +341,12 @@ use Illuminate\Support\Str;
     .control-btn:hover {
       background: rgba(0, 0, 0, 0.7);
       transform: scale(1.1);
+    }
+
+    .volume-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .volume-slider {
@@ -394,45 +400,67 @@ use Illuminate\Support\Str;
       opacity: 0;
       pointer-events: none;
       transform: scale(0);
-      transition: opacity 0.3s, transform 0.3s;
       z-index: 10;
     }
 
     .heart.active {
-      animation: floatHeart 1.4s ease-out forwards;
+      animation: floatHeart 1.4s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
     }
 
     @keyframes floatHeart {
-      0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
-      40% { transform: scale(1.2) translateY(-40px) rotate(10deg); opacity: 0.9; }
-      100% { transform: scale(0.8) translateY(-150px) rotate(-10deg); opacity: 0; }
+      0% { 
+        transform: scale(0) translateY(0) rotate(0deg); 
+        opacity: 0; 
+      }
+      20% { 
+        transform: scale(1.2) translateY(-20px) rotate(5deg); 
+        opacity: 1; 
+      }
+      40% { 
+        transform: scale(1.1) translateY(-40px) rotate(10deg); 
+        opacity: 0.9; 
+      }
+      60% { 
+        transform: scale(1) translateY(-80px) rotate(5deg); 
+        opacity: 0.7; 
+      }
+      80% { 
+        transform: scale(0.9) translateY(-120px) rotate(0deg); 
+        opacity: 0.4; 
+      }
+      100% { 
+        transform: scale(0.8) translateY(-150px) rotate(-5deg); 
+        opacity: 0; 
+      }
     }
 
-    /* ==== ACTIONS ==== */
+    /* ==== ACTIONS - FIXED ALIGNMENT ==== */
     .actions {
       position: absolute;
-      right: 25px;
-      bottom: 40px;
+      right: 30px;
+      bottom: 120px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
+      gap: 20px;
+      z-index: 10;
     }
 
     .action-btn {
       color: #fff;
-      font-size: 26px;
+      font-size: 24px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       position: relative;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
     .action-btn:hover { 
-      transform: scale(1.2); 
+      transform: scale(1.15); 
     }
 
     .liked { 
@@ -442,31 +470,36 @@ use Illuminate\Support\Str;
 
     @keyframes heartBeat {
       0% { transform: scale(1); }
-      50% { transform: scale(1.3); }
+      25% { transform: scale(1.3); }
+      50% { transform: scale(1.1); }
+      75% { transform: scale(1.2); }
       100% { transform: scale(1); }
     }
 
     .action-count {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     .user-avatar-btn {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      border: 2px solid #fff;
+      border: 2.5px solid #fff;
       overflow: hidden;
       cursor: pointer;
       transition: all 0.3s ease;
       background: #fff;
       position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .user-avatar-btn:hover {
       transform: scale(1.1);
       border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(254, 44, 85, 0.3);
     }
 
     .user-avatar-btn img {
@@ -477,36 +510,38 @@ use Illuminate\Support\Str;
 
     .caption {
       position: absolute;
-      bottom: 20px;
+      bottom: 30px;
       left: 20px;
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
-      width: 70%;
+      width: 65%;
       line-height: 1.4;
-      position: relative;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+      z-index: 5;
     }
 
     .overlay { 
       position: absolute; 
       inset: 0; 
       cursor: pointer; 
+      z-index: 2;
     }
 
-    /* ==== COMMENTS PANEL ==== */
+    /* ==== COMMENTS PANEL - IMPROVED ==== */
     .comments-panel {
       position: fixed;
       right: -400px;
       top: 0;
-      width: 400px;
+      width: 380px;
       height: 100vh;
       background: #fff;
-      border-left: 1px solid #ddd;
-      box-shadow: -4px 0 12px rgba(0,0,0,0.1);
-      transition: right 0.4s ease;
+      border-left: 1px solid #e0e0e0;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       display: flex;
       flex-direction: column;
-      z-index: 20;
+      z-index: 1000;
     }
 
     .comments-panel.active { 
@@ -514,39 +549,55 @@ use Illuminate\Support\Str;
     }
 
     .comments-header {
-      padding: 16px;
+      padding: 20px;
       border-bottom: 1px solid #eee;
-      font-weight: bold;
-      font-size: 16px;
+      font-weight: 600;
+      font-size: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #fafafa;
     }
 
     .comments-list {
       flex: 1;
       overflow-y: auto;
       padding: 16px;
+      background: #fff;
     }
 
     .comment {
-      padding: 8px 0;
-      border-bottom: 1px solid #f2f2f2;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f5;
+      line-height: 1.4;
+    }
+
+    .comment strong {
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .comment-input {
       border-top: 1px solid #eee;
-      padding: 10px 16px;
+      padding: 16px;
       display: flex;
-      gap: 8px;
+      gap: 10px;
+      align-items: center;
+      background: #fafafa;
     }
 
     .comment-input input {
       flex: 1;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 24px;
+      padding: 12px 16px;
       outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .comment-input input:focus {
+      border-color: var(--accent);
     }
 
     .comment-input button {
@@ -554,10 +605,19 @@ use Illuminate\Support\Str;
       color: #fff;
       border: none;
       border-radius: 50%;
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       cursor: pointer;
       font-size: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .comment-input button:hover {
+      background: #e00040;
+      transform: scale(1.05);
     }
 
     /* ==== UPLOAD OVERLAY ==== */
@@ -582,6 +642,52 @@ use Illuminate\Support\Str;
     #uploadOverlay video {
       width: 100%;
       display: block;
+    }
+
+    /* ==== EMPTY STATE ==== */
+    .empty-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .empty-state i {
+      font-size: 72px;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      color: #666;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .empty-state p {
+      color: #999;
+      max-width: 300px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .empty-state a {
+      background: var(--accent);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .empty-state a:hover {
+      background: #e00040;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(254, 44, 85, 0.3);
     }
   </style>
 </head>
@@ -671,120 +777,120 @@ use Illuminate\Support\Str;
   @endif
 
   <!-- Feed -->
-<main class="feed-container" id="feedContainer">
-  @if($videos->count() > 0)
-    @foreach($videos as $video)
-    @php $videoUser = $video->user; @endphp
-    <div class="video-post" data-video-id="{{ $video->id }}">
-      <div class="video-wrapper">
-        <!-- Cloudinary Video Player -->
-        @if(!empty($video->url))
-          <video 
-            src="{{ $video->url }}" 
-            loop 
-            playsinline 
-            preload="metadata"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          </video>
-          
-          <!-- Fallback if video fails to load -->
-          <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-            <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-            <span>Video unavailable</span>
+  <main class="feed-container" id="feedContainer">
+    @if($videos->count() > 0)
+      @foreach($videos as $video)
+      @php $videoUser = $video->user; @endphp
+      <div class="video-post" data-video-id="{{ $video->id }}">
+        <div class="video-wrapper">
+          <!-- Cloudinary Video Player -->
+          @if(!empty($video->url))
+            <video 
+              src="{{ $video->url }}" 
+              loop 
+              playsinline 
+              preload="metadata"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            </video>
+            
+            <!-- Fallback if video fails to load -->
+            <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+              <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+              <span>Video unavailable</span>
+            </div>
+          @else
+            <!-- Show MixKit fallback video -->
+            <video 
+              src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+              loop 
+              playsinline 
+              preload="metadata">
+            </video>
+          @endif
+
+          <!-- Play/Pause animation -->
+          <div class="play-pause-animation">
+            <i class="fas fa-pause"></i>
           </div>
-        @else
-          <!-- Show MixKit fallback video -->
-          <video 
-            src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
-            loop 
-            playsinline 
-            preload="metadata">
-          </video>
-        @endif
 
-        <!-- Play/Pause animation -->
-        <div class="play-pause-animation">
-          <i class="fas fa-pause"></i>
-        </div>
+          <!-- Overlay for tap actions -->
+          <div class="overlay" onclick="togglePlayPause(this, event)" ondblclick="doubleTapLike(this, event)"></div>
 
-        <!-- Overlay for tap actions -->
-        <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
-
-        <!-- Video controls -->
-        <div class="video-controls">
-          <div class="volume-container">
-            <button class="control-btn volume-btn" onclick="toggleMute(this)">
-              <i class="fas fa-volume-up"></i>
-            </button>
-            <div class="volume-slider">
-              <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+          <!-- Video controls -->
+          <div class="video-controls">
+            <div class="volume-container">
+              <button class="control-btn volume-btn" onclick="toggleMute(this)">
+                <i class="fas fa-volume-up"></i>
+              </button>
+              <div class="volume-slider">
+                <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Actions -->
-      <div class="actions">
-        @if($videoUser)
-        <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-          <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
-               alt="{{ $videoUser->username ?? $videoUser->name }}"
-               onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+        <!-- Actions - Fixed Alignment -->
+        <div class="actions">
+          @if($videoUser)
+          <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
+                 alt="{{ $videoUser->username ?? $videoUser->name }}"
+                 onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+          </div>
+          @endif
+          <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+            <i class="fa-solid fa-heart"></i>
+            <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
+          </div>
+          <div class="action-btn" onclick="toggleComments(this)">
+            <i class="fa-solid fa-comment"></i>
+            <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
+          </div>
+          <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+            <i class="fa-solid fa-share"></i>
+            <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
+          </div>
         </div>
-        @endif
-        <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
-          <i class="fa-solid fa-heart"></i>
-          <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-        </div>
-        <div class="action-btn" onclick="toggleComments(this)">
-          <i class="fa-solid fa-comment"></i>
-          <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-        </div>
-        <div class="action-btn" onclick="shareVideo({{ $video->id }})">
-          <i class="fa-solid fa-share"></i>
-          <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-        </div>
-      </div>
 
-      <div class="caption">
-        <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-        {{ $video->caption ?? '' }}
-      </div>
+        <div class="caption">
+          <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
+          {{ $video->caption ?? '' }}
+        </div>
 
-      <!-- Comments Panel -->
-      <div class="comments-panel">
-        <div class="comments-header">
-          Comments
-          <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
-        </div>
-        <div class="comments-list" id="comments-list-{{ $video->id }}">
-          @foreach($video->comments->where('parent_id', null) as $comment)
-            @php $commentUser = $comment->user; @endphp
-            <div class="comment">
-              <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
-              {{ $comment->content ?? '' }}
-            </div>
-          @endforeach
-        </div>
-        <div class="comment-input">
-          <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
-          <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+        <!-- Comments Panel -->
+        <div class="comments-panel">
+          <div class="comments-header">
+            Comments
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
+          </div>
+          <div class="comments-list" id="comments-list-{{ $video->id }}">
+            @foreach($video->comments->where('parent_id', null) as $comment)
+              @php $commentUser = $comment->user; @endphp
+              <div class="comment">
+                <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
+                {{ $comment->content ?? '' }}
+              </div>
+            @endforeach
+          </div>
+          <div class="comment-input">
+            <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
+            <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
         </div>
       </div>
-    </div>
-    @endforeach
-  @else
-    <!-- EMPTY STATE -->
-    <div style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center;">
-      <i class="fas fa-video-slash" style="font-size:72px; color:#ccc; margin-bottom:20px;"></i>
-      <h3 style="color:#666; margin-bottom:10px;">No videos yet</h3>
-      <p style="color:#999; max-width:300px;">Upload your first video to get started!</p>
-      <a href="{{ route('upload') }}" style="background:var(--accent); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; margin-top:20px;">
-        <i class="fas fa-plus"></i> Upload Video
-      </a>
-    </div>
-  @endif
-</main>
+      @endforeach
+    @else
+      <!-- EMPTY STATE -->
+      <div class="empty-state">
+        <i class="fas fa-video-slash"></i>
+        <h3>No videos yet</h3>
+        <p>Upload your first video to get started!</p>
+        <a href="{{ route('upload') }}">
+          <i class="fas fa-plus"></i> Upload Video
+        </a>
+      </div>
+    @endif
+  </main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -811,30 +917,44 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function togglePlayPause(overlay, event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
     const currentTime = new Date().getTime();
-    if (currentTime - lastTapTime < 300) {
+    const timeSinceLastTap = currentTime - lastTapTime;
+    
+    // Double tap detection (300ms threshold)
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
       doubleTapLike(overlay, event);
       lastTapTime = 0;
       return;
     }
     lastTapTime = currentTime;
 
-    const video = overlay.closest('.video-wrapper').querySelector('video');
-    const icon = overlay.closest('.video-wrapper').querySelector('.play-pause-animation i');
+    const videoWrapper = overlay.closest('.video-wrapper');
+    const video = videoWrapper.querySelector('video');
+    const icon = videoWrapper.querySelector('.play-pause-animation i');
 
     if (!video) return;
 
-    const animation = overlay.closest('.video-wrapper').querySelector('.play-pause-animation');
-    animation.classList.remove('active'); 
-    void animation.offsetWidth; 
+    // Play/pause animation
+    const animation = videoWrapper.querySelector('.play-pause-animation');
+    animation.classList.remove('active');
+    void animation.offsetWidth; // Trigger reflow
     animation.classList.add('active');
 
+    // Toggle play/pause
     if (video.paused) {
-      video.play().catch(() => { video.muted = true; video.play().catch(console.error); });
-      icon?.classList.replace('fa-play', 'fa-pause');
+      video.play().catch((error) => { 
+        console.log('Play failed, trying with mute:', error);
+        video.muted = true; 
+        video.play().catch(console.error); 
+      });
+      if (icon) icon.className = 'fas fa-pause';
     } else {
       video.pause();
-      icon?.classList.replace('fa-pause', 'fa-play');
+      if (icon) icon.className = 'fas fa-play';
     }
   }
 
@@ -842,16 +962,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const video = btn.closest('.video-wrapper').querySelector('video');
     const icon = btn.querySelector('i');
     if (!video) return;
+    
     video.muted = !video.muted;
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+    
+    // Update volume slider to reflect mute state
+    const slider = btn.closest('.volume-container').querySelector('input[type="range"]');
+    if (slider) {
+      slider.value = video.muted ? 0 : video.volume;
+    }
   }
 
   function changeVolume(slider) {
     const video = slider.closest('.video-wrapper').querySelector('video');
     const icon = slider.closest('.volume-container').querySelector('i');
     if (!video) return;
-    video.volume = slider.value;
-    video.muted = slider.value == 0;
+    
+    video.volume = parseFloat(slider.value);
+    video.muted = (slider.value == 0);
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
   }
 
@@ -861,15 +989,30 @@ document.addEventListener('DOMContentLoaded', function() {
     heart.style.left = `${x}px`;
     heart.style.top = `${y}px`;
     container.appendChild(heart);
-    setTimeout(() => heart.remove(), 1400);
+    setTimeout(() => {
+      if (heart.parentNode) {
+        heart.parentNode.removeChild(heart);
+      }
+    }, 1400);
   }
 
   function doubleTapLike(overlay, event) {
+    if (!event) return;
+    
     const videoWrapper = overlay.closest('.video-wrapper');
-    const videoId = overlay.closest('.video-post').dataset.videoId;
-    const likeBtn = overlay.closest('.video-post').querySelector('.like-btn i');
-    const rect = overlay.getBoundingClientRect();
-    createHeart(event.clientX - rect.left, event.clientY - rect.top, videoWrapper);
+    const videoPost = overlay.closest('.video-post');
+    const videoId = videoPost.dataset.videoId;
+    const likeBtn = videoPost.querySelector('.like-btn i');
+    
+    // Get tap position relative to video wrapper
+    const rect = videoWrapper.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Create heart animation at tap position
+    createHeart(x, y, videoWrapper);
+    
+    // Like the video if not already liked
     if (!likedVideos.has(videoId)) { 
       likeBtn.classList.add('liked'); 
       incrementLike(videoId); 
@@ -878,32 +1021,64 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function toggleLike(btn, videoId) {
-    const videoWrapper = btn.closest('.video-post').querySelector('.video-wrapper');
+    const videoPost = btn.closest('.video-post');
+    const videoWrapper = videoPost.querySelector('.video-wrapper');
     const likeIcon = btn.querySelector('i');
+    
     if (!likedVideos.has(videoId)) { 
       likeIcon.classList.add('liked'); 
-      createHeart(videoWrapper.offsetWidth/2, videoWrapper.offsetHeight/2, videoWrapper); 
+      
+      // Create heart animation in center
+      const rect = videoWrapper.getBoundingClientRect();
+      createHeart(rect.width / 2, rect.height / 2, videoWrapper);
+      
       incrementLike(videoId); 
       likedVideos.add(videoId); 
+    } else {
+      // Unlike functionality (optional)
+      likeIcon.classList.remove('liked');
+      likedVideos.delete(videoId);
+      // You might want to add decrementLike function here
     }
   }
 
   function incrementLike(videoId) {
     const countEl = document.querySelector(`.like-count-${videoId}`);
-    if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
-    fetch(`/video/${videoId}/like`, { method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'} }).catch(console.log);
+    if (countEl) {
+      countEl.textContent = parseInt(countEl.textContent) + 1;
+    }
+    fetch(`/video/${videoId}/like`, { 
+      method: 'POST', 
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
+    }).catch(console.log);
   }
 
   function shareVideo(videoId) {
     const countEl = document.querySelector(`.share-count-${videoId}`);
-    if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
-    fetch(`/video/${videoId}/share`, { method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'} });
-    navigator.clipboard.writeText(`${window.location.origin}/video/${videoId}`).then(()=>alert('Video link copied!'));
+    if (countEl) {
+      countEl.textContent = parseInt(countEl.textContent) + 1;
+    }
+    fetch(`/video/${videoId}/share`, { 
+      method: 'POST', 
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
+    });
+    
+    const videoUrl = `${window.location.origin}/video/${videoId}`;
+    navigator.clipboard.writeText(videoUrl).then(() => {
+      alert('Video link copied to clipboard!');
+    }).catch(() => {
+      // Fallback for browsers that don't support clipboard API
+      prompt('Copy this link:', videoUrl);
+    });
   }
 
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
-    document.querySelectorAll('.comments-panel').forEach(p => p !== panel && p.classList.remove('active'));
+    // Close all other comment panels
+    document.querySelectorAll('.comments-panel').forEach(p => {
+      if (p !== panel) p.classList.remove('active');
+    });
+    // Toggle current panel
     panel.classList.toggle('active');
   }
 
@@ -912,6 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const input = panel.querySelector('input');
     const videoId = input.dataset.videoId;
     const text = input.value.trim();
+    
     if (!text) return;
 
     const list = panel.querySelector('.comments-list');
@@ -920,49 +1096,84 @@ document.addEventListener('DOMContentLoaded', function() {
     div.innerHTML = `<strong>@you</strong> ${text}`;
     list.appendChild(div);
 
+    // Update comment count
     const countEl = document.querySelector(`.comment-count-${videoId}`);
-    if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
+    if (countEl) {
+      countEl.textContent = parseInt(countEl.textContent) + 1;
+    }
 
+    // Send to server
     fetch('{{ route("comment.store") }}', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
-      body:JSON.stringify({ video_id:videoId, content:text })
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({ video_id: videoId, content: text })
     }).catch(console.log);
 
-    input.value=''; 
-    list.scrollTop=list.scrollHeight;
+    // Clear input and scroll to bottom
+    input.value = ''; 
+    list.scrollTop = list.scrollHeight;
   }
 
   // ===== VIDEO OBSERVER =====
-  const videoObserver = new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
+  const videoObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
       const video = entry.target.querySelector('video');
       const icon = entry.target.querySelector('.play-pause-animation i');
-      if (!video || !video.src) return;
+      
+      if (!video) return;
+      
       if (entry.isIntersecting) { 
-        video.play().catch(()=>{video.muted=true; video.play().catch(console.error);}); 
-        icon?.classList.replace('fa-play','fa-pause'); 
+        video.play().catch(error => {
+          console.log('Auto-play failed, trying with mute:', error);
+          video.muted = true; 
+          video.play().catch(console.error); 
+        }); 
+        if (icon) icon.className = 'fas fa-pause';
       } else { 
         video.pause(); 
-        icon?.classList.replace('fa-pause','fa-play'); 
+        if (icon) icon.className = 'fas fa-play';
       }
     });
-  }, { threshold:0.8 });
+  }, { threshold: 0.8 });
 
-  document.querySelectorAll('.video-post').forEach(post=>videoObserver.observe(post));
+  // Observe all video posts
+  document.querySelectorAll('.video-post').forEach(post => {
+    videoObserver.observe(post);
+  });
 
   // Hide skeleton after 2 seconds
   showSkeleton();
-  setTimeout(hideSkeleton,2000);
+  setTimeout(hideSkeleton, 2000);
 
   // Menu navigation
-  document.querySelectorAll('.menu a').forEach(link=>{
-    link.addEventListener('click',function(e){
-      if (this.classList.contains('active') || this.getAttribute('href')==='#') return;
+  document.querySelectorAll('.menu a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
       e.preventDefault(); 
       showSkeleton();
-      setTimeout(()=>window.location.href=this.getAttribute('href'),500);
+      setTimeout(() => window.location.href = this.getAttribute('href'), 500);
     });
+  });
+
+  // Close comments when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.comments-panel') && !e.target.closest('.action-btn') && !e.target.closest('.fa-comment')) {
+      document.querySelectorAll('.comments-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+    }
+  });
+
+  // Escape key to close comments
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.comments-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+    }
   });
 });
 </script>
