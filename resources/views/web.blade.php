@@ -227,7 +227,6 @@ use Illuminate\Support\Str;
       overflow: hidden;
     }
 
-    /* PRESERVED SIDEBAR HOVER ANIMATIONS */
     .menu a::before {
       content: '';
       position: absolute;
@@ -671,284 +670,112 @@ use Illuminate\Support\Str;
   </script>
   @endif
 
-<main id="feedContainer">
-  @foreach($videos as $video)
-  <div class="video-post" data-video-id="{{ $video->id }}">
-    <div class="video-wrapper">
-      @if(!empty($video->url))
-        <video 
-          src="{{ $video->url }}" 
-          loop 
-          playsinline 
-          preload="metadata"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        </video>
-        <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
+  <!-- Feed -->
+  <main class="feed-container" id="feedContainer">
+    @foreach($videos as $video)
+    @php $videoUser = $video->user; @endphp
+    <div class="video-post" data-video-id="{{ $video->id }}">
+      <div class="video-wrapper">
+        <!-- Cloudinary Video Player -->
+        @if(!empty($video->url))
+          <video 
+            src="{{ $video->url }}" 
+            loop 
+            playsinline 
+            preload="metadata"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          </video>
+          
+          <!-- Fallback if video fails to load -->
+          <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
+            <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
+            <span>Video unavailable</span>
+          </div>
+        @else
+          <!-- Show MixKit fallback video -->
+          <video 
+            src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+            loop 
+            playsinline 
+            preload="metadata">
+          </video>
+        @endif
+
+        <!-- Play/Pause animation -->
+        <div class="play-pause-animation">
+          <i class="fas fa-pause"></i>
         </div>
-      @else
-        <video 
-          src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
-          loop 
-          playsinline 
-          preload="metadata">
-        </video>
-      @endif
 
-      <div class="play-pause-animation">
-        <i class="fas fa-pause"></i>
-      </div>
-      <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
+        <!-- Overlay for tap actions -->
+        <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
 
-      <div class="video-controls">
-        <div class="volume-container">
-          <button class="control-btn volume-btn" onclick="toggleMute(this)">
-            <i class="fas fa-volume-up"></i>
-          </button>
-          <div class="volume-slider">
-            <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+        <!-- Video controls -->
+        <div class="video-controls">
+          <div class="volume-container">
+            <button class="control-btn volume-btn" onclick="toggleMute(this)">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <div class="volume-slider">
+              <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Actions -->
-    <div class="actions">
-      @php $videoUser = $video->user; @endphp
-      @if($videoUser)
-      <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-        <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
-             alt="{{ $videoUser->username ?? $videoUser->name }}"
-             onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+      <!-- Actions -->
+      <div class="actions">
+        @if($videoUser)
+        <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+          <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
+               alt="{{ $videoUser->username ?? $videoUser->name }}"
+               onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+        </div>
+        @endif
+        <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+          <i class="fa-solid fa-heart"></i>
+          <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
+        </div>
+        <div class="action-btn" onclick="toggleComments(this)">
+          <i class="fa-solid fa-comment"></i>
+          <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
+        </div>
+        <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+          <i class="fa-solid fa-share"></i>
+          <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
+        </div>
       </div>
-      @endif
-      <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
-        <i class="fa-solid fa-heart"></i>
-        <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-      </div>
-      <div class="action-btn" onclick="toggleComments(this)">
-        <i class="fa-solid fa-comment"></i>
-        <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-      </div>
-      <div class="action-btn" onclick="shareVideo({{ $video->id }})">
-        <i class="fa-solid fa-share"></i>
-        <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-      </div>
-    </div>
 
-    <div class="caption">
-      <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-      {{ $video->caption ?? '' }}
-    </div>
+      <div class="caption">
+        <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
+        {{ $video->caption ?? '' }}
+      </div>
 
-    <!-- Comments Panel -->
-    <div class="comments-panel">
-      <div class="comments-header">
-        Comments
-        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
-      </div>
-      <div class="comments-list" id="comments-list-{{ $video->id }}">
-        @foreach($video->comments->where('parent_id', null) as $comment)
-          @php $commentUser = $comment->user; @endphp
-          <div class="comment">
-            <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
-            {{ $comment->content ?? '' }}
-          </div>
-        @endforeach
-      </div>
-      <div class="comment-input">
-        <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
-        <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+      <!-- Comments Panel -->
+      <div class="comments-panel">
+        <div class="comments-header">
+          Comments
+          <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
+        </div>
+        <div class="comments-list" id="comments-list-{{ $video->id }}">
+          @foreach($video->comments->where('parent_id', null) as $comment)
+            @php $commentUser = $comment->user; @endphp
+            <div class="comment">
+              <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
+              {{ $comment->content ?? '' }}
+            </div>
+          @endforeach
+        </div>
+        <div class="comment-input">
+          <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
+          <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
       </div>
     </div>
-  </div>
-  @endforeach
-</main>
+    @endforeach
+  </main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
- <body>
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div>
-      <div class="logo">
-        <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
-        SnipSnap
-      </div>
-
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search">
-      </div>
-
-      <div class="menu">
-        <a href="{{ route('my-web') }}" class="active" data-route="for-you">
-          <i class="fa-solid fa-house"></i>
-          <span class="menu-text">For You</span>
-        </a>
-        <a href="{{ route('explore.users') }}" data-route="explore">
-          <i class="fa-regular fa-compass"></i>
-          <span class="menu-text">Explore</span>
-        </a>
-        <a href="{{ route('following.videos') }}" data-route="following">
-          <i class="fa-solid fa-user-group"></i>
-          <span class="menu-text">Following</span>
-        </a>
-        <a href="{{ route('friends') }}" data-route="friends">
-          <i class="fa-solid fa-user-friends"></i>
-          <span class="menu-text">Friends</span>
-        </a>
-        <a href="{{ route('upload') }}" data-route="upload">
-          <i class="fa-solid fa-plus-square"></i>
-          <span class="menu-text">Upload</span>
-        </a>
-        <a href="{{ route('notifications') }}" data-route="notifications">
-          <i class="fa-regular fa-comment-dots"></i>
-          <span class="menu-text">Notifications</span>
-        </a>
-        <a href="{{ route('messages.index') }}" data-route="messages">
-          <i class="fa-regular fa-paper-plane"></i>
-          <span class="menu-text">Messages</span>
-        </a>
-        <a href="#" data-route="live">
-          <i class="fa-solid fa-tv"></i>
-          <span class="menu-text">LIVE</span>
-        </a>
-        <a href="{{ route('profile.show') }}" data-route="profile">
-          <i class="fa-solid fa-user"></i>
-          <span class="menu-text">Profile</span>
-        </a>
-        <a href="#" data-route="more">
-          <i class="fa-solid fa-ellipsis"></i>
-          <span class="menu-text">More</span>
-        </a>
-      </div>
-    </div>
-
-      <form method="POST" action="{{ route('logout.perform') }}">
-  @csrf
-  <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
-    <i class="fa-solid fa-right-from-bracket"></i> Logout
-  </button>
-</form>
-</aside>
-
-@if(request()->has('uploaded_video'))
-<div id="uploadOverlay">
-  <video id="processingVideo" src="{{ request()->get('uploaded_video') }}" autoplay muted loop></video>
-  <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
-    <i class="fas fa-spinner fa-spin" style="color:#fff; font-size:36px;"></i>
-  </div>
-</div>
-<script>
-  setTimeout(() => {
-    const overlay = document.getElementById('uploadOverlay');
-    if (overlay) {
-      overlay.style.animation = 'slideInRight 0.5s ease reverse';
-      setTimeout(() => overlay.remove(), 500);
-    }
-  }, 3000);
-</script>
-@endif
-
-<main id="feedContainer">
-  @foreach($videos as $video)
-  <div class="video-post" data-video-id="{{ $video->id }}">
-    <div class="video-wrapper">
-      @php $videoUser = $video->user; @endphp
-
-      @if(!empty($video->url))
-        <video 
-          src="{{ $video->url }}" 
-          loop 
-          playsinline 
-          preload="metadata"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        </video>
-        <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-          <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-          <span>Video unavailable</span>
-        </div>
-      @else
-        <video 
-          src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
-          loop 
-          playsinline 
-          preload="metadata">
-        </video>
-      @endif
-
-      <div class="play-pause-animation"><i class="fas fa-pause"></i></div>
-      <div class="overlay" onclick="togglePlayPause(this)" ondblclick="doubleTapLike(this, event)"></div>
-
-      <div class="video-controls">
-        <div class="volume-container">
-          <button class="control-btn volume-btn" onclick="toggleMute(this)">
-            <i class="fas fa-volume-up"></i>
-          </button>
-          <div class="volume-slider">
-            <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeVolume(this)">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="actions">
-      @if($videoUser)
-      <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-        <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
-             alt="{{ $videoUser->username ?? $videoUser->name }}"
-             onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
-      </div>
-      @endif
-      <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
-        <i class="fa-solid fa-heart"></i>
-        <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-      </div>
-      <div class="action-btn" onclick="toggleComments(this)">
-        <i class="fa-solid fa-comment"></i>
-        <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-      </div>
-      <div class="action-btn" onclick="shareVideo({{ $video->id }})">
-        <i class="fa-solid fa-share"></i>
-        <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-      </div>
-    </div>
-
-    <div class="caption">
-      <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-      {{ $video->caption ?? '' }}
-    </div>
-
-    <!-- Comments Panel -->
-    <div class="comments-panel">
-      <div class="comments-header">
-        Comments
-        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
-      </div>
-      <div class="comments-list" id="comments-list-{{ $video->id }}">
-        @foreach($video->comments->where('parent_id', null) as $comment)
-          @php $commentUser = $comment->user; @endphp
-          <div class="comment">
-            <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
-            {{ $comment->content ?? '' }}
-          </div>
-        @endforeach
-      </div>
-      <div class="comment-input">
-        <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
-        <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </div>
-  </div>
-  @endforeach
-</main>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
   // ===== SKELETON LOADER =====
   function showSkeleton() {
     document.getElementById('feedContainer').classList.add('skeleton-loading');
@@ -986,7 +813,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!video) return;
 
     const animation = overlay.closest('.video-wrapper').querySelector('.play-pause-animation');
-    animation.classList.remove('active'); void animation.offsetWidth; animation.classList.add('active');
+    animation.classList.remove('active'); 
+    void animation.offsetWidth; 
+    animation.classList.add('active');
 
     if (video.paused) {
       video.play().catch(() => { video.muted = true; video.play().catch(console.error); });
@@ -1029,13 +858,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const likeBtn = overlay.closest('.video-post').querySelector('.like-btn i');
     const rect = overlay.getBoundingClientRect();
     createHeart(event.clientX - rect.left, event.clientY - rect.top, videoWrapper);
-    if (!likedVideos.has(videoId)) { likeBtn.classList.add('liked'); incrementLike(videoId); likedVideos.add(videoId); }
+    if (!likedVideos.has(videoId)) { 
+      likeBtn.classList.add('liked'); 
+      incrementLike(videoId); 
+      likedVideos.add(videoId); 
+    }
   }
 
   function toggleLike(btn, videoId) {
     const videoWrapper = btn.closest('.video-post').querySelector('.video-wrapper');
     const likeIcon = btn.querySelector('i');
-    if (!likedVideos.has(videoId)) { likeIcon.classList.add('liked'); createHeart(videoWrapper.offsetWidth/2, videoWrapper.offsetHeight/2, videoWrapper); incrementLike(videoId); likedVideos.add(videoId); }
+    if (!likedVideos.has(videoId)) { 
+      likeIcon.classList.add('liked'); 
+      createHeart(videoWrapper.offsetWidth/2, videoWrapper.offsetHeight/2, videoWrapper); 
+      incrementLike(videoId); 
+      likedVideos.add(videoId); 
+    }
   }
 
   function incrementLike(videoId) {
@@ -1079,7 +917,8 @@ document.addEventListener('DOMContentLoaded', function() {
       body:JSON.stringify({ video_id:videoId, content:text })
     }).catch(console.log);
 
-    input.value=''; list.scrollTop=list.scrollHeight;
+    input.value=''; 
+    list.scrollTop=list.scrollHeight;
   }
 
   // ===== VIDEO OBSERVER =====
@@ -1088,8 +927,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const video = entry.target.querySelector('video');
       const icon = entry.target.querySelector('.play-pause-animation i');
       if (!video || !video.src) return;
-      if (entry.isIntersecting) { video.play().catch(()=>{video.muted=true; video.play().catch(console.error);}); icon?.classList.replace('fa-play','fa-pause'); }
-      else { video.pause(); icon?.classList.replace('fa-pause','fa-play'); }
+      if (entry.isIntersecting) { 
+        video.play().catch(()=>{video.muted=true; video.play().catch(console.error);}); 
+        icon?.classList.replace('fa-play','fa-pause'); 
+      } else { 
+        video.pause(); 
+        icon?.classList.replace('fa-pause','fa-play'); 
+      }
     });
   }, { threshold:0.8 });
 
@@ -1103,98 +947,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.menu a').forEach(link=>{
     link.addEventListener('click',function(e){
       if (this.classList.contains('active') || this.getAttribute('href')==='#') return;
-      e.preventDefault(); showSkeleton();
+      e.preventDefault(); 
+      showSkeleton();
       setTimeout(()=>window.location.href=this.getAttribute('href'),500);
     });
   });
-
 });
 </script>
-
-
-        // Navigation with skeleton
-        document.querySelectorAll('.menu a').forEach(link => {
-          link.addEventListener('click', function(e) {
-            if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
-            e.preventDefault();
-            showSkeleton();
-            setTimeout(() => {
-              window.location.href = this.getAttribute('href');
-            }, 500);
-          });
-        });
-      });
-    
-  console.log('=== VIDEO SOURCE FINDER ===');
-  setTimeout(() => {
-      // Find ALL elements that might have video URLs
-      const elements = document.querySelectorAll('[src*="/videos/"], [data-src*="/videos/"]');
-      console.log('Found elements with /videos/ URLs:', elements.length);
-      elements.forEach(el => {
-          console.log('❌ Problematic element:', el.outerHTML);
-      });
-  }, 1000);
-
-  console.log('=== DYNAMIC VIDEO DETECTOR ===');
-
-  // Monitor ALL dynamic video creation
-  const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-          mutation.addedNodes.forEach(function(node) {
-              if (node.nodeType === 1) {
-                  // Check the node itself
-                  if (node.src && node.src.includes('/videos/')) {
-                      console.log('❌ DYNAMIC ELEMENT ADDED:', node.outerHTML);
-                      console.trace();
-                  }
-                  
-                  // Check all children for video sources
-                  const videos = node.querySelectorAll?.('video, source, [src*="/videos/"]') || [];
-                  videos.forEach(function(video) {
-                      if (video.src && video.src.includes('/videos/')) {
-                          console.log('❌ DYNAMIC VIDEO FOUND:', video.outerHTML);
-                          console.log('Parent container:', node.outerHTML.substring(0, 500));
-                          console.trace();
-                      }
-                  });
-              }
-          });
-      });
-  });
-
-  // Start observing
-  observer.observe(document.body, { 
-      childList: true, 
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['src', 'data-src']
-  });
-
-  // Also monitor fetch/XHR requests for video data
-  const originalFetch = window.fetch;
-  window.fetch = function(...args) {
-      const url = args[0];
-      if (url && typeof url === 'string' && url.includes('/videos/')) {
-          console.log('❌ FETCH loading video:', url);
-          console.trace();
-      }
-      return originalFetch.apply(this, args);
-  };
-
-  // Monitor for 404 errors
-  window.addEventListener('error', function(e) {
-      if (e.target && (e.target.src || e.target.href) && 
-          (e.target.src.includes('/videos/') || e.target.href.includes('/videos/'))) {
-          console.log('❌ 404 ERROR for:', e.target.src || e.target.href);
-          console.log('Error element:', e.target.outerHTML);
-          console.trace();
-      }
-  }, true);
-
-  console.log('Video monitoring started...');
-  });
-
-
-  </script>
-  </body>
-  </html>
+</body>
+</html>
