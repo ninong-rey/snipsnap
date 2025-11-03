@@ -1009,6 +1009,16 @@ const observer = new IntersectionObserver(entries => {
         });
       });
     });
-  </script>
+  
+console.log('=== VIDEO SOURCE FINDER ===');
+setTimeout(() => {
+    // Find ALL elements that might have video URLs
+    const elements = document.querySelectorAll('[src*="/videos/"], [data-src*="/videos/"]');
+    console.log('Found elements with /videos/ URLs:', elements.length);
+    elements.forEach(el => {
+        console.log('❌ Problematic element:', el.outerHTML);
+    });
+}, 1000);
+</script>
 </body>
 </html>

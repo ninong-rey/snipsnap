@@ -524,6 +524,9 @@ Route::get('/test-cloudinary-config', function() {
         ], 500);
     }
 });
+Route::get('/video-debug', function() {
+    return view('video-debug');
+});
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
