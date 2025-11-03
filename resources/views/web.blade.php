@@ -1019,6 +1019,65 @@ setTimeout(() => {
         console.log('❌ Problematic element:', el.outerHTML);
     });
 }, 1000);
+
+console.log('=== DYNAMIC VIDEO DETECTOR ===');
+
+// Monitor ALL dynamic video creation
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) {
+                // Check the node itself
+                if (node.src && node.src.includes('/videos/')) {
+                    console.log('❌ DYNAMIC ELEMENT ADDED:', node.outerHTML);
+                    console.trace();
+                }
+                
+                // Check all children for video sources
+                const videos = node.querySelectorAll?.('video, source, [src*="/videos/"]') || [];
+                videos.forEach(function(video) {
+                    if (video.src && video.src.includes('/videos/')) {
+                        console.log('❌ DYNAMIC VIDEO FOUND:', video.outerHTML);
+                        console.log('Parent container:', node.outerHTML.substring(0, 500));
+                        console.trace();
+                    }
+                });
+            }
+        });
+    });
+});
+
+// Start observing
+observer.observe(document.body, { 
+    childList: true, 
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['src', 'data-src']
+});
+
+// Also monitor fetch/XHR requests for video data
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    const url = args[0];
+    if (url && typeof url === 'string' && url.includes('/videos/')) {
+        console.log('❌ FETCH loading video:', url);
+        console.trace();
+    }
+    return originalFetch.apply(this, args);
+};
+
+// Monitor for 404 errors
+window.addEventListener('error', function(e) {
+    if (e.target && (e.target.src || e.target.href) && 
+        (e.target.src.includes('/videos/') || e.target.href.includes('/videos/'))) {
+        console.log('❌ 404 ERROR for:', e.target.src || e.target.href);
+        console.log('Error element:', e.target.outerHTML);
+        console.trace();
+    }
+}, true);
+
+console.log('Video monitoring started...');
+
 </script>
 </body>
 </html>
