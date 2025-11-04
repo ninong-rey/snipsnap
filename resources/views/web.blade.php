@@ -752,70 +752,59 @@ use Illuminate\Support\Str;
 </head>
 
 <body>
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div>
-      <div class="logo">
-        <img src="{{ secure_asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
-        SnipSnap
-      </div>
+  <div class="menu">
+  <a href="{{ route('my-web') }}" class="active" data-route="for-you">
+    <i class="fa-solid fa-house"></i>
+    <span class="menu-text">For You</span>
+  </a>
+  <a href="{{ route('explore.users') }}" data-route="explore">
+    <i class="fa-regular fa-compass"></i>
+    <span class="menu-text">Explore</span>
+  </a>
+  <a href="{{ route('following.videos') }}" data-route="following">
+    <i class="fa-solid fa-user-group"></i>
+    <span class="menu-text">Following</span>
+  </a>
+  <!-- ✅ CORRECT: This route exists -->
+  <a href="{{ route('friends') }}" data-route="friends">
+    <i class="fa-solid fa-user-friends"></i>
+    <span class="menu-text">Friends</span>
+  </a>
+  <a href="{{ route('upload') }}" data-route="upload">
+    <i class="fa-solid fa-plus-square"></i>
+    <span class="menu-text">Upload</span>
+  </a>
+  <!-- ✅ CORRECT: This route exists -->
+  <a href="{{ route('notifications') }}" data-route="notifications">
+    <i class="fa-regular fa-comment-dots"></i>
+    <span class="menu-text">Notifications</span>
+  </a>
+  <!-- ✅ CORRECT: This route exists -->
+  <a href="{{ route('messages.index') }}" data-route="messages">
+    <i class="fa-regular fa-paper-plane"></i>
+    <span class="menu-text">Messages</span>
+  </a>
+  <a href="#" data-route="live">
+    <i class="fa-solid fa-tv"></i>
+    <span class="menu-text">LIVE</span>
+  </a>
+  <!-- ✅ CORRECT: Use profile.show -->
+  <a href="{{ route('profile.show') }}" data-route="profile">
+    <i class="fa-solid fa-user"></i>
+    <span class="menu-text">Profile</span>
+  </a>
+  <a href="#" data-route="more">
+    <i class="fa-solid fa-ellipsis"></i>
+    <span class="menu-text">More</span>
+  </a>
+</div>
 
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search">
-      </div>
-
-      <div class="menu">
-        <a href="{{ route('my-web') }}" class="active" data-route="for-you">
-          <i class="fa-solid fa-house"></i>
-          <span class="menu-text">For You</span>
-        </a>
-        <a href="{{ route('explore.users') }}" data-route="explore">
-          <i class="fa-regular fa-compass"></i>
-          <span class="menu-text">Explore</span>
-        </a>
-        <a href="{{ route('following.videos') }}" data-route="following">
-          <i class="fa-solid fa-user-group"></i>
-          <span class="menu-text">Following</span>
-        </a>
-        <a href="{{ route('friends') }}" data-route="friends">
-          <i class="fa-solid fa-user-friends"></i>
-          <span class="menu-text">Friends</span>
-        </a>
-        <a href="{{ route('upload') }}" data-route="upload">
-          <i class="fa-solid fa-plus-square"></i>
-          <span class="menu-text">Upload</span>
-        </a>
-        <a href="{{ route('notifications') }}" data-route="notifications">
-          <i class="fa-regular fa-comment-dots"></i>
-          <span class="menu-text">Notifications</span>
-        </a>
-        <a href="{{ route('messages.index') }}" data-route="messages">
-          <i class="fa-regular fa-paper-plane"></i>
-          <span class="menu-text">Messages</span>
-        </a>
-        <a href="#" data-route="live">
-          <i class="fa-solid fa-tv"></i>
-          <span class="menu-text">LIVE</span>
-        </a>
-        <!-- FIXED: Profile link - removed route that causes 500 error -->
-        <a href="{{ route('profile') }}" data-route="profile">
-          <i class="fa-solid fa-user"></i>
-          <span class="menu-text">Profile</span>
-        </a>
-        <a href="#" data-route="more">
-          <i class="fa-solid fa-ellipsis"></i>
-          <span class="menu-text">More</span>
-        </a>
-      </div>
-    </div>
-
-    <form method="POST" action="{{ secure_url(route('logout.perform')) }}">
-      @csrf
-      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-      </button>
-    </form>
+    <form method="POST" action="{{ route('logout.perform') }}">
+  @csrf
+  <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
+    <i class="fa-solid fa-right-from-bracket"></i> Logout
+  </button>
+</form>
   </aside>
 
   @if(request()->has('uploaded_video'))
@@ -991,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (userIdentifier) {
         window.location.href = `/user/${userIdentifier}`;
       } else {
-        window.location.href = '/profile';
+        window.location.href = '{{ route("profile.show") }}';
       }
     }, 500);
   }
@@ -1218,8 +1207,8 @@ document.addEventListener('DOMContentLoaded', function() {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
 
-    // Send to server - FIXED: Proper error handling
-    fetch('{{ route("comment.store") }}', {
+    // FIXED: Use the correct comment route
+fetch('{{ route("comment.store") }}', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
