@@ -267,7 +267,7 @@ use Illuminate\Support\Str;
       transition: opacity 0.3s ease;
     }
 
-    /* ==== FEED ==== */
+    /* ==== FEED - MOVED CLOSER TO SIDEBAR ==== */
     .feed-container {
       margin-left: 260px;
       width: calc(100% - 260px);
@@ -275,6 +275,7 @@ use Illuminate\Support\Str;
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       background: #fff;
+      padding-left: 40px; /* ADDED: Move content closer to sidebar */
     }
 
     .video-post {
@@ -282,7 +283,7 @@ use Illuminate\Support\Str;
       height: 100vh;
       scroll-snap-align: start;
       display: flex;
-      justify-content: center;
+      justify-content: flex-start; /* CHANGED: Move video left */
       align-items: center;
       background: #fff;
       position: relative;
@@ -507,7 +508,7 @@ use Illuminate\Support\Str;
       object-fit: cover;
     }
 
-    /* ==== USERNAME & CAPTION INSIDE VIDEO ==== */
+    /* ==== USERNAME & CAPTION INSIDE VIDEO - REMOVED AVATAR ==== */
     .video-info {
       position: absolute;
       left: 15px;
@@ -522,10 +523,9 @@ use Illuminate\Support\Str;
     .user-info {
       display: flex;
       align-items: center;
-      gap: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 16px;
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
@@ -536,24 +536,12 @@ use Illuminate\Support\Str;
       transform: translateX(3px);
     }
 
-    .user-avatar-small {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      overflow: hidden;
-    }
-
-    .user-avatar-small img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    /* REMOVED: user-avatar-small styles - no avatar in username area */
 
     .username {
       color: #fff;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 14px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
     }
 
@@ -887,16 +875,18 @@ use Illuminate\Support\Str;
             </div>
           </div>
 
-          <!-- Video Info - NOW INSIDE VIDEO WRAPPER -->
+          <!-- Video Info - FIXED: REMOVED AVATAR FROM USERNAME AREA -->
           <div class="video-info">
             @if($videoUser)
             <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-              <div class="user-avatar-small">
-                <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
-                     alt="{{ $videoUser->username ?? $videoUser->name }}"
-                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+              <!-- REMOVED: Avatar div - only username now -->
+              <div class="username">
+                @{{ $videoUser->username ?? $videoUser->name ?? 'Unknown User' }}
               </div>
-              <div class="username">@{{ $videoUser->username ?? $videoUser->name }}</div>
+            </div>
+            @else
+            <div class="user-info">
+              <div class="username">@unknown_user</div>
             </div>
             @endif
             <div class="caption">
@@ -904,7 +894,7 @@ use Illuminate\Support\Str;
             </div>
           </div>
 
-          <!-- Actions - NOW INSIDE VIDEO WRAPPER -->
+          <!-- Actions - ONLY ONE AVATAR (in actions sidebar) -->
           <div class="actions">
             @if($videoUser)
             <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -962,7 +952,6 @@ use Illuminate\Support\Str;
       </div>
     @endif
   </main>
-
 <script>
 // ... (JavaScript code remains exactly the same as before)
 document.addEventListener('DOMContentLoaded', function() {
