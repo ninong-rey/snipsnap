@@ -1,11 +1,3 @@
-<?php
-// TEMPORARY ERROR DISPLAY
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-try {
-?>
 @php
 use Illuminate\Support\Str;
 @endphp
@@ -1631,13 +1623,3 @@ if (document.getElementById('feedContainer')) {
 
 </body>
 </html>
-<?php
-} catch (Exception $e) {
-    // This will show the actual error
-    echo "<h1>ERROR FOUND:</h1>";
-    echo "<p><strong>Message:</strong> " . $e->getMessage() . "</p>";
-    echo "<p><strong>File:</strong> " . $e->getFile() . "</p>";
-    echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
-    echo "<p><strong>Trace:</strong> " . $e->getTraceAsString() . "</p>";
-}
-?>
