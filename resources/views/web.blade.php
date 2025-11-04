@@ -297,7 +297,6 @@ use Illuminate\Support\Str;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-      margin-right: 25%;
     }
 
     video {
@@ -434,11 +433,11 @@ use Illuminate\Support\Str;
       }
     }
 
-    /* ==== ACTIONS - FIXED ALIGNMENT ==== */
+    /* ==== ACTIONS - MOVED CLOSER TO VIDEO ==== */
     .actions {
       position: absolute;
-      right: 30px;
-      bottom: 120px;
+      right: -80px;
+      bottom: 100px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -508,17 +507,77 @@ use Illuminate\Support\Str;
       object-fit: cover;
     }
 
-    .caption {
+    /* ==== CAPTION & USER INFO - MOVED TO RIGHT SIDE ==== */
+    .video-info {
       position: absolute;
-      bottom: 30px;
-      left: 20px;
+      right: -280px;
+      bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 250px;
+      z-index: 5;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .user-info:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: translateX(-5px);
+    }
+
+    .user-avatar-small {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      overflow: hidden;
+    }
+
+    .user-avatar-small img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .username {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+
+    .caption {
       color: #fff;
       font-size: 14px;
       font-weight: 500;
-      width: 65%;
       line-height: 1.4;
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
-      z-index: 5;
+      padding: 12px 15px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .caption::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .caption::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
     }
 
     .overlay { 
@@ -739,7 +798,8 @@ use Illuminate\Support\Str;
           <i class="fa-solid fa-tv"></i>
           <span class="menu-text">LIVE</span>
         </a>
-        <a href="{{ route('profile.show') }}" data-route="profile">
+        <!-- FIXED: Profile link - removed route that causes 500 error -->
+        <a href="{{ route('profile') }}" data-route="profile">
           <i class="fa-solid fa-user"></i>
           <span class="menu-text">Profile</span>
         </a>
@@ -829,7 +889,7 @@ use Illuminate\Support\Str;
           </div>
         </div>
 
-        <!-- Actions - Fixed Alignment -->
+        <!-- Actions - Moved closer to video -->
         <div class="actions">
           @if($videoUser)
           <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -852,9 +912,21 @@ use Illuminate\Support\Str;
           </div>
         </div>
 
-        <div class="caption">
-          <strong>{{ $videoUser ? '@' . ($videoUser->username ?? $videoUser->name) : '@deleted_user' }}</strong><br>
-          {{ $video->caption ?? '' }}
+        <!-- Video Info - Moved to right side -->
+        <div class="video-info">
+          @if($videoUser)
+          <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+            <div class="user-avatar-small">
+              <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
+                   alt="{{ $videoUser->username ?? $videoUser->name }}"
+                   onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+            </div>
+            <div class="username">@{{ $videoUser->username ?? $videoUser->name }}</div>
+          </div>
+          @endif
+          <div class="caption">
+            {{ $video->caption ?? '' }}
+          </div>
         </div>
 
         <!-- Comments Panel -->
@@ -913,7 +985,14 @@ document.addEventListener('DOMContentLoaded', function() {
   function goToUserProfile(userIdentifier) {
     showSkeleton();
     setTimeout(() => {
-      window.location.href = (userIdentifier && isNaN(userIdentifier)) ? `/user/${userIdentifier}` : `/profile`;
+      // FIXED: Use proper route for user profile
+      if (userIdentifier && !isNaN(userIdentifier)) {
+        window.location.href = `/user/${userIdentifier}`;
+      } else if (userIdentifier) {
+        window.location.href = `/user/${userIdentifier}`;
+      } else {
+        window.location.href = '/profile';
+      }
     }, 500);
   }
 
@@ -1068,6 +1147,10 @@ document.addEventListener('DOMContentLoaded', function() {
         'X-CSRF-TOKEN': '{{ csrf_token() }}',
         'Content-Type': 'application/json'
       }
+    }).then(response => {
+      if (!response.ok) {
+        console.log('Like failed:', response.status);
+      }
     }).catch(error => console.log('Like error:', error));
   }
 
@@ -1085,6 +1168,10 @@ document.addEventListener('DOMContentLoaded', function() {
         'X-CSRF-TOKEN': '{{ csrf_token() }}',
         'Content-Type': 'application/json'
       }
+    }).then(response => {
+      if (!response.ok) {
+        console.log('Share failed:', response.status);
+      }
     }).catch(error => console.log('Share error:', error));
     
     // Copy link to clipboard
@@ -1097,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ===== COMMENTS SYSTEM - FIXED =====
+  // ===== COMMENTS SYSTEM - COMPLETELY FIXED =====
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
     
@@ -1118,9 +1205,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!text) return;
 
+    // Create new comment element
     const list = panel.querySelector('.comments-list');
-    
-    // Create new comment
     const commentDiv = document.createElement('div');
     commentDiv.className = 'comment';
     commentDiv.innerHTML = `<strong>@you</strong> ${text}`;
@@ -1132,18 +1218,41 @@ document.addEventListener('DOMContentLoaded', function() {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
 
-    // Send to server
+    // Send to server - FIXED: Proper error handling
     fetch('{{ route("comment.store") }}', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         video_id: videoId,
         content: text
       })
-    }).catch(error => console.log('Comment error:', error));
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Comment failed to save');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Comment saved:', data);
+      // Update comment with actual ID if needed
+      if (data.comment && data.comment.id) {
+        commentDiv.dataset.commentId = data.comment.id;
+      }
+    })
+    .catch(error => {
+      console.log('Comment error:', error);
+      // Remove the comment if save failed
+      commentDiv.remove();
+      if (countEl) {
+        countEl.textContent = parseInt(countEl.textContent) - 1;
+      }
+      alert('Failed to post comment. Please try again.');
+    });
 
     // Clear input and scroll to bottom
     input.value = '';
@@ -1195,6 +1304,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     });
+
+    // Set up user info clicks
+    document.querySelectorAll('.user-info').forEach(userInfo => {
+      userInfo.addEventListener('click', function() {
+        const username = this.querySelector('.username').textContent.replace('@', '');
+        goToUserProfile(username);
+      });
+    });
   }
 
   // ===== EVENT LISTENERS =====
@@ -1217,10 +1334,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Menu navigation
+  // Menu navigation - FIXED: Profile link
   document.querySelectorAll('.menu a').forEach(link => {
     link.addEventListener('click', function(e) {
       if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
+      
+      // Special handling for profile to avoid 500 error
+      if (this.dataset.route === 'profile') {
+        e.preventDefault();
+        showSkeleton();
+        setTimeout(() => {
+          window.location.href = '/profile'; // Use direct URL instead of route
+        }, 500);
+        return;
+      }
+      
       e.preventDefault();
       showSkeleton();
       setTimeout(() => window.location.href = this.getAttribute('href'), 500);
