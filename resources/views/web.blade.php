@@ -1086,6 +1086,22 @@ use Illuminate\Support\Str;
   </main>
 
 <script>
+/// ===== SAFE PROFILE NAVIGATION (Works on ALL pages) =====
+function goToUserProfile(userIdentifier) {
+    try {
+        const cleanId = (userIdentifier || '').toString().trim();
+        
+        if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
+            window.location.href = '/profile';
+        } else {
+            window.location.href = `/user/${encodeURIComponent(cleanId)}`;
+        }
+    } catch (error) {
+        console.error('Profile navigation error:', error);
+        window.location.href = '/profile';
+    }
+}
+
 // Only run video interactions if we're on a video page
 if (document.getElementById('feedContainer')) {
     document.addEventListener('DOMContentLoaded', function() {
@@ -1119,22 +1135,6 @@ if (document.getElementById('feedContainer')) {
             localStorage.setItem('sharedVideos', JSON.stringify(sharedVideos));
             localStorage.setItem('userComments', JSON.stringify(userComments));
             localStorage.setItem('userReplies', JSON.stringify(userReplies));
-        }
-
-        // ===== PROFILE NAVIGATION - NO 500 ERRORS =====
-        function goToUserProfile(userIdentifier) {
-            try {
-                const cleanId = (userIdentifier || '').toString().trim();
-                
-                if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
-                    window.location.href = '/profile';
-                } else {
-                    window.location.href = `/user/${encodeURIComponent(cleanId)}`;
-                }
-            } catch (error) {
-                console.error('Profile navigation error:', error);
-                window.location.href = '/profile';
-            }
         }
 
         // ===== DOUBLE TAP HEART =====
@@ -1609,7 +1609,6 @@ if (document.getElementById('feedContainer')) {
         window.closeCommentsModal = closeCommentsModal;
         window.shareVideo = shareVideo;
         window.postCommentFromModal = postCommentFromModal;
-        window.goToUserProfile = goToUserProfile;
         window.handleVideoTap = handleVideoTap;
         window.toggleReplyForm = toggleReplyForm;
         window.toggleReplies = toggleReplies;
@@ -1620,21 +1619,7 @@ if (document.getElementById('feedContainer')) {
             initializeVideoInteractions();
         }, 1000);
     });
-} else {
-    // Simple profile navigation for non-video pages
-    window.goToUserProfile = function(userIdentifier) {
-        try {
-            const cleanId = (userIdentifier || '').toString().trim();
-            if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
-                window.location.href = '/profile';
-            } else {
-                window.location.href = `/user/${encodeURIComponent(cleanId)}`;
-            }
-        } catch (error) {
-            window.location.href = '/profile';
-        }
-    };
 }
-</script>
+// Remove the else block at the end since goToUserProfile is now global
 </body>
 </html>
