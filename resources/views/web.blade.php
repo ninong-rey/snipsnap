@@ -881,8 +881,8 @@ use Illuminate\Support\Str;
             <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
               <!-- REMOVED: Avatar div - only username now -->
               <div class="username">
-                @{{ $videoUser->username ?? $videoUser->name ?? 'Unknown User' }}
-              </div>
+              {{ $videoUser->username ?? $videoUser->name ?? 'Unknown User' }}
+           </div>
             </div>
             @else
             <div class="user-info">
