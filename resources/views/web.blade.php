@@ -433,11 +433,11 @@ use Illuminate\Support\Str;
       }
     }
 
-    /* ==== ACTIONS - MOVED CLOSER TO VIDEO ==== */
+    /* ==== ACTIONS - FIXED ALIGNMENT ==== */
     .actions {
       position: absolute;
-      right: -80px;
-      bottom: 100px;
+      right: 20px;
+      bottom: 120px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -507,15 +507,15 @@ use Illuminate\Support\Str;
       object-fit: cover;
     }
 
-    /* ==== CAPTION & USER INFO - MOVED TO RIGHT SIDE ==== */
+    /* ==== CAPTION & USER INFO - FIXED ALIGNMENT ==== */
     .video-info {
       position: absolute;
-      right: -280px;
-      bottom: 100px;
+      left: 20px;
+      bottom: 120px;
       display: flex;
       flex-direction: column;
       gap: 15px;
-      width: 250px;
+      width: 300px;
       z-index: 5;
     }
 
@@ -533,7 +533,7 @@ use Illuminate\Support\Str;
 
     .user-info:hover {
       background: rgba(0, 0, 0, 0.5);
-      transform: translateX(-5px);
+      transform: translateX(5px);
     }
 
     .user-avatar-small {
@@ -587,7 +587,7 @@ use Illuminate\Support\Str;
       z-index: 2;
     }
 
-    /* ==== COMMENTS PANEL - IMPROVED ==== */
+    /* ==== COMMENTS PANEL ==== */
     .comments-panel {
       position: fixed;
       right: -400px;
@@ -752,59 +752,69 @@ use Illuminate\Support\Str;
 </head>
 
 <body>
-  <div class="menu">
-  <a href="{{ route('my-web') }}" class="active" data-route="for-you">
-    <i class="fa-solid fa-house"></i>
-    <span class="menu-text">For You</span>
-  </a>
-  <a href="{{ route('explore.users') }}" data-route="explore">
-    <i class="fa-regular fa-compass"></i>
-    <span class="menu-text">Explore</span>
-  </a>
-  <a href="{{ route('following.videos') }}" data-route="following">
-    <i class="fa-solid fa-user-group"></i>
-    <span class="menu-text">Following</span>
-  </a>
-  <!-- ✅ CORRECT: This route exists -->
-  <a href="{{ route('friends') }}" data-route="friends">
-    <i class="fa-solid fa-user-friends"></i>
-    <span class="menu-text">Friends</span>
-  </a>
-  <a href="{{ route('upload') }}" data-route="upload">
-    <i class="fa-solid fa-plus-square"></i>
-    <span class="menu-text">Upload</span>
-  </a>
-  <!-- ✅ CORRECT: This route exists -->
-  <a href="{{ route('notifications') }}" data-route="notifications">
-    <i class="fa-regular fa-comment-dots"></i>
-    <span class="menu-text">Notifications</span>
-  </a>
-  <!-- ✅ CORRECT: This route exists -->
-  <a href="{{ route('messages.index') }}" data-route="messages">
-    <i class="fa-regular fa-paper-plane"></i>
-    <span class="menu-text">Messages</span>
-  </a>
-  <a href="#" data-route="live">
-    <i class="fa-solid fa-tv"></i>
-    <span class="menu-text">LIVE</span>
-  </a>
-  <!-- ✅ CORRECT: Use profile.show -->
-  <a href="{{ route('profile.show') }}" data-route="profile">
-    <i class="fa-solid fa-user"></i>
-    <span class="menu-text">Profile</span>
-  </a>
-  <a href="#" data-route="more">
-    <i class="fa-solid fa-ellipsis"></i>
-    <span class="menu-text">More</span>
-  </a>
-</div>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div>
+      <div class="logo">
+        <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
+        SnipSnap
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search">
+      </div>
+
+      <div class="menu">
+        <a href="{{ route('my-web') }}" class="active" data-route="for-you">
+          <i class="fa-solid fa-house"></i>
+          <span class="menu-text">For You</span>
+        </a>
+        <a href="{{ route('explore.users') }}" data-route="explore">
+          <i class="fa-regular fa-compass"></i>
+          <span class="menu-text">Explore</span>
+        </a>
+        <a href="{{ route('following.videos') }}" data-route="following">
+          <i class="fa-solid fa-user-group"></i>
+          <span class="menu-text">Following</span>
+        </a>
+        <a href="{{ route('friends') }}" data-route="friends">
+          <i class="fa-solid fa-user-friends"></i>
+          <span class="menu-text">Friends</span>
+        </a>
+        <a href="{{ route('upload') }}" data-route="upload">
+          <i class="fa-solid fa-plus-square"></i>
+          <span class="menu-text">Upload</span>
+        </a>
+        <a href="{{ route('notifications') }}" data-route="notifications">
+          <i class="fa-regular fa-comment-dots"></i>
+          <span class="menu-text">Notifications</span>
+        </a>
+        <a href="{{ route('messages.index') }}" data-route="messages">
+          <i class="fa-regular fa-paper-plane"></i>
+          <span class="menu-text">Messages</span>
+        </a>
+        <a href="#" data-route="live">
+          <i class="fa-solid fa-tv"></i>
+          <span class="menu-text">LIVE</span>
+        </a>
+        <a href="{{ route('profile.show') }}" data-route="profile">
+          <i class="fa-solid fa-user"></i>
+          <span class="menu-text">Profile</span>
+        </a>
+        <a href="#" data-route="more">
+          <i class="fa-solid fa-ellipsis"></i>
+          <span class="menu-text">More</span>
+        </a>
+      </div>
+    </div>
 
     <form method="POST" action="{{ route('logout.perform') }}">
-  @csrf
-  <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
-    <i class="fa-solid fa-right-from-bracket"></i> Logout
-  </button>
-</form>
+      @csrf
+      <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </form>
   </aside>
 
   @if(request()->has('uploaded_video'))
@@ -878,7 +888,7 @@ use Illuminate\Support\Str;
           </div>
         </div>
 
-        <!-- Actions - Moved closer to video -->
+        <!-- Actions - Fixed alignment -->
         <div class="actions">
           @if($videoUser)
           <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -901,7 +911,7 @@ use Illuminate\Support\Str;
           </div>
         </div>
 
-        <!-- Video Info - Moved to right side -->
+        <!-- Video Info - Fixed alignment -->
         <div class="video-info">
           @if($videoUser)
           <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -974,7 +984,6 @@ document.addEventListener('DOMContentLoaded', function() {
   function goToUserProfile(userIdentifier) {
     showSkeleton();
     setTimeout(() => {
-      // FIXED: Use proper route for user profile
       if (userIdentifier && !isNaN(userIdentifier)) {
         window.location.href = `/user/${userIdentifier}`;
       } else if (userIdentifier) {
@@ -985,7 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
   }
 
-  // ===== VIDEO CONTROLS - FIXED =====
+  // ===== VIDEO CONTROLS =====
   function togglePlayPause(overlay, event) {
     if (event) {
       event.stopPropagation();
@@ -1046,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
   }
 
-  // ===== DOUBLE TAP HEART - FIXED =====
+  // ===== DOUBLE TAP HEART =====
   function handleVideoTap(overlay, event) {
     const currentTime = new Date().getTime();
     const timeSinceLastTap = currentTime - lastTapTime;
@@ -1099,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ===== LIKE SYSTEM - FIXED =====
+  // ===== LIKE SYSTEM =====
   function toggleLike(btn, videoId) {
     const likeIcon = btn.querySelector('i');
     const videoPost = btn.closest('.video-post');
@@ -1119,7 +1128,6 @@ document.addEventListener('DOMContentLoaded', function() {
       // Unlike the video
       likeIcon.classList.remove('liked');
       likedVideos.delete(videoId);
-      // You could add decrementLike function here
     }
   }
 
@@ -1143,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(error => console.log('Like error:', error));
   }
 
-  // ===== SHARE SYSTEM - FIXED =====
+  // ===== SHARE SYSTEM =====
   function shareVideo(videoId) {
     const countEl = document.querySelector(`.share-count-${videoId}`);
     if (countEl) {
@@ -1173,7 +1181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ===== COMMENTS SYSTEM - COMPLETELY FIXED =====
+  // ===== COMMENTS SYSTEM =====
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
     
@@ -1207,8 +1215,8 @@ document.addEventListener('DOMContentLoaded', function() {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
 
-    // FIXED: Use the correct comment route
-fetch('{{ route("comment.store") }}', {
+    // Send to server
+    fetch('{{ route("comment.store") }}', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1228,7 +1236,6 @@ fetch('{{ route("comment.store") }}', {
     })
     .then(data => {
       console.log('Comment saved:', data);
-      // Update comment with actual ID if needed
       if (data.comment && data.comment.id) {
         commentDiv.dataset.commentId = data.comment.id;
       }
@@ -1323,22 +1330,11 @@ fetch('{{ route("comment.store") }}', {
     }
   });
 
-  // Menu navigation - FIXED: Profile link
+  // Menu navigation
   document.querySelectorAll('.menu a').forEach(link => {
     link.addEventListener('click', function(e) {
       if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
       
-      // Special handling for profile to avoid 500 error
-      if (this.dataset.route === 'profile') {
-        e.preventDefault();
-        showSkeleton();
-        setTimeout(() => {
-          window.location.href = '/profile'; // Use direct URL instead of route
-        }, 500);
-        return;
-      }
-      
-      e.preventDefault();
       showSkeleton();
       setTimeout(() => window.location.href = this.getAttribute('href'), 500);
     });
