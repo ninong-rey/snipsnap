@@ -531,11 +531,7 @@ use Illuminate\Support\Str;
       backdrop-filter: blur(10px);
     }
 
-    .user-info:hover {
-      background: rgba(0, 0, 0, 0.6);
-      transform: translateX(3px);
-    }
-
+    
     /* REMOVED: user-avatar-small styles - no avatar in username area */
 
     .username {
@@ -550,10 +546,7 @@ use Illuminate\Support\Str;
       font-size: 13px;
       font-weight: 500;
       line-height: 1.3;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
       padding: 10px 12px;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
       border-radius: 10px;
       max-height: 100px;
       overflow-y: auto;
