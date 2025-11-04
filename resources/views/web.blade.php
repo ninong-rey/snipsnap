@@ -434,6 +434,46 @@ use Illuminate\Support\Str;
       }
     }
 
+    /* ==== SHARE TOAST ==== */
+    .share-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      z-index: 10000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .share-toast.active {
+      animation: shareFloat 2s ease-in-out forwards;
+    }
+
+    @keyframes shareFloat {
+      0% { 
+        transform: translate(-50%, -50%) scale(0); 
+        opacity: 0; 
+      }
+      20% { 
+        transform: translate(-50%, -60%) scale(1); 
+        opacity: 1; 
+      }
+      80% { 
+        transform: translate(-50%, -60%) scale(1); 
+        opacity: 1; 
+      }
+      100% { 
+        transform: translate(-50%, -80%) scale(0.8); 
+        opacity: 0; 
+      }
+    }
+
     /* ==== ACTIONS - CLOSER TO VIDEO ==== */
     .actions {
       position: absolute;
@@ -464,7 +504,7 @@ use Illuminate\Support\Str;
     }
 
     .liked { 
-      color: var(--accent); 
+      color: var(--accent) !important; 
       animation: heartBeat 0.6s ease;
     }
 
@@ -531,14 +571,13 @@ use Illuminate\Support\Str;
       backdrop-filter: blur(10px);
     }
 
-    
     /* REMOVED: user-avatar-small styles - no avatar in username area */
 
     .username {
       color: #fff;
       font-weight: 600;
       font-size: 14px;
-      
+      text-shadow: none; /* REMOVED text shadow */
     }
 
     .caption {
@@ -733,6 +772,9 @@ use Illuminate\Support\Str;
 </head>
 
 <body>
+  <!-- Share Toast -->
+  <div class="share-toast" id="shareToast">Video link copied!</div>
+
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div>
@@ -872,7 +914,6 @@ use Illuminate\Support\Str;
           <div class="video-info">
             @if($videoUser)
             <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-              <!-- REMOVED: Avatar div - only username now -->
               <div class="username">
               {{ $videoUser->username ?? $videoUser->name ?? 'Unknown User' }}
            </div>
@@ -954,6 +995,21 @@ document.addEventListener('DOMContentLoaded', function() {
   let lastTapTime = 0;
   let isMuteButtonEnabled = true;
   let currentVolume = 1;
+
+  // ===== SKELETON LOADER =====
+  function showSkeleton() {
+    document.getElementById('feedContainer').classList.add('skeleton-loading');
+    document.getElementById('sidebar')?.classList.add('skeleton-loading');
+  }
+
+  function hideSkeleton() {
+    document.getElementById('feedContainer').classList.remove('skeleton-loading');
+    document.getElementById('sidebar')?.classList.remove('skeleton-loading');
+  }
+
+  // Show skeleton initially
+  showSkeleton();
+  setTimeout(hideSkeleton, 2000);
 
   // ===== PERSISTENT STATE MANAGEMENT =====
   function saveState() {
@@ -1086,6 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const videoPost = overlay.closest('.video-post');
     const videoId = videoPost.dataset.videoId;
     const likeBtn = videoPost.querySelector('.like-btn i');
+    const likeCount = videoPost.querySelector('.like-count-' + videoId);
     
     // Get position for heart
     const rect = videoWrapper.getBoundingClientRect();
@@ -1098,119 +1155,112 @@ document.addEventListener('DOMContentLoaded', function() {
     // Like the video if not already liked
     if (!likedVideos[videoId]) {
       likeBtn.classList.add('liked');
-      incrementLike(videoId, true);
+      const currentCount = parseInt(likeCount.textContent) || 0;
+      likeCount.textContent = currentCount + 1;
       likedVideos[videoId] = true;
       saveState();
+      
+      // Send to server
+      fetch(`/video/${videoId}/like`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json'
+        }
+      }).catch(error => console.log('Like error:', error));
     }
   }
 
   // ===== LIKE SYSTEM - ONE PER USER =====
   function toggleLike(btn, videoId) {
     const likeIcon = btn.querySelector('i');
-    const videoPost = btn.closest('.video-post');
-    const videoWrapper = videoPost.querySelector('.video-wrapper');
+    const likeCount = document.querySelector(`.like-count-${videoId}`);
     
     if (!likedVideos[videoId]) {
       // Like the video
       likeIcon.classList.add('liked');
       
       // Create heart animation in center
+      const videoWrapper = btn.closest('.video-post').querySelector('.video-wrapper');
       const rect = videoWrapper.getBoundingClientRect();
       createHeart(rect.width / 2, rect.height / 2, videoWrapper);
       
-      incrementLike(videoId, false);
+      // Update count
+      const currentCount = parseInt(likeCount.textContent) || 0;
+      likeCount.textContent = currentCount + 1;
       likedVideos[videoId] = true;
+      
+      // Send to server
+      fetch(`/video/${videoId}/like`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json'
+        }
+      }).catch(error => console.log('Like error:', error));
     } else {
       // Unlike the video
       likeIcon.classList.remove('liked');
-      decrementLike(videoId);
+      const currentCount = parseInt(likeCount.textContent) || 0;
+      likeCount.textContent = Math.max(0, currentCount - 1);
       delete likedVideos[videoId];
+      
+      // Send to server
+      fetch(`/video/${videoId}/unlike`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json'
+        }
+      }).catch(error => console.log('Unlike error:', error));
     }
     saveState();
   }
 
-  function incrementLike(videoId, isDoubleTap = false) {
-    const countEl = document.querySelector(`.like-count-${videoId}`);
-    if (countEl) {
-      const currentCount = parseInt(countEl.textContent) || 0;
-      countEl.textContent = currentCount + 1;
-    }
-    
-    // Send to server
-    fetch(`/video/${videoId}/like`, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-        'Content-Type': 'application/json'
-      }
-    }).then(response => {
-      if (!response.ok) {
-        console.log('Like failed:', response.status);
-      }
-    }).catch(error => console.log('Like error:', error));
-  }
-
-  function decrementLike(videoId) {
-    const countEl = document.querySelector(`.like-count-${videoId}`);
-    if (countEl) {
-      const currentCount = parseInt(countEl.textContent) || 0;
-      countEl.textContent = Math.max(0, currentCount - 1);
-    }
-    
-    // Send to server
-    fetch(`/video/${videoId}/unlike`, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-        'Content-Type': 'application/json'
-      }
-    }).then(response => {
-      if (!response.ok) {
-        console.log('Unlike failed:', response.status);
-      }
-    }).catch(error => console.log('Unlike error:', error));
-  }
-
-  // ===== SHARE SYSTEM - ONE PER USER =====
+  // ===== SHARE SYSTEM - ONE PER USER WITH SMOOTH TOAST =====
   function shareVideo(videoId) {
-    if (sharedVideos[videoId]) {
-      alert('You have already shared this video!');
-      return;
-    }
-
     const countEl = document.querySelector(`.share-count-${videoId}`);
-    if (countEl) {
+    
+    // Update count if not already shared
+    if (!sharedVideos[videoId] && countEl) {
       const currentCount = parseInt(countEl.textContent) || 0;
       countEl.textContent = currentCount + 1;
+      sharedVideos[videoId] = true;
+      saveState();
+      
+      // Send to server
+      fetch(`/video/${videoId}/share`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json'
+        }
+      }).catch(error => console.log('Share error:', error));
     }
     
-    sharedVideos[videoId] = true;
-    saveState();
-    
-    // Send to server
-    fetch(`/video/${videoId}/share`, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-        'Content-Type': 'application/json'
-      }
-    }).then(response => {
-      if (!response.ok) {
-        console.log('Share failed:', response.status);
-      }
-    }).catch(error => console.log('Share error:', error));
-    
-    // Copy link to clipboard
+    // Copy link to clipboard and show toast
     const videoUrl = `${window.location.origin}/video/${videoId}`;
     navigator.clipboard.writeText(videoUrl).then(() => {
-      alert('Video link copied to clipboard!');
+      showShareToast();
     }).catch(() => {
       // Fallback for older browsers
       prompt('Copy this link:', videoUrl);
+      showShareToast();
     });
   }
 
-  // ===== COMMENTS SYSTEM - FIXED SLIDE =====
+  function showShareToast() {
+    const toast = document.getElementById('shareToast');
+    toast.classList.remove('active');
+    void toast.offsetWidth; // Force reflow
+    toast.classList.add('active');
+    
+    setTimeout(() => {
+      toast.classList.remove('active');
+    }, 2000);
+  }
+
+  // ===== COMMENTS SYSTEM - FIXED =====
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
     
@@ -1220,13 +1270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Toggle current panel with smooth animation
-    if (panel.classList.contains('active')) {
-      panel.style.transition = 'right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-      panel.classList.remove('active');
-    } else {
-      panel.style.transition = 'right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-      panel.classList.add('active');
-    }
+    panel.classList.toggle('active');
   }
 
   function postComment(btn) {
@@ -1413,6 +1457,7 @@ document.addEventListener('DOMContentLoaded', function() {
     link.addEventListener('click', function(e) {
       if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
       
+      showSkeleton();
       setTimeout(() => window.location.href = this.getAttribute('href'), 500);
     });
   });
