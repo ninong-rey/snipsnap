@@ -1,3 +1,11 @@
+<?php
+// TEMPORARY ERROR DISPLAY
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+try {
+?>
 @php
 use Illuminate\Support\Str;
 @endphp
@@ -981,7 +989,7 @@ use Illuminate\Support\Str;
   <main class="feed-container" id="feedContainer">
     @if($videos->count() > 0)
       @foreach($videos as $video)
-      @php $videoUser = $video->user; @endphp
+      @php $videoUser = $video->user ?? null; @endphp
       <div class="video-post" data-video-id="{{ $video->id }}">
         <div class="video-wrapper">
           <!-- Cloudinary Video Player -->
@@ -1372,15 +1380,14 @@ if (document.getElementById('feedContainer')) {
             const commentsList = document.getElementById('commentsModalList');
             commentsList.innerHTML = '';
             
-            // Load server comments
-            const serverComments = @json($video->comments->where('parent_id', null)->map(function($comment) use ($video) {
-                return [
-                    'id' => $comment->id,
-                    'user' => $comment->user ? '@' . ($comment->user->username ?? $comment->user->name) : '@deleted_user',
-                    'content' => $comment->content ?? '',
-                    'video_id' => $video->id
-                ];
-            }));
+            const serverComments = @json(($video->comments ?? collect())->where('parent_id', null)->map(function($comment) use ($video) {
+    return [
+        'id' => $comment->id ?? null,
+        'user' => ($comment->user ? '@' . ($comment->user->username ?? $comment->user->name ?? 'deleted_user') : '@deleted_user'),
+        'content' => $comment->content ?? '',
+        'video_id' => $video->id
+    ];
+}));
             
             // Load user comments from localStorage
             const localComments = userComments[videoId] || [];
@@ -1620,6 +1627,17 @@ if (document.getElementById('feedContainer')) {
         }, 1000);
     });
 }
-// Remove the else block at the end since goToUserProfile is now global
+</script>
+
 </body>
 </html>
+<?php
+} catch (Exception $e) {
+    // This will show the actual error
+    echo "<h1>ERROR FOUND:</h1>";
+    echo "<p><strong>Message:</strong> " . $e->getMessage() . "</p>";
+    echo "<p><strong>File:</strong> " . $e->getFile() . "</p>";
+    echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
+    echo "<p><strong>Trace:</strong> " . $e->getTraceAsString() . "</p>";
+}
+?>

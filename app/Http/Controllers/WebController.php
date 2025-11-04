@@ -22,20 +22,15 @@ class WebController extends Controller
         ->orderBy('created_at', 'desc')
         ->get()
         ->map(function ($video) {
-            // DEBUG: Check what's happening with video URLs
             if (empty($video->url)) {
-                \Log::info('Video URL is empty for video ID: ' . $video->id);
-                \Log::info('Using MixKit fallback URL');
                 $video->video_url = 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4';
             } else {
-                \Log::info('Using Cloudinary URL for video ID ' . $video->id . ': ' . $video->url);
                 $video->video_url = $video->url;
             }
-            
             return $video;
         });
 
-    return view('web', compact('videos'));
+    return view('my-web', compact('videos')); // ← CHANGE 'web' to 'my-web'
 }
 
     /**
