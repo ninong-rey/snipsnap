@@ -542,7 +542,7 @@ use Illuminate\Support\Str;
       color: #fff;
       font-weight: 600;
       font-size: 14px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+      
     }
 
     .caption {
@@ -953,7 +953,6 @@ use Illuminate\Support\Str;
     @endif
   </main>
 <script>
-// ... (JavaScript code remains exactly the same as before)
 document.addEventListener('DOMContentLoaded', function() {
   // ===== SKELETON LOADER =====
   function showSkeleton() {
@@ -1298,6 +1297,40 @@ document.addEventListener('DOMContentLoaded', function() {
         goToUserProfile(username);
       });
     });
+
+    // Set up action button click handlers
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const videoId = this.closest('.video-post').dataset.videoId;
+        toggleLike(this, videoId);
+      });
+    });
+
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      if (!btn.classList.contains('like-btn')) {
+        btn.addEventListener('click', function() {
+          if (this.querySelector('.fa-comment')) {
+            toggleComments(this);
+          } else if (this.querySelector('.fa-share')) {
+            const videoId = this.closest('.video-post').dataset.videoId;
+            shareVideo(videoId);
+          }
+        });
+      }
+    });
+
+    // Set up volume controls
+    document.querySelectorAll('.volume-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        toggleMute(this);
+      });
+    });
+
+    document.querySelectorAll('.volume-slider input').forEach(slider => {
+      slider.addEventListener('input', function() {
+        changeVolume(this);
+      });
+    });
   }
 
   // ===== EVENT LISTENERS =====
@@ -1329,6 +1362,16 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => window.location.href = this.getAttribute('href'), 500);
     });
   });
+
+  // ===== ATTACH FUNCTIONS TO WINDOW OBJECT =====
+  window.togglePlayPause = togglePlayPause;
+  window.toggleMute = toggleMute;
+  window.changeVolume = changeVolume;
+  window.toggleLike = toggleLike;
+  window.toggleComments = toggleComments;
+  window.shareVideo = shareVideo;
+  window.postComment = postComment;
+  window.goToUserProfile = goToUserProfile;
 
   // ===== INITIALIZE EVERYTHING =====
   showSkeleton();
