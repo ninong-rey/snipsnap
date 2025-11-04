@@ -814,7 +814,7 @@ use Illuminate\Support\Str;
           </div>
 
           <!-- Overlay for tap actions -->
-          <div class="overlay" onclick="togglePlayPause(this, event)" ondblclick="doubleTapLike(this, event)"></div>
+          <div class="overlay" onclick="togglePlayPause(this, event)"></div>
 
           <!-- Video controls -->
           <div class="video-controls">
@@ -905,10 +905,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sidebar')?.classList.remove('skeleton-loading');
   }
 
-  // ===== VIDEO FUNCTIONS =====
+  // ===== GLOBAL VARIABLES =====
   const likedVideos = new Set();
   let lastTapTime = 0;
 
+  // ===== CORE FUNCTIONS =====
   function goToUserProfile(userIdentifier) {
     showSkeleton();
     setTimeout(() => {
@@ -916,57 +917,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
   }
 
+  // ===== VIDEO CONTROLS - FIXED =====
   function togglePlayPause(overlay, event) {
     if (event) {
       event.stopPropagation();
+      event.preventDefault();
     }
     
-    const currentTime = new Date().getTime();
-    const timeSinceLastTap = currentTime - lastTapTime;
-    
-    // Double tap detection (300ms threshold)
-    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-      doubleTapLike(overlay, event);
-      lastTapTime = 0;
-      return;
-    }
-    lastTapTime = currentTime;
-
     const videoWrapper = overlay.closest('.video-wrapper');
     const video = videoWrapper.querySelector('video');
-    const icon = videoWrapper.querySelector('.play-pause-animation i');
+    const animation = videoWrapper.querySelector('.play-pause-animation');
+    const icon = animation.querySelector('i');
 
     if (!video) return;
 
-    // Play/pause animation
-    const animation = videoWrapper.querySelector('.play-pause-animation');
+    // Reset and trigger animation
     animation.classList.remove('active');
-    void animation.offsetWidth; // Trigger reflow
+    void animation.offsetWidth; // Force reflow
     animation.classList.add('active');
 
     // Toggle play/pause
     if (video.paused) {
-      video.play().catch((error) => { 
+      video.play().catch(error => {
         console.log('Play failed, trying with mute:', error);
-        video.muted = true; 
-        video.play().catch(console.error); 
+        video.muted = true;
+        video.play().catch(console.error);
       });
-      if (icon) icon.className = 'fas fa-pause';
+      icon.className = 'fas fa-pause';
     } else {
       video.pause();
-      if (icon) icon.className = 'fas fa-play';
+      icon.className = 'fas fa-play';
     }
   }
 
   function toggleMute(btn) {
     const video = btn.closest('.video-wrapper').querySelector('video');
     const icon = btn.querySelector('i');
+    
     if (!video) return;
     
     video.muted = !video.muted;
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
     
-    // Update volume slider to reflect mute state
+    // Update slider to match mute state
     const slider = btn.closest('.volume-container').querySelector('input[type="range"]');
     if (slider) {
       slider.value = video.muted ? 0 : video.volume;
@@ -975,12 +968,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function changeVolume(slider) {
     const video = slider.closest('.video-wrapper').querySelector('video');
-    const icon = slider.closest('.volume-container').querySelector('i');
+    const icon = slider.closest('.volume-container').querySelector('.volume-btn i');
+    
     if (!video) return;
     
-    video.volume = parseFloat(slider.value);
-    video.muted = (slider.value == 0);
+    const volume = parseFloat(slider.value);
+    video.volume = volume;
+    video.muted = (volume === 0);
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+  }
+
+  // ===== DOUBLE TAP HEART - FIXED =====
+  function handleVideoTap(overlay, event) {
+    const currentTime = new Date().getTime();
+    const timeSinceLastTap = currentTime - lastTapTime;
+    
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // Double tap detected - show heart
+      doubleTapLike(overlay, event);
+      lastTapTime = 0;
+    } else {
+      // Single tap - toggle play/pause
+      togglePlayPause(overlay, event);
+      lastTapTime = currentTime;
+    }
   }
 
   function createHeart(x, y, container) {
@@ -989,6 +1000,8 @@ document.addEventListener('DOMContentLoaded', function() {
     heart.style.left = `${x}px`;
     heart.style.top = `${y}px`;
     container.appendChild(heart);
+    
+    // Remove heart after animation
     setTimeout(() => {
       if (heart.parentNode) {
         heart.parentNode.removeChild(heart);
@@ -997,48 +1010,48 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function doubleTapLike(overlay, event) {
-    if (!event) return;
-    
     const videoWrapper = overlay.closest('.video-wrapper');
     const videoPost = overlay.closest('.video-post');
     const videoId = videoPost.dataset.videoId;
     const likeBtn = videoPost.querySelector('.like-btn i');
     
-    // Get tap position relative to video wrapper
+    // Get position for heart
     const rect = videoWrapper.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    // Create heart animation at tap position
+    // Create heart at tap position
     createHeart(x, y, videoWrapper);
     
-    // Like the video if not already liked
-    if (!likedVideos.has(videoId)) { 
-      likeBtn.classList.add('liked'); 
-      incrementLike(videoId); 
-      likedVideos.add(videoId); 
+    // Like the video
+    if (!likedVideos.has(videoId)) {
+      likeBtn.classList.add('liked');
+      incrementLike(videoId);
+      likedVideos.add(videoId);
     }
   }
 
+  // ===== LIKE SYSTEM - FIXED =====
   function toggleLike(btn, videoId) {
+    const likeIcon = btn.querySelector('i');
     const videoPost = btn.closest('.video-post');
     const videoWrapper = videoPost.querySelector('.video-wrapper');
-    const likeIcon = btn.querySelector('i');
     
-    if (!likedVideos.has(videoId)) { 
-      likeIcon.classList.add('liked'); 
+    if (!likedVideos.has(videoId)) {
+      // Like the video
+      likeIcon.classList.add('liked');
       
       // Create heart animation in center
       const rect = videoWrapper.getBoundingClientRect();
       createHeart(rect.width / 2, rect.height / 2, videoWrapper);
       
-      incrementLike(videoId); 
-      likedVideos.add(videoId); 
+      incrementLike(videoId);
+      likedVideos.add(videoId);
     } else {
-      // Unlike functionality (optional)
+      // Unlike the video
       likeIcon.classList.remove('liked');
       likedVideos.delete(videoId);
-      // You might want to add decrementLike function here
+      // You could add decrementLike function here
     }
   }
 
@@ -1047,37 +1060,52 @@ document.addEventListener('DOMContentLoaded', function() {
     if (countEl) {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
-    fetch(`/video/${videoId}/like`, { 
-      method: 'POST', 
-      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
-    }).catch(console.log);
+    
+    // Send to server
+    fetch(`/video/${videoId}/like`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Content-Type': 'application/json'
+      }
+    }).catch(error => console.log('Like error:', error));
   }
 
+  // ===== SHARE SYSTEM - FIXED =====
   function shareVideo(videoId) {
     const countEl = document.querySelector(`.share-count-${videoId}`);
     if (countEl) {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
-    fetch(`/video/${videoId}/share`, { 
-      method: 'POST', 
-      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } 
-    });
     
+    // Send to server
+    fetch(`/video/${videoId}/share`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Content-Type': 'application/json'
+      }
+    }).catch(error => console.log('Share error:', error));
+    
+    // Copy link to clipboard
     const videoUrl = `${window.location.origin}/video/${videoId}`;
     navigator.clipboard.writeText(videoUrl).then(() => {
       alert('Video link copied to clipboard!');
     }).catch(() => {
-      // Fallback for browsers that don't support clipboard API
+      // Fallback for older browsers
       prompt('Copy this link:', videoUrl);
     });
   }
 
+  // ===== COMMENTS SYSTEM - FIXED =====
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
-    // Close all other comment panels
+    
+    // Close all other panels
     document.querySelectorAll('.comments-panel').forEach(p => {
       if (p !== panel) p.classList.remove('active');
     });
+    
     // Toggle current panel
     panel.classList.toggle('active');
   }
@@ -1091,10 +1119,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!text) return;
 
     const list = panel.querySelector('.comments-list');
-    const div = document.createElement('div');
-    div.className = 'comment';
-    div.innerHTML = `<strong>@you</strong> ${text}`;
-    list.appendChild(div);
+    
+    // Create new comment
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+    commentDiv.innerHTML = `<strong>@you</strong> ${text}`;
+    list.appendChild(commentDiv);
 
     // Update comment count
     const countEl = document.querySelector(`.comment-count-${videoId}`);
@@ -1109,11 +1139,14 @@ document.addEventListener('DOMContentLoaded', function() {
         'Content-Type': 'application/json',
         'X-CSRF-TOKEN': '{{ csrf_token() }}'
       },
-      body: JSON.stringify({ video_id: videoId, content: text })
-    }).catch(console.log);
+      body: JSON.stringify({
+        video_id: videoId,
+        content: text
+      })
+    }).catch(error => console.log('Comment error:', error));
 
     // Clear input and scroll to bottom
-    input.value = ''; 
+    input.value = '';
     list.scrollTop = list.scrollHeight;
   }
 
@@ -1121,53 +1154,61 @@ document.addEventListener('DOMContentLoaded', function() {
   const videoObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const video = entry.target.querySelector('video');
-      const icon = entry.target.querySelector('.play-pause-animation i');
+      const animation = entry.target.querySelector('.play-pause-animation');
+      const icon = animation?.querySelector('i');
       
       if (!video) return;
       
-      if (entry.isIntersecting) { 
+      if (entry.isIntersecting) {
         video.play().catch(error => {
           console.log('Auto-play failed, trying with mute:', error);
-          video.muted = true; 
-          video.play().catch(console.error); 
-        }); 
+          video.muted = true;
+          video.play().catch(console.error);
+        });
         if (icon) icon.className = 'fas fa-pause';
-      } else { 
-        video.pause(); 
+      } else {
+        video.pause();
         if (icon) icon.className = 'fas fa-play';
       }
     });
   }, { threshold: 0.8 });
 
-  // Observe all video posts
-  document.querySelectorAll('.video-post').forEach(post => {
-    videoObserver.observe(post);
-  });
-
-  // Hide skeleton after 2 seconds
-  showSkeleton();
-  setTimeout(hideSkeleton, 2000);
-
-  // Menu navigation
-  document.querySelectorAll('.menu a').forEach(link => {
-    link.addEventListener('click', function(e) {
-      if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
-      e.preventDefault(); 
-      showSkeleton();
-      setTimeout(() => window.location.href = this.getAttribute('href'), 500);
+  // ===== INITIALIZATION =====
+  function initializeVideoInteractions() {
+    // Set up video observers
+    document.querySelectorAll('.video-post').forEach(post => {
+      videoObserver.observe(post);
     });
-  });
 
-  // Close comments when clicking outside
+    // Set up overlay click handlers for double tap
+    document.querySelectorAll('.overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(event) {
+        handleVideoTap(this, event);
+      });
+    });
+
+    // Set up comment input enter key
+    document.querySelectorAll('.comment-input input').forEach(input => {
+      input.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          postComment(this.nextElementSibling);
+        }
+      });
+    });
+  }
+
+  // ===== EVENT LISTENERS =====
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('.comments-panel') && !e.target.closest('.action-btn') && !e.target.closest('.fa-comment')) {
+    // Close comments when clicking outside
+    if (!e.target.closest('.comments-panel') && 
+        !e.target.closest('.action-btn') && 
+        !e.target.closest('.fa-comment')) {
       document.querySelectorAll('.comments-panel').forEach(panel => {
         panel.classList.remove('active');
       });
     }
   });
 
-  // Escape key to close comments
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       document.querySelectorAll('.comments-panel').forEach(panel => {
@@ -1175,6 +1216,23 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+
+  // Menu navigation
+  document.querySelectorAll('.menu a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
+      e.preventDefault();
+      showSkeleton();
+      setTimeout(() => window.location.href = this.getAttribute('href'), 500);
+    });
+  });
+
+  // ===== INITIALIZE EVERYTHING =====
+  showSkeleton();
+  setTimeout(() => {
+    hideSkeleton();
+    initializeVideoInteractions();
+  }, 2000);
 });
 </script>
 </body>
