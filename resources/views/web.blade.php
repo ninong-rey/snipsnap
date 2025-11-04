@@ -854,7 +854,7 @@ use Illuminate\Support\Str;
           </div>
 
           <!-- Overlay for tap actions -->
-          <div class="overlay" onclick="togglePlayPause(this, event)"></div>
+          <div class="overlay" onclick="handleVideoTap(this, event)"></div>
 
           <!-- Video controls -->
           <div class="video-controls">
@@ -945,27 +945,25 @@ use Illuminate\Support\Str;
       </div>
     @endif
   </main>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ===== SKELETON LOADER =====
-  function showSkeleton() {
-    document.getElementById('feedContainer').classList.add('skeleton-loading');
-    document.getElementById('sidebar')?.classList.add('skeleton-loading');
-  }
-
-  function hideSkeleton() {
-    document.getElementById('feedContainer').classList.remove('skeleton-loading');
-    document.getElementById('sidebar')?.classList.remove('skeleton-loading');
-  }
-
   // ===== GLOBAL VARIABLES =====
-  const likedVideos = new Set();
+  const likedVideos = JSON.parse(localStorage.getItem('likedVideos') || '{}');
+  const sharedVideos = JSON.parse(localStorage.getItem('sharedVideos') || '{}');
   let lastTapTime = 0;
+  let isMuteButtonEnabled = true;
+  let currentVolume = 1;
+
+  // ===== PERSISTENT STATE MANAGEMENT =====
+  function saveState() {
+    localStorage.setItem('likedVideos', JSON.stringify(likedVideos));
+    localStorage.setItem('sharedVideos', JSON.stringify(sharedVideos));
+  }
 
   // ===== CORE FUNCTIONS =====
   function goToUserProfile(userIdentifier) {
-    showSkeleton();
-    setTimeout(() => {
+    try {
       if (userIdentifier && !isNaN(userIdentifier)) {
         window.location.href = `/user/${userIdentifier}`;
       } else if (userIdentifier) {
@@ -973,10 +971,53 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         window.location.href = '{{ route("profile.show") }}';
       }
-    }, 500);
+    } catch (error) {
+      console.error('Profile navigation error:', error);
+      window.location.href = '{{ route("profile.show") }}';
+    }
   }
 
-  // ===== VIDEO CONTROLS =====
+  // ===== VIDEO CONTROLS - FIXED MUTE/UNMUTE =====
+  function toggleMute(btn) {
+    if (!isMuteButtonEnabled) return;
+    
+    isMuteButtonEnabled = false;
+    setTimeout(() => { isMuteButtonEnabled = true; }, 300);
+    
+    const video = btn.closest('.video-wrapper').querySelector('video');
+    const icon = btn.querySelector('i');
+    
+    if (!video) return;
+    
+    video.muted = !video.muted;
+    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+    
+    // Update slider to match mute state
+    const slider = btn.closest('.volume-container').querySelector('input[type="range"]');
+    if (slider) {
+      if (video.muted) {
+        currentVolume = slider.value;
+        slider.value = 0;
+      } else {
+        slider.value = currentVolume || 1;
+        video.volume = currentVolume || 1;
+      }
+    }
+  }
+
+  function changeVolume(slider) {
+    const video = slider.closest('.video-wrapper').querySelector('video');
+    const icon = slider.closest('.volume-container').querySelector('.volume-btn i');
+    
+    if (!video) return;
+    
+    const volume = parseFloat(slider.value);
+    video.volume = volume;
+    currentVolume = volume;
+    video.muted = (volume === 0);
+    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+  }
+
   function togglePlayPause(overlay, event) {
     if (event) {
       event.stopPropagation();
@@ -1007,34 +1048,6 @@ document.addEventListener('DOMContentLoaded', function() {
       video.pause();
       icon.className = 'fas fa-play';
     }
-  }
-
-  function toggleMute(btn) {
-    const video = btn.closest('.video-wrapper').querySelector('video');
-    const icon = btn.querySelector('i');
-    
-    if (!video) return;
-    
-    video.muted = !video.muted;
-    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-    
-    // Update slider to match mute state
-    const slider = btn.closest('.volume-container').querySelector('input[type="range"]');
-    if (slider) {
-      slider.value = video.muted ? 0 : video.volume;
-    }
-  }
-
-  function changeVolume(slider) {
-    const video = slider.closest('.video-wrapper').querySelector('video');
-    const icon = slider.closest('.volume-container').querySelector('.volume-btn i');
-    
-    if (!video) return;
-    
-    const volume = parseFloat(slider.value);
-    video.volume = volume;
-    video.muted = (volume === 0);
-    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
   }
 
   // ===== DOUBLE TAP HEART =====
@@ -1082,21 +1095,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create heart at tap position
     createHeart(x, y, videoWrapper);
     
-    // Like the video
-    if (!likedVideos.has(videoId)) {
+    // Like the video if not already liked
+    if (!likedVideos[videoId]) {
       likeBtn.classList.add('liked');
-      incrementLike(videoId);
-      likedVideos.add(videoId);
+      incrementLike(videoId, true);
+      likedVideos[videoId] = true;
+      saveState();
     }
   }
 
-  // ===== LIKE SYSTEM =====
+  // ===== LIKE SYSTEM - ONE PER USER =====
   function toggleLike(btn, videoId) {
     const likeIcon = btn.querySelector('i');
     const videoPost = btn.closest('.video-post');
     const videoWrapper = videoPost.querySelector('.video-wrapper');
     
-    if (!likedVideos.has(videoId)) {
+    if (!likedVideos[videoId]) {
       // Like the video
       likeIcon.classList.add('liked');
       
@@ -1104,19 +1118,22 @@ document.addEventListener('DOMContentLoaded', function() {
       const rect = videoWrapper.getBoundingClientRect();
       createHeart(rect.width / 2, rect.height / 2, videoWrapper);
       
-      incrementLike(videoId);
-      likedVideos.add(videoId);
+      incrementLike(videoId, false);
+      likedVideos[videoId] = true;
     } else {
       // Unlike the video
       likeIcon.classList.remove('liked');
-      likedVideos.delete(videoId);
+      decrementLike(videoId);
+      delete likedVideos[videoId];
     }
+    saveState();
   }
 
-  function incrementLike(videoId) {
+  function incrementLike(videoId, isDoubleTap = false) {
     const countEl = document.querySelector(`.like-count-${videoId}`);
     if (countEl) {
-      countEl.textContent = parseInt(countEl.textContent) + 1;
+      const currentCount = parseInt(countEl.textContent) || 0;
+      countEl.textContent = currentCount + 1;
     }
     
     // Send to server
@@ -1133,12 +1150,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(error => console.log('Like error:', error));
   }
 
-  // ===== SHARE SYSTEM =====
+  function decrementLike(videoId) {
+    const countEl = document.querySelector(`.like-count-${videoId}`);
+    if (countEl) {
+      const currentCount = parseInt(countEl.textContent) || 0;
+      countEl.textContent = Math.max(0, currentCount - 1);
+    }
+    
+    // Send to server
+    fetch(`/video/${videoId}/unlike`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Content-Type': 'application/json'
+      }
+    }).then(response => {
+      if (!response.ok) {
+        console.log('Unlike failed:', response.status);
+      }
+    }).catch(error => console.log('Unlike error:', error));
+  }
+
+  // ===== SHARE SYSTEM - ONE PER USER =====
   function shareVideo(videoId) {
+    if (sharedVideos[videoId]) {
+      alert('You have already shared this video!');
+      return;
+    }
+
     const countEl = document.querySelector(`.share-count-${videoId}`);
     if (countEl) {
-      countEl.textContent = parseInt(countEl.textContent) + 1;
+      const currentCount = parseInt(countEl.textContent) || 0;
+      countEl.textContent = currentCount + 1;
     }
+    
+    sharedVideos[videoId] = true;
+    saveState();
     
     // Send to server
     fetch(`/video/${videoId}/share`, {
@@ -1163,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ===== COMMENTS SYSTEM =====
+  // ===== COMMENTS SYSTEM - FIXED SLIDE =====
   function toggleComments(el) {
     const panel = el.closest('.video-post').querySelector('.comments-panel');
     
@@ -1172,8 +1219,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (p !== panel) p.classList.remove('active');
     });
     
-    // Toggle current panel
-    panel.classList.toggle('active');
+    // Toggle current panel with smooth animation
+    if (panel.classList.contains('active')) {
+      panel.style.transition = 'right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      panel.classList.remove('active');
+    } else {
+      panel.style.transition = 'right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      panel.classList.add('active');
+    }
   }
 
   function postComment(btn) {
@@ -1262,6 +1315,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== INITIALIZATION =====
   function initializeVideoInteractions() {
+    // Restore liked state on page load
+    document.querySelectorAll('.video-post').forEach(post => {
+      const videoId = post.dataset.videoId;
+      const likeBtn = post.querySelector('.like-btn i');
+      if (likedVideos[videoId] && likeBtn) {
+        likeBtn.classList.add('liked');
+      }
+    });
+
     // Set up video observers
     document.querySelectorAll('.video-post').forEach(post => {
       videoObserver.observe(post);
@@ -1351,7 +1413,6 @@ document.addEventListener('DOMContentLoaded', function() {
     link.addEventListener('click', function(e) {
       if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
       
-      showSkeleton();
       setTimeout(() => window.location.href = this.getAttribute('href'), 500);
     });
   });
@@ -1365,13 +1426,12 @@ document.addEventListener('DOMContentLoaded', function() {
   window.shareVideo = shareVideo;
   window.postComment = postComment;
   window.goToUserProfile = goToUserProfile;
+  window.handleVideoTap = handleVideoTap;
 
   // ===== INITIALIZE EVERYTHING =====
-  showSkeleton();
   setTimeout(() => {
-    hideSkeleton();
     initializeVideoInteractions();
-  }, 2000);
+  }, 1000);
 });
 </script>
 </body>
