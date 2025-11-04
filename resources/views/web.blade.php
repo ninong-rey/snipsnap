@@ -434,6 +434,116 @@ use Illuminate\Support\Str;
       }
     }
 
+    /* ==== COMMENTS MODAL ==== */
+    .comments-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 400px;
+      max-width: 90vw;
+      height: 70vh;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .comments-modal.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .comments-modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .close-comments {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.3s ease;
+    }
+
+    .close-comments:hover {
+      color: var(--accent);
+    }
+
+    .comments-modal-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .comment-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f5;
+      line-height: 1.4;
+    }
+
+    .comment-item strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .comments-modal-input {
+      border-top: 1px solid #eee;
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .comments-modal-input input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 24px;
+      padding: 12px 16px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .comments-modal-input input:focus {
+      border-color: var(--accent);
+    }
+
+    .comments-modal-input button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .comments-modal-input button:hover {
+      background: #e00040;
+      transform: scale(1.05);
+    }
+
     /* ==== SHARE TOAST ==== */
     .share-toast {
       position: fixed;
@@ -571,13 +681,10 @@ use Illuminate\Support\Str;
       backdrop-filter: blur(10px);
     }
 
-    /* REMOVED: user-avatar-small styles - no avatar in username area */
-
     .username {
       color: #fff;
       font-weight: 600;
       font-size: 14px;
-      text-shadow: none; /* REMOVED text shadow */
     }
 
     .caption {
@@ -607,96 +714,23 @@ use Illuminate\Support\Str;
       z-index: 2;
     }
 
-    /* ==== COMMENTS PANEL ==== */
-    .comments-panel {
+    /* ==== MODAL BACKDROP ==== */
+    .modal-backdrop {
       position: fixed;
-      right: -400px;
       top: 0;
-      width: 380px;
-      height: 100vh;
-      background: #fff;
-      border-left: 1px solid #e0e0e0;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
-      transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      display: flex;
-      flex-direction: column;
-      z-index: 1000;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
 
-    .comments-panel.active { 
-      right: 0; 
-    }
-
-    .comments-header {
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-      font-weight: 600;
-      font-size: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fafafa;
-    }
-
-    .comments-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      background: #fff;
-    }
-
-    .comment {
-      padding: 12px 0;
-      border-bottom: 1px solid #f5f5f5;
-      line-height: 1.4;
-    }
-
-    .comment strong {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .comment-input {
-      border-top: 1px solid #eee;
-      padding: 16px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      background: #fafafa;
-    }
-
-    .comment-input input {
-      flex: 1;
-      border: 1px solid #ddd;
-      border-radius: 24px;
-      padding: 12px 16px;
-      outline: none;
-      font-size: 14px;
-      transition: border-color 0.3s ease;
-    }
-
-    .comment-input input:focus {
-      border-color: var(--accent);
-    }
-
-    .comment-input button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .comment-input button:hover {
-      background: #e00040;
-      transform: scale(1.05);
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
     }
 
     /* ==== UPLOAD OVERLAY ==== */
@@ -774,6 +808,28 @@ use Illuminate\Support\Str;
 <body>
   <!-- Share Toast -->
   <div class="share-toast" id="shareToast">Video link copied!</div>
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop" id="modalBackdrop" onclick="closeCommentsModal()"></div>
+
+  <!-- Comments Modal -->
+  <div class="comments-modal" id="commentsModal">
+    <div class="comments-modal-header">
+      Comments
+      <button class="close-comments" onclick="closeCommentsModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="comments-modal-list" id="commentsModalList">
+      <!-- Comments will be loaded here -->
+    </div>
+    <div class="comments-modal-input">
+      <input type="text" placeholder="Add a comment..." id="commentInput">
+      <button onclick="postCommentFromModal()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
@@ -910,7 +966,7 @@ use Illuminate\Support\Str;
             </div>
           </div>
 
-          <!-- Video Info - FIXED: REMOVED AVATAR FROM USERNAME AREA -->
+          <!-- Video Info -->
           <div class="video-info">
             @if($videoUser)
             <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -928,7 +984,7 @@ use Illuminate\Support\Str;
             </div>
           </div>
 
-          <!-- Actions - ONLY ONE AVATAR (in actions sidebar) -->
+          <!-- Actions -->
           <div class="actions">
             @if($videoUser)
             <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
@@ -941,7 +997,7 @@ use Illuminate\Support\Str;
               <i class="fa-solid fa-heart"></i>
               <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
             </div>
-            <div class="action-btn" onclick="toggleComments(this)">
+            <div class="action-btn" onclick="openCommentsModal({{ $video->id }})">
               <i class="fa-solid fa-comment"></i>
               <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
             </div>
@@ -949,27 +1005,6 @@ use Illuminate\Support\Str;
               <i class="fa-solid fa-share"></i>
               <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Comments Panel -->
-        <div class="comments-panel">
-          <div class="comments-header">
-            Comments
-            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleComments(this)"></i>
-          </div>
-          <div class="comments-list" id="comments-list-{{ $video->id }}">
-            @foreach($video->comments->where('parent_id', null) as $comment)
-              @php $commentUser = $comment->user; @endphp
-              <div class="comment">
-                <strong>{{ $commentUser ? '@' . ($commentUser->username ?? $commentUser->name) : '@deleted_user' }}</strong>
-                {{ $comment->content ?? '' }}
-              </div>
-            @endforeach
-          </div>
-          <div class="comment-input">
-            <input type="text" placeholder="Add a comment..." data-video-id="{{ $video->id }}">
-            <button onclick="postComment(this)"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
       </div>
@@ -992,7 +1027,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== GLOBAL VARIABLES =====
   const likedVideos = JSON.parse(localStorage.getItem('likedVideos') || '{}');
   const sharedVideos = JSON.parse(localStorage.getItem('sharedVideos') || '{}');
-  let lastTapTime = 0;
+  const userComments = JSON.parse(localStorage.getItem('userComments') || '{}');
+  let currentVideoId = null;
   let isMuteButtonEnabled = true;
   let currentVolume = 1;
 
@@ -1015,25 +1051,26 @@ document.addEventListener('DOMContentLoaded', function() {
   function saveState() {
     localStorage.setItem('likedVideos', JSON.stringify(likedVideos));
     localStorage.setItem('sharedVideos', JSON.stringify(sharedVideos));
+    localStorage.setItem('userComments', JSON.stringify(userComments));
   }
 
-  // ===== CORE FUNCTIONS =====
+  // ===== PROFILE NAVIGATION =====
   function goToUserProfile(userIdentifier) {
-    try {
-      if (userIdentifier && !isNaN(userIdentifier)) {
-        window.location.href = `/user/${userIdentifier}`;
-      } else if (userIdentifier) {
-        window.location.href = `/user/${userIdentifier}`;
-      } else {
-        window.location.href = '{{ route("profile.show") }}';
-      }
-    } catch (error) {
-      console.error('Profile navigation error:', error);
-      window.location.href = '{{ route("profile.show") }}';
+    console.log('Profile navigation attempt:', userIdentifier);
+    
+    // Clean input
+    const cleanId = (userIdentifier || '').toString().trim();
+    
+    if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
+      // Go to current user's profile
+      window.location.href = '/profile';
+    } else {
+      // Go to specific user's profile using the correct route
+      window.location.href = `/user/${encodeURIComponent(cleanId)}`;
     }
   }
 
-  // ===== VIDEO CONTROLS - FIXED MUTE/UNMUTE =====
+  // ===== VIDEO CONTROLS =====
   function toggleMute(btn) {
     if (!isMuteButtonEnabled) return;
     
@@ -1074,12 +1111,8 @@ document.addEventListener('DOMContentLoaded', function() {
     icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
   }
 
-  function togglePlayPause(overlay, event) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    
+  // ===== PLAY/PAUSE - SINGLE TAP ONLY =====
+  function togglePlayPause(overlay) {
     const videoWrapper = overlay.closest('.video-wrapper');
     const video = videoWrapper.querySelector('video');
     const animation = videoWrapper.querySelector('.play-pause-animation');
@@ -1106,22 +1139,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ===== DOUBLE TAP HEART =====
-  function handleVideoTap(overlay, event) {
-    const currentTime = new Date().getTime();
-    const timeSinceLastTap = currentTime - lastTapTime;
-    
-    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-      // Double tap detected - show heart
-      doubleTapLike(overlay, event);
-      lastTapTime = 0;
-    } else {
-      // Single tap - toggle play/pause
-      togglePlayPause(overlay, event);
-      lastTapTime = currentTime;
-    }
-  }
-
   function createHeart(x, y, container) {
     const heart = document.createElement('i');
     heart.className = 'fa-solid fa-heart heart active';
@@ -1137,51 +1154,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1400);
   }
 
-  function doubleTapLike(overlay, event) {
-    const videoWrapper = overlay.closest('.video-wrapper');
-    const videoPost = overlay.closest('.video-post');
-    const videoId = videoPost.dataset.videoId;
-    const likeBtn = videoPost.querySelector('.like-btn i');
-    const likeCount = videoPost.querySelector('.like-count-' + videoId);
-    
-    // Get position for heart
-    const rect = videoWrapper.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // Create heart at tap position
-    createHeart(x, y, videoWrapper);
-    
-    // Like the video if not already liked
-    if (!likedVideos[videoId]) {
-      likeBtn.classList.add('liked');
-      const currentCount = parseInt(likeCount.textContent) || 0;
-      likeCount.textContent = currentCount + 1;
-      likedVideos[videoId] = true;
-      saveState();
-      
-      // Send to server
-      fetch(`/video/${videoId}/like`, {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          'Content-Type': 'application/json'
-        }
-      }).catch(error => console.log('Like error:', error));
-    }
-  }
-
   // ===== LIKE SYSTEM - ONE PER USER =====
   function toggleLike(btn, videoId) {
     const likeIcon = btn.querySelector('i');
     const likeCount = document.querySelector(`.like-count-${videoId}`);
+    const videoWrapper = btn.closest('.video-post').querySelector('.video-wrapper');
     
     if (!likedVideos[videoId]) {
       // Like the video
       likeIcon.classList.add('liked');
       
       // Create heart animation in center
-      const videoWrapper = btn.closest('.video-post').querySelector('.video-wrapper');
       const rect = videoWrapper.getBoundingClientRect();
       createHeart(rect.width / 2, rect.height / 2, videoWrapper);
       
@@ -1217,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     saveState();
   }
 
-  // ===== SHARE SYSTEM - ONE PER USER WITH SMOOTH TOAST =====
+  // ===== SHARE SYSTEM - ONE PER USER =====
   function shareVideo(videoId) {
     const countEl = document.querySelector(`.share-count-${videoId}`);
     
@@ -1260,36 +1243,93 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2000);
   }
 
-  // ===== COMMENTS SYSTEM - FIXED =====
-  function toggleComments(el) {
-    const panel = el.closest('.video-post').querySelector('.comments-panel');
+  // ===== COMMENTS MODAL SYSTEM =====
+  function openCommentsModal(videoId) {
+    currentVideoId = videoId;
+    const modal = document.getElementById('commentsModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    const commentInput = document.getElementById('commentInput');
     
-    // Close all other panels
-    document.querySelectorAll('.comments-panel').forEach(p => {
-      if (p !== panel) p.classList.remove('active');
-    });
+    // Load comments for this video
+    loadComments(videoId);
     
-    // Toggle current panel with smooth animation
-    panel.classList.toggle('active');
+    // Show modal and backdrop
+    backdrop.classList.add('active');
+    modal.classList.add('active');
+    
+    // Focus input
+    setTimeout(() => {
+      commentInput.focus();
+    }, 300);
   }
 
-  function postComment(btn) {
-    const panel = btn.closest('.comments-panel');
-    const input = panel.querySelector('input');
-    const videoId = input.dataset.videoId;
+  function closeCommentsModal() {
+    const modal = document.getElementById('commentsModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    
+    modal.classList.remove('active');
+    backdrop.classList.remove('active');
+    
+    // Clear input
+    document.getElementById('commentInput').value = '';
+    currentVideoId = null;
+  }
+
+  function loadComments(videoId) {
+    const commentsList = document.getElementById('commentsModalList');
+    
+    // Clear current comments
+    commentsList.innerHTML = '';
+    
+    // Load server comments
+    const serverComments = @json($video->comments->where('parent_id', null)->map(function($comment) {
+        return [
+            'user' => $comment->user ? '@' . ($comment->user->username ?? $comment->user->name) : '@deleted_user',
+            'content' => $comment->content ?? ''
+        ];
+    }));
+    
+    // Load user comments from localStorage
+    const localComments = userComments[videoId] || [];
+    
+    // Combine and display all comments
+    [...serverComments, ...localComments].forEach(comment => {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'comment-item';
+      commentDiv.innerHTML = `<strong>${comment.user}</strong> ${comment.content}`;
+      commentsList.appendChild(commentDiv);
+    });
+    
+    // Scroll to bottom
+    commentsList.scrollTop = commentsList.scrollHeight;
+  }
+
+  function postCommentFromModal() {
+    const input = document.getElementById('commentInput');
     const text = input.value.trim();
     
-    if (!text) return;
+    if (!text || !currentVideoId) return;
 
+    const commentsList = document.getElementById('commentsModalList');
+    
     // Create new comment element
-    const list = panel.querySelector('.comments-list');
     const commentDiv = document.createElement('div');
-    commentDiv.className = 'comment';
+    commentDiv.className = 'comment-item';
     commentDiv.innerHTML = `<strong>@you</strong> ${text}`;
-    list.appendChild(commentDiv);
+    commentsList.appendChild(commentDiv);
+
+    // Save to localStorage
+    if (!userComments[currentVideoId]) {
+      userComments[currentVideoId] = [];
+    }
+    userComments[currentVideoId].push({
+      user: '@you',
+      content: text
+    });
+    saveState();
 
     // Update comment count
-    const countEl = document.querySelector(`.comment-count-${videoId}`);
+    const countEl = document.querySelector(`.comment-count-${currentVideoId}`);
     if (countEl) {
       countEl.textContent = parseInt(countEl.textContent) + 1;
     }
@@ -1303,35 +1343,16 @@ document.addEventListener('DOMContentLoaded', function() {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        video_id: videoId,
+        video_id: currentVideoId,
         content: text
       })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Comment failed to save');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Comment saved:', data);
-      if (data.comment && data.comment.id) {
-        commentDiv.dataset.commentId = data.comment.id;
-      }
-    })
-    .catch(error => {
-      console.log('Comment error:', error);
-      // Remove the comment if save failed
-      commentDiv.remove();
-      if (countEl) {
-        countEl.textContent = parseInt(countEl.textContent) - 1;
-      }
-      alert('Failed to post comment. Please try again.');
+    }).catch(error => {
+      console.log('Comment save error:', error);
     });
 
     // Clear input and scroll to bottom
     input.value = '';
-    list.scrollTop = list.scrollHeight;
+    commentsList.scrollTop = commentsList.scrollHeight;
   }
 
   // ===== VIDEO OBSERVER =====
@@ -1373,111 +1394,88 @@ document.addEventListener('DOMContentLoaded', function() {
       videoObserver.observe(post);
     });
 
-    // Set up overlay click handlers for double tap
-    document.querySelectorAll('.overlay').forEach(overlay => {
-      overlay.addEventListener('click', function(event) {
-        handleVideoTap(this, event);
-      });
-    });
-
     // Set up comment input enter key
-    document.querySelectorAll('.comment-input input').forEach(input => {
-      input.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-          postComment(this.nextElementSibling);
-        }
-      });
-    });
-
-    // Set up user info clicks
-    document.querySelectorAll('.user-info').forEach(userInfo => {
-      userInfo.addEventListener('click', function() {
-        const username = this.querySelector('.username').textContent.replace('@', '');
-        goToUserProfile(username);
-      });
-    });
-
-    // Set up action button click handlers
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const videoId = this.closest('.video-post').dataset.videoId;
-        toggleLike(this, videoId);
-      });
-    });
-
-    document.querySelectorAll('.action-btn').forEach(btn => {
-      if (!btn.classList.contains('like-btn')) {
-        btn.addEventListener('click', function() {
-          if (this.querySelector('.fa-comment')) {
-            toggleComments(this);
-          } else if (this.querySelector('.fa-share')) {
-            const videoId = this.closest('.video-post').dataset.videoId;
-            shareVideo(videoId);
-          }
-        });
+    document.getElementById('commentInput')?.addEventListener('keypress', function(event) {
+      if (event.key === 'Enter') {
+        postCommentFromModal();
       }
     });
 
-    // Set up volume controls
-    document.querySelectorAll('.volume-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        toggleMute(this);
-      });
-    });
-
-    document.querySelectorAll('.volume-slider input').forEach(slider => {
-      slider.addEventListener('input', function() {
-        changeVolume(this);
-      });
+    // Set up escape key to close modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeCommentsModal();
+      }
     });
   }
-
-  // ===== EVENT LISTENERS =====
-  document.addEventListener('click', function(e) {
-    // Close comments when clicking outside
-    if (!e.target.closest('.comments-panel') && 
-        !e.target.closest('.action-btn') && 
-        !e.target.closest('.fa-comment')) {
-      document.querySelectorAll('.comments-panel').forEach(panel => {
-        panel.classList.remove('active');
-      });
-    }
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.comments-panel').forEach(panel => {
-        panel.classList.remove('active');
-      });
-    }
-  });
-
-  // Menu navigation
-  document.querySelectorAll('.menu a').forEach(link => {
-    link.addEventListener('click', function(e) {
-      if (this.classList.contains('active') || this.getAttribute('href') === '#') return;
-      
-      showSkeleton();
-      setTimeout(() => window.location.href = this.getAttribute('href'), 500);
-    });
-  });
 
   // ===== ATTACH FUNCTIONS TO WINDOW OBJECT =====
   window.togglePlayPause = togglePlayPause;
   window.toggleMute = toggleMute;
   window.changeVolume = changeVolume;
   window.toggleLike = toggleLike;
-  window.toggleComments = toggleComments;
+  window.openCommentsModal = openCommentsModal;
+  window.closeCommentsModal = closeCommentsModal;
   window.shareVideo = shareVideo;
-  window.postComment = postComment;
+  window.postCommentFromModal = postCommentFromModal;
   window.goToUserProfile = goToUserProfile;
-  window.handleVideoTap = handleVideoTap;
 
   // ===== INITIALIZE EVERYTHING =====
   setTimeout(() => {
     initializeVideoInteractions();
   }, 1000);
 });
+// ===== DOUBLE TAP HEART =====
+let lastTapTime = 0;
+
+function handleVideoTap(overlay, event) {
+    const currentTime = new Date().getTime();
+    const timeSinceLastTap = currentTime - lastTapTime;
+    
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+        // Double tap detected - show heart
+        doubleTapLike(overlay, event);
+        lastTapTime = 0;
+    } else {
+        // Single tap - toggle play/pause
+        togglePlayPause(overlay, event);
+        lastTapTime = currentTime;
+    }
+}
+
+function doubleTapLike(overlay, event) {
+    const videoWrapper = overlay.closest('.video-wrapper');
+    const videoPost = overlay.closest('.video-post');
+    const videoId = videoPost.dataset.videoId;
+    const likeBtn = videoPost.querySelector('.like-btn i');
+    const likeCount = videoPost.querySelector('.like-count-' + videoId);
+    
+    // Get position for heart
+    const rect = videoWrapper.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Create heart at tap position
+    createHeart(x, y, videoWrapper);
+    
+    // Like the video if not already liked
+    if (!likedVideos[videoId]) {
+        likeBtn.classList.add('liked');
+        const currentCount = parseInt(likeCount.textContent) || 0;
+        likeCount.textContent = currentCount + 1;
+        likedVideos[videoId] = true;
+        saveState();
+        
+        // Send to server
+        fetch(`/video/${videoId}/like`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        }).catch(error => console.log('Like error:', error));
+    }
+}
 </script>
 </body>
 </html>
