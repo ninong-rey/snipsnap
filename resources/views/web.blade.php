@@ -433,15 +433,15 @@ use Illuminate\Support\Str;
       }
     }
 
-    /* ==== ACTIONS - FIXED ALIGNMENT ==== */
+    /* ==== ACTIONS - CLOSER TO VIDEO ==== */
     .actions {
       position: absolute;
-      right: 20px;
-      bottom: 120px;
+      right: 10px;
+      bottom: 80px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 15px;
       z-index: 10;
     }
 
@@ -453,7 +453,7 @@ use Illuminate\Support\Str;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       position: relative;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
@@ -476,17 +476,17 @@ use Illuminate\Support\Str;
     }
 
     .action-count {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #fff;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     .user-avatar-btn {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      border: 2.5px solid #fff;
+      border: 2px solid #fff;
       overflow: hidden;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -507,38 +507,38 @@ use Illuminate\Support\Str;
       object-fit: cover;
     }
 
-    /* ==== CAPTION & USER INFO - FIXED ALIGNMENT ==== */
+    /* ==== USERNAME & CAPTION INSIDE VIDEO ==== */
     .video-info {
       position: absolute;
-      left: 20px;
-      bottom: 120px;
+      left: 15px;
+      bottom: 80px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      width: 300px;
+      gap: 10px;
+      width: calc(100% - 120px);
       z-index: 5;
     }
 
     .user-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
-      padding: 8px 12px;
-      border-radius: 20px;
-      background: rgba(0, 0, 0, 0.3);
+      padding: 6px 10px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
     }
 
     .user-info:hover {
-      background: rgba(0, 0, 0, 0.5);
-      transform: translateX(5px);
+      background: rgba(0, 0, 0, 0.6);
+      transform: translateX(3px);
     }
 
     .user-avatar-small {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: 2px solid var(--accent);
       overflow: hidden;
@@ -553,26 +553,26 @@ use Illuminate\Support\Str;
     .username {
       color: #fff;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
     }
 
     .caption {
       color: #fff;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      line-height: 1.4;
+      line-height: 1.3;
       text-shadow: 0 1px 3px rgba(0,0,0,0.7);
-      padding: 12px 15px;
-      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
-      border-radius: 12px;
-      max-height: 120px;
+      border-radius: 10px;
+      max-height: 100px;
       overflow-y: auto;
     }
 
     .caption::-webkit-scrollbar {
-      width: 4px;
+      width: 3px;
     }
 
     .caption::-webkit-scrollbar-thumb {
@@ -886,45 +886,45 @@ use Illuminate\Support\Str;
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Actions - Fixed alignment -->
-        <div class="actions">
-          @if($videoUser)
-          <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-            <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
-                 alt="{{ $videoUser->username ?? $videoUser->name }}"
-                 onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+          <!-- Video Info - NOW INSIDE VIDEO WRAPPER -->
+          <div class="video-info">
+            @if($videoUser)
+            <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
+              <div class="user-avatar-small">
+                <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
+                     alt="{{ $videoUser->username ?? $videoUser->name }}"
+                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
+              </div>
+              <div class="username">@{{ $videoUser->username ?? $videoUser->name }}</div>
+            </div>
+            @endif
+            <div class="caption">
+              {{ $video->caption ?? '' }}
+            </div>
           </div>
-          @endif
-          <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
-            <i class="fa-solid fa-heart"></i>
-            <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="toggleComments(this)">
-            <i class="fa-solid fa-comment"></i>
-            <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
-          </div>
-          <div class="action-btn" onclick="shareVideo({{ $video->id }})">
-            <i class="fa-solid fa-share"></i>
-            <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
-          </div>
-        </div>
 
-        <!-- Video Info - Fixed alignment -->
-        <div class="video-info">
-          @if($videoUser)
-          <div class="user-info" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
-            <div class="user-avatar-small">
+          <!-- Actions - NOW INSIDE VIDEO WRAPPER -->
+          <div class="actions">
+            @if($videoUser)
+            <div class="user-avatar-btn" onclick="goToUserProfile('{{ $videoUser->username ?? $videoUser->id }}')">
               <img src="{{ $videoUser->avatar ? asset('storage/' . $videoUser->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($videoUser->name ?? 'User') . '&background=fe2c55&color=fff&size=32' }}" 
                    alt="{{ $videoUser->username ?? $videoUser->name }}"
                    onerror="this.src='https://ui-avatars.com/api/?name=User&background=fe2c55&color=fff&size=32'">
             </div>
-            <div class="username">@{{ $videoUser->username ?? $videoUser->name }}</div>
-          </div>
-          @endif
-          <div class="caption">
-            {{ $video->caption ?? '' }}
+            @endif
+            <div class="action-btn like-btn" onclick="toggleLike(this, {{ $video->id }})">
+              <i class="fa-solid fa-heart"></i>
+              <span class="action-count like-count-{{ $video->id }}">{{ $video->likes_count ?? 0 }}</span>
+            </div>
+            <div class="action-btn" onclick="toggleComments(this)">
+              <i class="fa-solid fa-comment"></i>
+              <span class="action-count comment-count-{{ $video->id }}">{{ $video->comments_count ?? 0 }}</span>
+            </div>
+            <div class="action-btn" onclick="shareVideo({{ $video->id }})">
+              <i class="fa-solid fa-share"></i>
+              <span class="action-count share-count-{{ $video->id }}">{{ $video->shares_count ?? 0 }}</span>
+            </div>
           </div>
         </div>
 
@@ -964,6 +964,7 @@ use Illuminate\Support\Str;
   </main>
 
 <script>
+// ... (JavaScript code remains exactly the same as before)
 document.addEventListener('DOMContentLoaded', function() {
   // ===== SKELETON LOADER =====
   function showSkeleton() {
