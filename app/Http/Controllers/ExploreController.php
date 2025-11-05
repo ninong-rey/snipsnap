@@ -18,7 +18,7 @@ class ExploreController extends Controller
         // For simplicity, we order by the count of associated likes.
         $trendingVideos = Video::with(['user', 'likes'])
                                 ->withCount('likes')
-                                ->orderByDesc('likes_count')
+                                ->orderBy('likes_count', 'desc')
                                 ->take(12) // Show a top list of 12 trending videos
                                 ->get();
 

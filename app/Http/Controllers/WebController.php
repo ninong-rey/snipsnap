@@ -155,7 +155,7 @@ class WebController extends Controller
         // Get top 10 trending creators by video count
         $trendingUsers = User::where('id', '!=', Auth::id())
             ->withCount(['videos'])
-            ->orderByDesc('videos_count')
+            ->orderBy('videos_count', 'desc')
             ->take(10)
             ->get();
 
