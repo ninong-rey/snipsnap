@@ -984,26 +984,24 @@ use Illuminate\Support\Str;
       @php $videoUser = $video->user ?? null; @endphp
       <div class="video-post" data-video-id="{{ $video->id }}">
         <div class="video-wrapper">
-         @if(isset($videos) && $videos->count())
-    @foreach ($videos as $video)
-        @php
-            $user = $video->user ?? null;
-        @endphp
-
-        <div class="video-card">
-            {{-- Video --}}
-            @if(!empty($video->path))
-                <video src="{{ asset('storage/' . $video->path) }}" controls></video>
-            @endif
-
-            {{-- Username (no avatar) --}}
-            <p class="username">{{ $user->name ?? 'Unknown User' }}</p>
-        </div>
-    @endforeach
+          @if(!empty($video->url))
+    <!-- Use Cloudinary URL directly -->
+    <video 
+        src="{{ $video->url }}" 
+        loop 
+        playsinline 
+        preload="metadata"
+        onerror="handleVideoError(this)">
+    </video>
 @else
-    <p class="text-gray-400 p-2">No videos found</p>
+    <!-- Fallback to MixKit video -->
+    <video 
+        src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+        loop 
+        playsinline 
+        preload="metadata">
+    </video>
 @endif
-
 
           <!-- Play/Pause animation -->
           <div class="play-pause-animation">
