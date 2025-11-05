@@ -895,70 +895,69 @@ use Illuminate\Support\Str;
   </div>
 
   <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar">
     <div>
-      <div class="logo">
-        <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
-        SnipSnap
-      </div>
+        <div class="logo">
+            <img src="{{ asset('image/snipsnap.png') }}" alt="SnipSnap" onerror="this.style.display='none'">
+            SnipSnap
+        </div>
 
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search">
-      </div>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search">
+        </div>
 
-      <div class="menu">
-    <!-- Use the EXACT route names from your route:list -->
-    <a href="{{ route('web') }}" class="active" data-route="for-you">
-        <i class="fa-solid fa-house"></i>
-        <span class="menu-text">For You</span>
-    </a>
-    <a href="{{ route('explore.users') }}" data-route="explore">
-        <i class="fa-regular fa-compass"></i>
-        <span class="menu-text">Explore</span>
-    </a>
-    <a href="{{ route('following.videos') }}" data-route="following">
-        <i class="fa-solid fa-user-group"></i>
-        <span class="menu-text">Following</span>
-    </a>
-    <a href="{{ route('friends') }}" data-route="friends">
-        <i class="fa-solid fa-user-friends"></i>
-        <span class="menu-text">Friends</span>
-    </a>
-    <a href="{{ route('upload') }}" data-route="upload">
-        <i class="fa-solid fa-plus-square"></i>
-        <span class="menu-text">Upload</span>
-    </a>
-    <a href="{{ route('notifications') }}" data-route="notifications">
-        <i class="fa-regular fa-comment-dots"></i>
-        <span class="menu-text">Notifications</span>
-    </a>
-    <a href="{{ route('messages.index') }}" data-route="messages">
-        <i class="fa-regular fa-paper-plane"></i>
-        <span class="menu-text">Messages</span>
-    </a>
-    <a href="#" data-route="live">
-        <i class="fa-solid fa-tv"></i>
-        <span class="menu-text">LIVE</span>
-    </a>
-    <a href="{{ route('profile.show') }}" data-route="profile">
-        <i class="fa-solid fa-user"></i>
-        <span class="menu-text">Profile</span>
-    </a>
-    <a href="#" data-route="more">
-        <i class="fa-solid fa-ellipsis"></i>
-        <span class="menu-text">More</span>
-    </a>
-</div>
+        <div class="menu">
+            <a href="{{ route('home') }}" class="active" data-route="for-you">
+                <i class="fa-solid fa-house"></i>
+                <span class="menu-text">For You</span>
+            </a>
+            <a href="{{ route('explore.users') }}" data-route="explore">
+                <i class="fa-regular fa-compass"></i>
+                <span class="menu-text">Explore</span>
+            </a>
+            <a href="{{ route('following.videos') }}" data-route="following">
+                <i class="fa-solid fa-user-group"></i>
+                <span class="menu-text">Following</span>
+            </a>
+            <a href="{{ route('friends') }}" data-route="friends">
+                <i class="fa-solid fa-user-friends"></i>
+                <span class="menu-text">Friends</span>
+            </a>
+            <a href="{{ route('upload') }}" data-route="upload">
+                <i class="fa-solid fa-plus-square"></i>
+                <span class="menu-text">Upload</span>
+            </a>
+            <a href="{{ route('notifications') }}" data-route="notifications">
+                <i class="fa-regular fa-comment-dots"></i>
+                <span class="menu-text">Notifications</span>
+            </a>
+            <a href="{{ route('messages.index') }}" data-route="messages">
+                <i class="fa-regular fa-paper-plane"></i>
+                <span class="menu-text">Messages</span>
+            </a>
+            <a href="javascript:void(0)" data-route="live">
+                <i class="fa-solid fa-tv"></i>
+                <span class="menu-text">LIVE</span>
+            </a>
+            <a href="{{ route('profile.show') }}" data-route="profile">
+                <i class="fa-solid fa-user"></i>
+                <span class="menu-text">Profile</span>
+            </a>
+            <a href="javascript:void(0)" data-route="more">
+                <i class="fa-solid fa-ellipsis"></i>
+                <span class="menu-text">More</span>
+            </a>
+        </div>
     </div>
 
     <form method="POST" action="{{ route('logout.perform') }}">
-    @csrf
-    <button type="submit" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-    </button>
-</form>
-  </aside>
+        @csrf
+        <button type="submit" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:10px 12px;border-radius:8px;width:100%;text-align:left;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+    </form>
+</aside>
 
   @if(request()->has('uploaded_video'))
   <div id="uploadOverlay">
@@ -985,30 +984,24 @@ use Illuminate\Support\Str;
       @php $videoUser = $video->user ?? null; @endphp
       <div class="video-post" data-video-id="{{ $video->id }}">
         <div class="video-wrapper">
-          <!-- Cloudinary Video Player -->
           @if(!empty($video->url))
-            <video 
-              src="{{ $video->url }}" 
-              loop 
-              playsinline 
-              preload="metadata"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            </video>
-            
-            <!-- Fallback if video fails to load -->
-            <div style="display:none; width:100%; height:100%; background:#000; align-items:center; justify-content:center; color:#fff; flex-direction:column;">
-              <i class="fas fa-video-slash" style="font-size:48px; margin-bottom:10px;"></i>
-              <span>Video unavailable</span>
-            </div>
-          @else
-            <!-- Show MixKit fallback video -->
-            <video 
-              src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
-              loop 
-              playsinline 
-              preload="metadata">
-            </video>
-          @endif
+    <!-- Use Cloudinary URL directly -->
+    <video 
+        src="{{ $video->url }}" 
+        loop 
+        playsinline 
+        preload="metadata"
+        onerror="handleVideoError(this)">
+    </video>
+@else
+    <!-- Fallback to MixKit video -->
+    <video 
+        src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" 
+        loop 
+        playsinline 
+        preload="metadata">
+    </video>
+@endif
 
           <!-- Play/Pause animation -->
           <div class="play-pause-animation">
