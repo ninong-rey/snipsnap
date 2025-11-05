@@ -1372,15 +1372,8 @@ if (document.getElementById('feedContainer')) {
     const commentsList = document.getElementById('commentsModalList');
     commentsList.innerHTML = '';
     
-    // Safe server comments - handle case where $video might not be defined
-    const serverComments = @json(($videos->firstWhere('id', $video->id ?? null)?->comments ?? collect())->where('parent_id', null)->map(function($comment) {
-        return [
-            'id' => $comment->id ?? null,
-            'user' => ($comment->user ? '@' . ($comment->user->username ?? $comment->user->name ?? 'deleted_user') : '@deleted_user'),
-            'content' => $comment->content ?? '',
-            'video_id' => $comment->video_id ?? null
-        ];
-    }) ?? []);
+    // Start with empty comments for now
+    const serverComments = [];
     
     // Load user comments from localStorage
     const localComments = userComments[videoId] || [];

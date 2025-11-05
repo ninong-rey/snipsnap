@@ -24,24 +24,24 @@ class AuthController extends Controller
      * Handle login submission
      */
     public function loginPerform(Request $request)
-    {
-        $request->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'login' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        $loginInput = $request->login;
-        $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
+    $loginInput = $request->login;
+    $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
 
-        $user = User::where($field, $loginInput)->first();
+    $user = User::where($field, $loginInput)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->withErrors(['login' => 'Invalid credentials provided.']);
-        }
-
-        Auth::login($user, $request->filled('remember'));
-        return redirect()->route('my-web')->with('success', 'Logged in successfully!');
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return back()->withErrors(['login' => 'Invalid credentials provided.']);
     }
+
+    Auth::login($user, $request->filled('remember'));
+    return redirect('/web')->with('success', 'Logged in successfully!'); // ← FIXED
+}
 
     /**
      * Show signup page
