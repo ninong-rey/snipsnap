@@ -30,7 +30,7 @@ class WebController extends Controller
             return $video;
         });
 
-    return view('my-web', compact('videos')); // ← CHANGE 'web' to 'my-web'
+    return view('web', compact('videos'));
 }
 
     /**

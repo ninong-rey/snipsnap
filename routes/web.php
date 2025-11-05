@@ -23,6 +23,7 @@ use App\Models\Video;
 | DEBUG ROUTES - Add these at the top for testing
 |--------------------------------------------------------------------------
 */
+
 Route::get('/test-cloudinary-config', function() {
     try {
         \Log::info('Testing Cloudinary configuration...');
@@ -148,7 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout.perform');
 
     // Main Feed
-    Route::get('/web', [WebController::class, 'index'])->name('my-web');
+    Route::get('/web', [WebController::class, 'index'])->name('web');
     Route::get('/following', [FollowController::class, 'followingVideos'])->name('following.videos');
 
     // Profile
