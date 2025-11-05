@@ -1369,29 +1369,30 @@ if (document.getElementById('feedContainer')) {
         }
 
         function loadComments(videoId) {
-            const commentsList = document.getElementById('commentsModalList');
-            commentsList.innerHTML = '';
-            
-            const serverComments = @json(($video->comments ?? collect())->where('parent_id', null)->map(function($comment) use ($video) {
-    return [
-        'id' => $comment->id ?? null,
-        'user' => ($comment->user ? '@' . ($comment->user->username ?? $comment->user->name ?? 'deleted_user') : '@deleted_user'),
-        'content' => $comment->content ?? '',
-        'video_id' => $video->id
-    ];
-}));
-            
-            // Load user comments from localStorage
-            const localComments = userComments[videoId] || [];
-            const localReplies = userReplies[videoId] || {};
-            
-            [...serverComments, ...localComments].forEach(comment => {
-                const commentDiv = createCommentElement(comment, localReplies[comment.id] || []);
-                commentsList.appendChild(commentDiv);
-            });
-            
-            commentsList.scrollTop = commentsList.scrollHeight;
-        }
+    const commentsList = document.getElementById('commentsModalList');
+    commentsList.innerHTML = '';
+    
+    // Safe server comments - handle case where $video might not be defined
+    const serverComments = @json(($videos->firstWhere('id', $video->id ?? null)?->comments ?? collect())->where('parent_id', null)->map(function($comment) {
+        return [
+            'id' => $comment->id ?? null,
+            'user' => ($comment->user ? '@' . ($comment->user->username ?? $comment->user->name ?? 'deleted_user') : '@deleted_user'),
+            'content' => $comment->content ?? '',
+            'video_id' => $comment->video_id ?? null
+        ];
+    }) ?? []);
+    
+    // Load user comments from localStorage
+    const localComments = userComments[videoId] || [];
+    const localReplies = userReplies[videoId] || {};
+    
+    [...serverComments, ...localComments].forEach(comment => {
+        const commentDiv = createCommentElement(comment, localReplies[comment.id] || []);
+        commentsList.appendChild(commentDiv);
+    });
+    
+    commentsList.scrollTop = commentsList.scrollHeight;
+}
 
         function createCommentElement(comment, replies) {
             const commentDiv = document.createElement('div');
