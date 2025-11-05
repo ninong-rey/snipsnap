@@ -690,7 +690,7 @@
       </div>
 
       <div class="menu">
-        <a href="{{ route('my-web') }}"><i class="fa-solid fa-house"></i>For You</a>
+        <a href="{{ route('home') }}"><i class="fa-solid fa-house"></i>For You</a>
         <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
         <!-- UPDATED: Following is now active and shows videos from followed users -->
         <a href="{{ route('following.videos') }}" class="active"><i class="fa-solid fa-user-group"></i>Following</a>

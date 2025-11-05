@@ -133,7 +133,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
   SnipSnap Studio
 </div>
     <a href="{{ route('upload') }}" class="upload-btn active"><i class="fas fa-plus"></i> Upload</a>
-    <a href="{{ route('my-web') }}" class="menu-item"><i class="fas fa-home"></i> Home</a>
+    <a href="{{ route('home') }}" class="menu-item"><i class="fas fa-home"></i> Home</a>
   </div>
 
   <div class="main-content" id="mainContent">
@@ -189,7 +189,7 @@ body { background:#f9f9f9; color:#161823; display:flex; height:100vh; overflow:h
         <button type="button" class="cancel-btn" id="cancelUploadBtn" style="display:none;">
           <i class="fas fa-times"></i> Cancel Upload
         </button>
-        <button type="button" class="cancel-btn" id="backBtn" onclick="window.location.href='{{ route('my-web') }}'">
+        <button type="button" class="cancel-btn" id="backBtn" onclick="window.location.href='{{ route('home') }}'">
           <i class="fas fa-arrow-left"></i> Back
         </button>
         

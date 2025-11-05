@@ -741,7 +741,7 @@
         </div>
 
         <div class="menu">
-            <a href="{{ route('my-web') }}"><i class="fa-solid fa-house"></i>For You</a>
+            <a href="{{ route('home') }}"><i class="fa-solid fa-house"></i>For You</a>
             <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
             <a href="{{ route('following.videos') }}"><i class="fa-solid fa-user-group"></i>Following</a>
             <a href="{{ route('friends') }}"><i class="fa-solid fa-user-friends"></i>Friends</a>
@@ -1265,73 +1265,74 @@
     // =============================
     // Profile form submission
     // =============================
-    document.addEventListener('DOMContentLoaded', function() {
-        const profileForm = document.getElementById('profileForm');
-        if (profileForm) {
-            profileForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(data.message, 'success');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(data.message || 'Update failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Update error:', error);
-                    showToast(error.message, 'error');
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                });
-            });
-        }
-    });
+    
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('profileForm');
+    const modal = document.getElementById('editModal');
 
-    // Toast notification function
-    function showToast(message, type = 'info') {
-        // Remove existing toasts
-        const existingToasts = document.querySelectorAll('.toast');
-        existingToasts.forEach(toast => toast.remove());
-        
-        // Create toast element
+    function showToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.textContent = message;
-        
+        toast.innerText = message;
         document.body.appendChild(toast);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
+        setTimeout(() => toast.remove(), 3000);
     }
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(profileForm);
+            const submitBtn = profileForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const response = await fetch(profileForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Profile updated successfully!', 'success');
+                    modal.style.display = 'none';
+
+                    // Update profile info on page
+                    if (result.user) {
+                        const usernameEl = document.querySelector('.username');
+                        const nameEl = document.querySelector('.name');
+                        const bioEl = document.querySelector('.profile-bio');
+                        const avatarEl = document.querySelector('.profile-avatar');
+
+                        usernameEl && (usernameEl.textContent = '@ ' + result.user.username);
+                        nameEl && (nameEl.textContent = result.user.name);
+                        bioEl && (bioEl.textContent = result.user.bio || 'No bio yet. Tap Edit Profile to add one!');
+                        if (avatarEl && result.user.avatar_url) avatarEl.src = result.user.avatar_url;
+                    }
+                } else {
+                    const msg = result.message || 'Failed to update profile.';
+                    showToast(msg, 'error');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showToast('Failed to save changes. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        });
+    }
+});
 </script>
+
 
 </body>
 </html>

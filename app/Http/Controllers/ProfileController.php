@@ -19,19 +19,21 @@ class ProfileController extends Controller
     {
         $user = $user ?? Auth::user();
 
-        /** @var \App\Models\User $user */
+        if (!$user) {
+            abort(404, 'User not found');
+        }
 
-        // ✅ Use relationship queries instead of property access to prevent null issues
+        // Counts
         $likesTotal = $user->videos()->withCount('likes')->get()->sum('likes_count');
         $followingCount = $user->following()->count();
         $followersCount = $user->followers()->count();
 
-        // ✅ Format counts (e.g., 12500 -> 12.5K)
+        // Format counts
         $likesTotal = $this->formatCount($likesTotal);
         $followingCount = $this->formatCount($followingCount);
         $followersCount = $this->formatCount($followersCount);
 
-        // ✅ Retrieve user videos safely
+        // Videos
         $videos = $user->videos()->latest()->get();
 
         return view('profile', compact(
@@ -44,98 +46,77 @@ class ProfileController extends Controller
     }
 
     /**
-     * Show the edit profile page
-     */
-    public function edit()
-    {
-        return view('profile_edit', ['user' => Auth::user()]);
-    }
-
-    /**
      * Update the authenticated user's profile
      */
-    /**
- * Update the authenticated user's profile
- */
-public function update(Request $request)
+    public function update(Request $request)
 {
-    /** @var \App\Models\User $user */
     $user = Auth::user();
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'Not authenticated'], 401);
+    }
 
-    try {
-        $data = $request->validate([
-            'username' => [
-                'nullable',
-                'string',
-                'alpha_dash',
-                'min:3',
-                'max:24',
-                Rule::unique('users')->ignore($user->id),
-            ],
-            'name'   => 'nullable|string|max:30',
-            'bio'    => 'nullable|string|max:80',
-            'phone'  => 'nullable|string|max:20',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+    $data = $request->validate([
+        'username' => ['nullable','string','alpha_dash','min:3','max:24',Rule::unique('users')->ignore($user->id)],
+        'name'     => 'nullable|string|max:30',
+        'bio'      => 'nullable|string|max:80',
+        'phone'    => 'nullable|string|max:20',
+        'avatar'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ]);
 
-        // ✅ Handle avatar upload
-        if ($request->hasFile('avatar')) {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+    // Handle avatar
+    if ($request->hasFile('avatar')) {
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+    }
+
+    $user->update($data);
+
+    // Return full user info for JS
+    return response()->json([
+        'success' => true,
+        'user' => [
+            'username' => $user->username,
+            'name' => $user->name,
+            'bio' => $user->bio,
+            'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
+        ]
+    ]);
+}
+
+
+    /**
+     * Follow a user
+     */
+    public function follow(User $userToFollow)
+    {
+        $user = Auth::user();
+        if (!$user || $user->id === $userToFollow->id) {
+            return response()->json(['success' => false, 'message' => 'Invalid action.'], 422);
         }
 
-        $user->update($data);
+        $isFollowing = Follow::where('follower_id', $user->id)
+                              ->where('following_id', $userToFollow->id)
+                              ->exists();
+
+        if (!$isFollowing) {
+            Follow::create([
+                'follower_id'  => $user->id,
+                'following_id' => $userToFollow->id,
+            ]);
+        }
+
+        $followersCount = $userToFollow->followers()->count();
+        $isNowFollowing = !$isFollowing;
 
         return response()->json([
             'success' => true,
-            'message' => 'Profile updated successfully!'
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-    /**
- * Follow a user
- */
-public function follow(User $userToFollow)
-{
-    $user = Auth::user();
-
-    if ($user->id === $userToFollow->id) {
-        return response()->json([
-            'success' => false,
-            'message' => 'You cannot follow yourself.'
-        ], 422);
-    }
-
-    $isFollowing = Follow::where('follower_id', $user->id)
-        ->where('following_id', $userToFollow->id)
-        ->exists();
-
-    if (!$isFollowing) {
-        Follow::create([
-            'follower_id'  => $user->id,
-            'following_id' => $userToFollow->id,
+            'message' => $isNowFollowing ? 'User followed!' : 'Already following',
+            'following' => $isNowFollowing,
+            'followers_count' => $followersCount
         ]);
     }
-
-    $followersCount = $userToFollow->followers()->count();
-    $isNowFollowing = !$isFollowing;
-
-    return response()->json([
-        'success' => true,
-        'message' => $isNowFollowing ? 'User followed!' : 'Already following',
-        'following' => $isNowFollowing,
-        'followers_count' => $followersCount
-    ]);
-}
 
     /**
      * Unfollow a user
@@ -143,29 +124,24 @@ public function follow(User $userToFollow)
     public function unfollow(User $userToUnfollow)
     {
         $user = Auth::user();
+        if (!$user) return back()->with('error', 'Not authenticated');
 
         Follow::where('follower_id', $user->id)
-            ->where('following_id', $userToUnfollow->id)
-            ->delete();
+              ->where('following_id', $userToUnfollow->id)
+              ->delete();
 
         return back()->with('success', 'User unfollowed.');
     }
 
     /**
-     * Format numbers into readable format (e.g., 12500 -> 12.5K)
+     * Format numbers into readable format
      */
     private function formatCount($n)
     {
         $n = (float) $n;
 
-        if ($n >= 1000000) {
-            return round($n / 1000000, 1) . 'M';
-        }
-        if ($n >= 1000) {
-            return round($n / 1000, 1) . 'K';
-        }
-
+        if ($n >= 1000000) return round($n / 1000000, 1) . 'M';
+        if ($n >= 1000) return round($n / 1000, 1) . 'K';
         return (string) $n;
     }
-    
 }

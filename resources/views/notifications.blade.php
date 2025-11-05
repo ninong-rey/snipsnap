@@ -666,7 +666,7 @@
       </div>
 
       <div class="menu">
-        <a href="{{ route('my-web') }}"><i class="fa-solid fa-house"></i>For You</a>
+        <a href="{{ route('home') }}"><i class="fa-solid fa-house"></i>For You</a>
         <a href="{{ route('explore.users') }}"><i class="fa-regular fa-compass"></i>Explore</a>
         <a href="{{ route('following.videos') }}"><i class="fa-solid fa-user-group"></i>Following</a>
         <a href="{{ route('friends') }}"><i class="fa-solid fa-user-friends"></i>Friends</a>
