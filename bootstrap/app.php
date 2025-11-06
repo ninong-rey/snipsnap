@@ -1,13 +1,12 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application
 |--------------------------------------------------------------------------
-|
-| This file bootstraps the Laravel application instance.
-| It loads the framework and prepares it for use.
-|
 */
 
 $app = new Illuminate\Foundation\Application(
@@ -18,10 +17,6 @@ $app = new Illuminate\Foundation\Application(
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
 |--------------------------------------------------------------------------
-|
-| Here we bind the HTTP Kernel, Console Kernel, and Exception Handler
-| into the service container so they can be resolved automatically.
-|
 */
 
 $app->singleton(
@@ -38,5 +33,37 @@ $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
     App\Exceptions\Handler::class
 );
+
+/*
+|--------------------------------------------------------------------------
+| Render Optimization: HTTPS & Trusted Proxies
+|--------------------------------------------------------------------------
+|
+| This ensures Laravel correctly detects HTTPS requests behind Render’s
+| proxy servers and prevents redirect loops or mixed-content issues.
+|
+*/
+
+$app->afterBootstrapping(Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class, function ($app) {
+    // Force HTTPS in production
+    if (env('APP_ENV') === 'production') {
+        URL::forceScheme('https');
+    }
+
+    // Trust Render's proxies for X-Forwarded headers
+    Request::setTrustedProxies(
+        ['*'],
+        Request::HEADER_X_FORWARDED_FOR |
+        Request::HEADER_X_FORWARDED_HOST |
+        Request::HEADER_X_FORWARDED_PORT |
+        Request::HEADER_X_FORWARDED_PROTO
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Return The Application
+|--------------------------------------------------------------------------
+*/
 
 return $app;
