@@ -24,7 +24,7 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 10000
 
-# Simple PHP server start
-CMD php -S 0.0.0.0:80 -t public
+# Use port 10000 for Render
+CMD php -S 0.0.0.0:10000 -t public
