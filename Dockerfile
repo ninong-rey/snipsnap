@@ -24,7 +24,5 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 10000
-
-# Use port 10000 for Render
-CMD php -S 0.0.0.0:10000 -t public
+# Use Render's PORT environment variable (fallback to 10000)
+CMD php -S 0.0.0.0:${PORT:-10000} -t public
