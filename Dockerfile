@@ -20,11 +20,10 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy our custom Apache configuration
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Enable mod_rewrite and our site
-RUN a2enmod rewrite && a2ensite 000-default.conf
+# Clear and cache routes
+RUN php artisan config:clear
+RUN php artisan route:clear  
+RUN php artisan route:cache
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
@@ -32,5 +31,5 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-# Run migrations and start server
+# Run migrations and start PHP server
 CMD sh -c "php artisan migrate --force && php -S 0.0.0.0:80 -t public"
