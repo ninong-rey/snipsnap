@@ -74,47 +74,49 @@ Route::get('/', [WebController::class, 'index'])->name('home');
 // Test notifications
 Route::get('/test-notification', function () {
     $user = User::first();
-    $user->notify(new TestNotification("Hello from Render!"));
-    return 'Notification sent!';
+    if ($user) {
+        $user->notify(new TestNotification("Hello from Render!"));
+        return response('Notification sent!');
+    }
+    return response('No user found', 404);
 });
 
 Route::get('/fake-notification', function () {
     return view('fake-notification');
 });
 
-// Serve uploaded media
+// Serve uploaded media safely
 Route::get('/media/{path}', function ($path) {
     $filePath = storage_path('app/public/' . $path);
 
     if (!File::exists($filePath)) {
-        abort(404);
+        return response('File not found', 404);
     }
 
-    $file = File::get($filePath);
-    $type = File::mimeType($filePath);
-
-    return Response::make($file, 200)->header("Content-Type", $type);
+    return response()->file($filePath);
 })->where('path', '.*');
 
-// Authentication
-Route::get('/login', [AuthController::class, 'loginView'])->name('login');
-Route::post('/login', [AuthController::class, 'loginPerform'])->name('login.perform');
+// Authentication routes
+Route::prefix('auth')->group(function () {
+    Route::get('/login', [AuthController::class, 'loginView'])->name('login');
+    Route::post('/login', [AuthController::class, 'loginPerform'])->name('login.perform');
 
-Route::get('/signup', [AuthController::class, 'signupView'])->name('signup.view');
-Route::post('/signup', [AuthController::class, 'signupPerform'])->name('signup.perform');
+    Route::get('/signup', [AuthController::class, 'signupView'])->name('signup.view');
+    Route::post('/signup', [AuthController::class, 'signupPerform'])->name('signup.perform');
 
-Route::get('/reset', [AuthController::class, 'forgotPasswordView'])->name('password.request');
-Route::post('/reset', [AuthController::class, 'otpRequest'])->name('otp.request');
+    Route::get('/reset', [AuthController::class, 'forgotPasswordView'])->name('password.request');
+    Route::post('/reset', [AuthController::class, 'otpRequest'])->name('otp.request');
 
-Route::get('/reset-password', [AuthController::class, 'resetPasswordView'])->name('password.reset');
-Route::post('/reset-password', [AuthController::class, 'otpVerify'])->name('otp.verify');
+    Route::get('/reset-password', [AuthController::class, 'resetPasswordView'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'otpVerify'])->name('otp.verify');
+});
 
 /*
 |--------------------------------------------------------------------------
-| PROTECTED ROUTES (Requires Login)
+| PROTECTED ROUTES
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout.perform');
@@ -124,65 +126,69 @@ Route::middleware('auth')->group(function () {
     Route::get('/following', [FollowController::class, 'followingVideos'])->name('following.videos');
 
     // Profile
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
+        Route::post('/update', [ProfileController::class, 'update'])->name('profile.update');
+    });
 
-    // User Profiles
-    Route::get('/user/{username}', [WebController::class, 'showUserProfile'])->name('user.profile');
-    Route::get('/users/{id}', [UserController::class, 'profile'])->name('users.profile');
-    Route::get('/users/{id}/followers', [UserController::class, 'followers'])->name('users.followers');
-    Route::get('/users/{id}/following', [UserController::class, 'following'])->name('users.following');
-    Route::get('/users/{id}/videos', [UserController::class, 'videos'])->name('users.videos');
-    Route::get('/users/{id}/liked-videos', [UserController::class, 'likedVideos'])->name('users.liked-videos');
+    // Users
+    Route::prefix('users')->group(function () {
+        Route::get('/{id}', [UserController::class, 'profile'])->name('users.profile');
+        Route::get('/{id}/followers', [UserController::class, 'followers'])->name('users.followers');
+        Route::get('/{id}/following', [UserController::class, 'following'])->name('users.following');
+        Route::get('/{id}/videos', [UserController::class, 'videos'])->name('users.videos');
+        Route::get('/{id}/liked-videos', [UserController::class, 'likedVideos'])->name('users.liked-videos');
 
-    // Video Routes
-    Route::get('/video/{id}', [VideoController::class, 'show'])->name('video.show');
-    Route::post('/video/upload', [VideoController::class, 'store'])->name('video.upload');
-    Route::post('/video/{id}/like', [VideoController::class, 'like'])->name('video.like');
-    Route::post('/video/{id}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
-    Route::post('/video/{id}/share', [VideoController::class, 'share'])->name('video.share');
+        Route::get('/suggestions', [UserController::class, 'suggestions'])->name('users.suggestions');
+        Route::get('/search', [UserController::class, 'search'])->name('users.search');
+    });
+
+    // Video
+    Route::prefix('video')->group(function () {
+        Route::get('/{id}', [VideoController::class, 'show'])->name('video.show');
+        Route::post('/upload', [VideoController::class, 'store'])->name('video.upload');
+        Route::post('/{id}/like', [VideoController::class, 'like'])->name('video.like');
+        Route::post('/{id}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
+        Route::post('/{id}/share', [VideoController::class, 'share'])->name('video.share');
+    });
 
     // Comments
     Route::post('/comment', [CommentController::class, 'store'])->name('comment.store');
 
-    // Explore Users
+    // Explore
     Route::get('/explore-users', [WebController::class, 'exploreUsers'])->name('explore.users');
+    Route::get('/friends', [WebController::class, 'friends'])->name('friends');
 
-    // Follow System
+    // Follow
     Route::post('/user/{id}/follow', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
     Route::get('/follow/status/{user}', [FollowController::class, 'followStatus'])->name('follow.status');
 
-    // User suggestions and search
-    Route::get('/users/suggestions', [UserController::class, 'suggestions'])->name('users.suggestions');
-    Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
-
-    // Friends
-    Route::get('/friends', [WebController::class, 'friends'])->name('friends');
-
     // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::get('/notifications/unread-counts', [NotificationController::class, 'getUnreadCounts']);
-    Route::get('/notifications/fetch-latest', [NotificationController::class, 'fetchLatest']);
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('notifications');
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::get('/unread-counts', [NotificationController::class, 'getUnreadCounts']);
+        Route::get('/fetch-latest', [NotificationController::class, 'fetchLatest']);
+    });
 
     // Messages
-    Route::get('/messages', [MessagesController::class, 'index'])->name('messages.index');
-    Route::get('/messages/{userId}', [MessagesController::class, 'show'])->name('messages.show');
-    Route::post('/messages/send', [MessagesController::class, 'send'])->name('messages.send');
-    Route::get('/messages/fetch-new/{receiverId}/{lastMessageId}', [MessagesController::class, 'fetchNew'])->name('messages.fetchNew');
+    Route::prefix('messages')->group(function () {
+        Route::get('/', [MessagesController::class, 'index'])->name('messages.index');
+        Route::get('/{userId}', [MessagesController::class, 'show'])->name('messages.show');
+        Route::post('/send', [MessagesController::class, 'send'])->name('messages.send');
+        Route::get('/fetch-new/{receiverId}/{lastMessageId}', [MessagesController::class, 'fetchNew'])->name('messages.fetchNew');
+        Route::post('/call-invitation', [MessagesController::class, 'sendCallInvitation']);
+    });
 
-    // Jitsi call join
+    // Jitsi calls
     Route::get('/call/join/{roomId}', function ($roomId) {
         return view('call-join', ['roomId' => $roomId]);
     })->name('call.join');
-    Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| SPA Catch-All (optional)
-|--------------------------------------------------------------------------
-| Only if you have a Vue/React SPA front-end
-*/
+// User profiles by username (optional)
+Route::get('/user/{username}', [WebController::class, 'showUserProfile'])->name('user.profile');
+
+// SPA Catch-All (React/Vue support)
 Route::get('/{any}', [WebController::class, 'index'])->where('any', '.*');
