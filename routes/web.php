@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebController;
@@ -14,36 +15,25 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\UserController;
+
 use App\Notifications\TestNotification;
 use App\Models\User;
-use App\Models\Video;
 
 /*
 |--------------------------------------------------------------------------
-| DEBUG ROUTES - Add these at the top for testing
+| DEBUG ROUTES - For testing only
 |--------------------------------------------------------------------------
 */
-
 Route::get('/test-cloudinary-config', function() {
     try {
-        \Log::info('Testing Cloudinary configuration...');
-        
-        // Test 1: Check if environment variables are set
         $cloudName = env('CLOUDINARY_CLOUD_NAME');
         $apiKey = env('CLOUDINARY_API_KEY');
         $apiSecret = env('CLOUDINARY_API_SECRET');
-        
-        \Log::info('Env vars:', [
-            'cloud_name' => $cloudName ? 'SET' : 'MISSING',
-            'api_key' => $apiKey ? 'SET' : 'MISSING', 
-            'api_secret' => $apiSecret ? 'SET' : 'MISSING'
-        ]);
-        
+
         if (!$cloudName || !$apiKey || !$apiSecret) {
             return response()->json(['error' => 'Missing Cloudinary environment variables'], 500);
         }
-        
-        // Test 2: Test Cloudinary connection
+
         $cloudinary = new \Cloudinary\Cloudinary([
             'cloud' => [
                 'cloud_name' => $cloudName,
@@ -51,39 +41,39 @@ Route::get('/test-cloudinary-config', function() {
                 'api_secret' => $apiSecret,
             ]
         ]);
-        
-        // Simple API call to test connection
+
         $result = $cloudinary->adminApi()->ping();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Cloudinary configuration is working!',
             'ping_result' => $result
         ]);
-        
+
     } catch (\Exception $e) {
-        \Log::error('Cloudinary config test failed: ' . $e->getMessage());
         return response()->json([
             'success' => false,
             'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
         ], 500);
     }
 });
+
 Route::get('/video-debug', function() {
     return view('video-debug');
 });
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 
-// Home - Keep your original home route
+// Home page
 Route::get('/', [WebController::class, 'index'])->name('home');
 
+// Test notifications
 Route::get('/test-notification', function () {
-    $user = User::first(); // or Auth::user()
+    $user = User::first();
     $user->notify(new TestNotification("Hello from Render!"));
     return 'Notification sent!';
 });
@@ -92,38 +82,19 @@ Route::get('/fake-notification', function () {
     return view('fake-notification');
 });
 
-// Serve uploaded videos safely
+// Serve uploaded media
 Route::get('/media/{path}', function ($path) {
-    $path = storage_path('app/public/' . $path);
+    $filePath = storage_path('app/public/' . $path);
 
-    if (!File::exists($path)) {
+    if (!File::exists($filePath)) {
         abort(404);
     }
 
-    $file = File::get($path);
-    $type = File::mimeType($path);
+    $file = File::get($filePath);
+    $type = File::mimeType($filePath);
 
     return Response::make($file, 200)->header("Content-Type", $type);
 })->where('path', '.*');
-
-// Video upload route (Ajax/Fetch)
-Route::post('/upload', function(Request $request){
-    $request->validate([
-        'video' => 'required|mimes:mp4,mov,avi,webm|max:51200', // 50MB max
-    ]);
-
-    $path = $request->file('video')->store('videos', 'public');
-    $url = Storage::url($path);
-
-    return response()->json([
-        'success' => true,
-        'url' => $url
-    ]);
-})->name('upload.store');
-
-// Upload page
-Route::get('/upload', [VideoController::class, 'create'])->name('upload');
-Route::post('/upload', [VideoController::class, 'store'])->name('upload.store');
 
 // Authentication
 Route::get('/login', [AuthController::class, 'loginView'])->name('login');
@@ -148,7 +119,7 @@ Route::middleware('auth')->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout.perform');
 
-    // Main Feed
+    // Feed
     Route::get('/web', [WebController::class, 'index'])->name('web');
     Route::get('/following', [FollowController::class, 'followingVideos'])->name('following.videos');
 
@@ -165,11 +136,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{id}/liked-videos', [UserController::class, 'likedVideos'])->name('users.liked-videos');
 
     // Video Routes
-Route::get('/video/{id}', [VideoController::class, 'show'])->name('video.show');
-Route::post('/video/upload', [VideoController::class, 'store'])->name('video.upload');
-Route::post('/video/{id}/like', [VideoController::class, 'like'])->name('video.like');
-Route::post('/video/{id}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
-Route::post('/video/{id}/share', [VideoController::class, 'share'])->name('video.share');
+    Route::get('/video/{id}', [VideoController::class, 'show'])->name('video.show');
+    Route::post('/video/upload', [VideoController::class, 'store'])->name('video.upload');
+    Route::post('/video/{id}/like', [VideoController::class, 'like'])->name('video.like');
+    Route::post('/video/{id}/unlike', [VideoController::class, 'unlike'])->name('video.unlike');
+    Route::post('/video/{id}/share', [VideoController::class, 'share'])->name('video.share');
 
     // Comments
     Route::post('/comment', [CommentController::class, 'store'])->name('comment.store');
@@ -207,3 +178,11 @@ Route::post('/video/{id}/share', [VideoController::class, 'share'])->name('video
     })->name('call.join');
     Route::post('/messages/call-invitation', [MessagesController::class, 'sendCallInvitation']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| SPA Catch-All (optional)
+|--------------------------------------------------------------------------
+| Only if you have a Vue/React SPA front-end
+*/
+Route::get('/{any}', [WebController::class, 'index'])->where('any', '.*');

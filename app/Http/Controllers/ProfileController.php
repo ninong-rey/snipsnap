@@ -23,25 +23,33 @@ class ProfileController extends Controller
             abort(404, 'User not found');
         }
 
-        // Counts
-        $likesTotal = $user->videos()->withCount('likes')->get()->sum('likes_count');
-        $followingCount = $user->following()->count();
-        $followersCount = $user->followers()->count();
+        // Counts safely
+        $likesTotal = optional($user->videos()->withCount('likes')->get())->sum('likes_count') ?? 0;
+        $followingCount = optional($user->following())->count() ?? 0;
+        $followersCount = optional($user->followers())->count() ?? 0;
 
         // Format counts
         $likesTotal = $this->formatCount($likesTotal);
         $followingCount = $this->formatCount($followingCount);
         $followersCount = $this->formatCount($followersCount);
 
-        // Videos
-        $videos = $user->videos()->latest()->get();
+        // Videos safely
+        $videos = $user->videos()->latest()->get()->filter(function ($video) {
+            return Storage::disk('public')->exists($video->path ?? '');
+        });
+
+        // Avatar fallback
+        $avatar = $user->avatar && Storage::disk('public')->exists($user->avatar)
+            ? $user->avatar
+            : 'avatars/default-avatar.png';
 
         return view('profile', compact(
             'user',
             'videos',
             'likesTotal',
             'followingCount',
-            'followersCount'
+            'followersCount',
+            'avatar'
         ));
     }
 
@@ -49,42 +57,40 @@ class ProfileController extends Controller
      * Update the authenticated user's profile
      */
     public function update(Request $request)
-{
-    $user = Auth::user();
-    if (!$user) {
-        return response()->json(['success' => false, 'message' => 'Not authenticated'], 401);
-    }
-
-    $data = $request->validate([
-        'username' => ['nullable','string','alpha_dash','min:3','max:24',Rule::unique('users')->ignore($user->id)],
-        'name'     => 'nullable|string|max:30',
-        'bio'      => 'nullable|string|max:80',
-        'phone'    => 'nullable|string|max:20',
-        'avatar'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-    ]);
-
-    // Handle avatar
-    if ($request->hasFile('avatar')) {
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Not authenticated'], 401);
         }
-        $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+
+        $data = $request->validate([
+            'username' => ['nullable','string','alpha_dash','min:3','max:24',Rule::unique('users')->ignore($user->id)],
+            'name'     => 'nullable|string|max:30',
+            'bio'      => 'nullable|string|max:80',
+            'phone'    => 'nullable|string|max:20',
+            'avatar'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        // Handle avatar safely
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'username' => $user->username,
+                'name' => $user->name,
+                'bio' => $user->bio,
+                'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/avatars/default-avatar.png'),
+            ]
+        ]);
     }
-
-    $user->update($data);
-
-    // Return full user info for JS
-    return response()->json([
-        'success' => true,
-        'user' => [
-            'username' => $user->username,
-            'name' => $user->name,
-            'bio' => $user->bio,
-            'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
-        ]
-    ]);
-}
-
 
     /**
      * Follow a user
@@ -107,7 +113,7 @@ class ProfileController extends Controller
             ]);
         }
 
-        $followersCount = $userToFollow->followers()->count();
+        $followersCount = optional($userToFollow->followers())->count() ?? 0;
         $isNowFollowing = !$isFollowing;
 
         return response()->json([
