@@ -20,16 +20,11 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Clear and cache routes
-RUN php artisan config:clear
-RUN php artisan route:clear  
-RUN php artisan route:cache
-
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 80
 
-# Run migrations and start PHP server
-CMD sh -c "php artisan migrate --force && php -S 0.0.0.0:80 -t public"
+# Simple PHP server start
+CMD php -S 0.0.0.0:80 -t public
