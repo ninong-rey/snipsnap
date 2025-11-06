@@ -4,32 +4,30 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of exception types that are not reported.
-     */
     protected $dontReport = [
         //
     ];
 
-    /**
-     * A list of inputs that are never flashed for validation exceptions.
-     */
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    public function report(Throwable $exception)
+    public function register(): void
     {
-        parent::report($exception);
-    }
-
-    public function render($request, Throwable $exception)
-    {
-        return parent::render($request, $exception);
+        $this->reportable(function (Throwable $e) {
+            // Only call config() and Log inside this callback
+            if (config('app.debug')) {
+                Log::error('Exception caught: ', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        });
     }
 }
