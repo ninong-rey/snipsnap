@@ -23,8 +23,8 @@ RUN composer install --no-dev --optimize-autoloader
 # Copy our custom Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Enable mod_rewrite
-RUN a2enmod rewrite
+# Enable mod_rewrite and our site
+RUN a2enmod rewrite && a2ensite 000-default.conf
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
