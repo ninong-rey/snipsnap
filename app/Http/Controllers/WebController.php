@@ -63,7 +63,7 @@ class WebController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Video uploaded successfully!',
-                'redirect_url' => route('my-web'),
+                'redirect_url' => route('web'),
             ]);
 
         } catch (\Exception $e) {

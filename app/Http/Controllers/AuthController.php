@@ -73,7 +73,7 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        return redirect()->route('my-web')->with('success', 'Registration successful!');
+        return redirect()->route('web')->with('success', 'Registration successful!');
     }
 
     /**
@@ -194,7 +194,7 @@ class AuthController extends Controller
             $request->session()->forget('otp_email');
 
             Auth::login($user);
-            return redirect()->route('my-web')->with('success', 'Password reset successfully!');
+            return redirect()->route('web')->with('success', 'Password reset successfully!');
         }
 
         return back()->withErrors(['otp' => 'User not found.']);
